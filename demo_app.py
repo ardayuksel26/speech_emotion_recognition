@@ -12,10 +12,135 @@ import librosa
 import soundfile as sf
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.model_selection import train_test_split
 import pickle
 import os
-from speech_emotion_recognition import SpeechEmotionRecognition
+
+# Uygulama boyunca tekrar eğitimi önlemek için cache
+@st.cache_resource(show_spinner=True)
+def load_and_train_model():
+    emotions = ['angry', 'calm', 'happy', 'sad']
+    dataframes = []
+    for emotion in emotions:
+        path = f'Extracted_CSV/{emotion}.csv'
+        if os.path.exists(path):
+            df = pd.read_csv(path)
+            df['emotion'] = emotion
+            dataframes.append(df)
+    if not dataframes:
+        return None
+
+    data = pd.concat(dataframes, ignore_index=True)
+
+    # Orijinal isimleri lookup için sakla
+    name_col = 'name' if 'name' in data.columns else None
+
+    # X,y hazırla
+    X = data.drop(columns=['emotion']).copy()
+    y = data['emotion'].copy()
+
+    # String kolonları (özellikle 'name') özelliklerden çıkar
+    string_cols = X.select_dtypes(include=['object']).columns.tolist()
+    feature_columns = [c for c in X.columns if c not in string_cols and c != 'id']
+    X = X[feature_columns]
+
+    # Eksik değerleri doldur
+    if X.isnull().values.any():
+        X = X.fillna(X.mean())
+
+    # Etiket kodlama
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
+
+    # Ölçekleme ve model
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Basit ve hızlı bir model: RandomForest
+    model = RandomForestClassifier(n_estimators=200, random_state=42)
+    model.fit(X_scaled, y_encoded)
+
+    # Lookup dataframe: sadece isim ve özellikler
+    lookup_df = None
+    if name_col is not None:
+        lookup_df = pd.concat([
+            data[[name_col]].reset_index(drop=True),
+            pd.DataFrame(X.values, columns=feature_columns)
+        ], axis=1)
+
+    artifacts = {
+        'model': model,
+        'scaler': scaler,
+        'label_encoder': label_encoder,
+        'feature_columns': feature_columns,
+        'lookup_df': lookup_df
+    }
+    return artifacts
+
+@st.cache_resource(show_spinner=True)
+def build_simple_audio_model(max_files_per_class: int = 200):
+    """Sound_Source klasöründeki WAV'lerden basit özelliklerle bir model eğitir.
+    Bu model, CSV'de karşılığı olmayan yeni ses dosyaları için kullanılacaktır.
+    """
+    base_dir = 'Sound_Source'
+    class_map = {
+        'Angry': 'angry',
+        'Calm': 'calm',
+        'Happy': 'happy',
+        'Sad': 'sad',
+    }
+    X_simple = []
+    y_simple = []
+    files_count = {k: 0 for k in class_map.keys()}
+
+    if not os.path.isdir(base_dir):
+        return None
+
+    # WAV'leri dolaş ve özellik çıkar
+    for folder, label in class_map.items():
+        folder_path = os.path.join(base_dir, folder)
+        if not os.path.isdir(folder_path):
+            continue
+        for fname in os.listdir(folder_path):
+            if not fname.lower().endswith('.wav'):
+                continue
+            if files_count[folder] >= max_files_per_class:
+                continue
+            fpath = os.path.join(folder_path, fname)
+            try:
+                audio, sr = librosa.load(fpath, sr=16000)
+                feats = extract_simple_features(audio, sr)
+                X_simple.append(feats)
+                y_simple.append(label)
+                files_count[folder] += 1
+            except Exception:
+                # Bozuk dosya vb. durumlarda atla
+                continue
+
+    if len(X_simple) == 0:
+        return None
+
+    X_simple = np.array(X_simple, dtype=float)
+    y_simple = np.array(y_simple)
+
+    # Etiket kodlama
+    simple_label_encoder = LabelEncoder()
+    y_enc = simple_label_encoder.fit_transform(y_simple)
+
+    # Ölçekleme ve model
+    simple_scaler = StandardScaler()
+    X_scaled = simple_scaler.fit_transform(X_simple)
+    simple_model = RandomForestClassifier(n_estimators=200, random_state=42)
+    simple_model.fit(X_scaled, y_enc)
+
+    return {
+        'model': simple_model,
+        'scaler': simple_scaler,
+        'label_encoder': simple_label_encoder
+    }
 
 def extract_simple_features(audio, sr):
     """Basit ses özelliklerini çıkar"""
@@ -78,6 +203,19 @@ tab1, tab2, tab3, tab4 = st.tabs(["🎤 Ses Analizi", "📊 Model Performansı",
 
 with tab1:
     st.header("🎤 Ses Dosyası Analizi")
+
+    # Modeli yükle/eğit
+    with st.spinner("Model yükleniyor / eğitiliyor..."):
+        artifacts = load_and_train_model()
+        simple_artifacts = build_simple_audio_model()
+    if artifacts is None:
+        st.error("Veri yüklenemedi. Lütfen 'Extracted_CSV' klasörünü kontrol edin.")
+    else:
+        model = artifacts['model']
+        scaler = artifacts['scaler']
+        label_encoder = artifacts['label_encoder']
+        feature_columns = artifacts['feature_columns']
+        lookup_df = artifacts['lookup_df']
     
     # Ses dosyası yükleme
     uploaded_file = st.file_uploader(
@@ -124,39 +262,65 @@ with tab1:
             st.pyplot(fig)
             
             # Duygu tahmini butonu
-            if st.button("🔮 Duygu Tahmini Yap", type="primary"):
+            if artifacts is not None and st.button("🔮 Duygu Tahmini Yap", type="primary"):
                 with st.spinner("Duygu analizi yapılıyor..."):
-                    # Basit özellik çıkarımı (gerçek uygulamada daha detaylı olmalı)
-                    features = extract_simple_features(audio, sr)
+                    # 1) CSV'den isim eşleşmesi ile özellikleri bulmayı dene
+                    prediction_done = False
+                    base_name = os.path.basename(uploaded_file.name)
+                    if lookup_df is not None and 'name' in lookup_df.columns:
+                        # Tam eşleşme veya sadece dosya adı ile eşleşme dene
+                        row = lookup_df[lookup_df['name'] == base_name]
+                        if row.empty:
+                            # Bazı veri setlerinde isimler farklı uzantı ile olabilir
+                            name_no_ext = os.path.splitext(base_name)[0]
+                            row = lookup_df[lookup_df['name'].str.replace(".wav", "", regex=False) == name_no_ext]
+                        if not row.empty:
+                            x_vec = row[feature_columns].iloc[0].values.astype(float)
+                            x_scaled = scaler.transform([x_vec])
+                            probs = model.predict_proba(x_scaled)[0]
+                            classes = label_encoder.classes_
+                            pred_idx = int(np.argmax(probs))
+                            pred_label = classes[pred_idx]
+                            prediction_done = True
                     
-                    # Model tahmini (örnek)
-                    emotion_prediction = predict_emotion_simple(features)
-                    
+                    # 2) Eşleşme yoksa: basit özellik tabanlı model ile tahmin
+                    if not prediction_done:
+                        if simple_artifacts is None:
+                            st.warning("CSV'de bu dosya yok ve basit özellik modeli oluşturulamadı. Eşit dağılımla gösteriliyor.")
+                            classes = label_encoder.classes_
+                            probs = np.ones(len(classes)) / len(classes)
+                            pred_idx = 0
+                            pred_label = classes[pred_idx]
+                        else:
+                            simple_feats = extract_simple_features(audio, sr)
+                            simple_model = simple_artifacts['model']
+                            simple_scaler = simple_artifacts['scaler']
+                            simple_le = simple_artifacts['label_encoder']
+                            x2 = simple_scaler.transform([simple_feats])
+                            probs = simple_model.predict_proba(x2)[0]
+                            classes = simple_le.classes_
+                            pred_idx = int(np.argmax(probs))
+                            pred_label = classes[pred_idx]
+
                     # Sonuçları göster
                     st.success("✅ Analiz tamamlandı!")
-                    
+
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.metric("Tahmin Edilen Duygu", emotion_prediction['emotion'])
+                        st.metric("Tahmin Edilen Duygu", pred_label)
                     with col2:
-                        st.metric("Güven Skoru", f"{emotion_prediction['confidence']:.2%}")
-                    
-                    # Duygu dağılımı
+                        st.metric("Güven Skoru", f"{float(np.max(probs)):.2%}")
+
+                    # Duygu olasılıkları
                     st.subheader("📊 Duygu Olasılıkları")
-                    emotions = list(emotion_prediction['all_probabilities'].keys())
-                    probabilities = list(emotion_prediction['all_probabilities'].values())
-                    
                     fig, ax = plt.subplots(figsize=(10, 6))
-                    bars = ax.bar(emotions, probabilities, color=['red', 'blue', 'green', 'purple'])
+                    bars = ax.bar(classes, probs, color=['red', 'blue', 'green', 'purple'])
                     ax.set_ylabel('Olasılık')
                     ax.set_title('Duygu Olasılık Dağılımı')
                     ax.set_ylim(0, 1)
-                    
-                    # Değerleri çubukların üzerine yaz
-                    for bar, prob in zip(bars, probabilities):
+                    for bar, prob in zip(bars, probs):
                         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                               f'{prob:.2%}', ha='center', va='bottom')
-                    
+                               f'{float(prob):.2%}', ha='center', va='bottom')
                     st.pyplot(fig)
             
             # Geçici dosyayı sil
