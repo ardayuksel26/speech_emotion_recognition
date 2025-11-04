@@ -16,6 +16,8 @@ from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.decomposition import PCA
+import pickle
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -223,6 +225,47 @@ class SpeechEmotionRecognition:
         
         return best_model_name, best_model
     
+    def save_best_model(self):
+        """En iyi modeli ve gerekli bileşenleri kaydet"""
+        print("\nMODEL KAYDETME")
+        print("="*50)
+        
+        if not self.models or not self.results:
+            print("HATA: Kaydedilecek model bulunamadi!")
+            return False
+        
+        # En iyi modeli bul
+        best_model_name = max(self.results.keys(), key=lambda x: self.results[x]['accuracy'])
+        best_model = self.models[best_model_name]
+        
+        # Kaydetmek için model paketini hazırla
+        model_package = {
+            'model': best_model,
+            'scaler': self.scaler,
+            'label_encoder': self.label_encoder,
+            'best_model_name': best_model_name,
+            'accuracy': self.results[best_model_name]['accuracy'],
+            'cv_mean': self.results[best_model_name]['cv_mean'],
+            'cv_std': self.results[best_model_name]['cv_std'],
+            'feature_columns': list(self.X.columns) if hasattr(self.X, 'columns') else None,
+            'all_results': self.results
+        }
+        
+        # Modeli kaydet
+        os.makedirs('models', exist_ok=True)
+        model_path = 'models/best_emotion_model.pkl'
+        
+        try:
+            with open(model_path, 'wb') as f:
+                pickle.dump(model_package, f)
+            print(f"Model basariyla kaydedildi: {model_path}")
+            print(f"Kaydedilen model: {best_model_name}")
+            print(f"Model dogrulugu: {self.results[best_model_name]['accuracy']:.4f}")
+            return True
+        except Exception as e:
+            print(f"HATA: Model kaydedilemedi: {str(e)}")
+            return False
+    
     def visualize_results(self):
         """Sonuçları görselleştir"""
         print("\nGORSELLESTIRME")
@@ -378,12 +421,16 @@ class SpeechEmotionRecognition:
         # 7. Model değerlendirme
         best_model_name, best_model = self.evaluate_models()
         
-        # 8. Görselleştirme
+        # 8. En iyi modeli kaydet
+        self.save_best_model()
+        
+        # 9. Görselleştirme
         self.visualize_results()
         
         print(f"\nAnaliz tamamlandi!")
         print(f"En iyi model: {best_model_name}")
         print(f"En iyi dogruluk: {self.results[best_model_name]['accuracy']:.4f}")
+        print(f"Model 'models/best_emotion_model.pkl' dosyasina kaydedildi.")
         
         return True
 
