@@ -1,0 +1,150 @@
+import { FaMicrophone, FaPlay, FaPause, FaMagic } from "react-icons/fa";
+import { MdSpeed } from "react-icons/md";
+import { useRef, useEffect } from "react";
+
+const AudioPlayer = ({
+  mode,
+  isRecording,
+  recordedUrl,
+  recordingTime,
+  levels,
+  isPlaying,
+  playProgress,
+  playbackRate,
+  onStartRecording,
+  onStopRecording,
+  onTogglePlay,
+  onSpeedChange,
+  onAnalyze,
+  // --- DÜZELTME: Prop'ları buradan alıyoruz ---
+  isSpeedMenuOpen,
+  setIsSpeedMenuOpen,
+}) => {
+  // const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false); // BU SATIRI SİLDİK, ARTIK PROP OLARAK GELİYOR
+  
+  const speedMenuRef = useRef(null);
+  const speedOptions = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
+  const formatTime = (seconds) => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const s = String(Math.floor(seconds % 60)).padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(event.target)) {
+        setIsSpeedMenuOpen(false); // Prop olan fonksiyonu çağırır
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [setIsSpeedMenuOpen]); // Dependency array güncellendi
+
+  return (
+    <div className="w-full flex flex-col items-center animate-fade-in-up">
+      
+      <div className="w-full h-40 bg-slate-800/60 rounded-2xl border border-white/5 p-4 mb-4 relative overflow-hidden flex items-center justify-center">
+        {!isRecording && !recordedUrl ? (
+          <div className="flex flex-col items-center justify-center h-full text-slate-500 animate-pulse">
+            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2">
+              <FaMicrophone className="text-lg text-slate-400" />
+            </div>
+            <span className="text-xs tracking-wider uppercase font-semibold">Kayda Başlamak İçin Butona Tıkla</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-1 w-full h-full">
+            {levels.map((level, index) => {
+              const totalBars = levels.length;
+              const playIndex = Math.floor(playProgress * (totalBars - 1));
+              const isCurrent = index === playIndex && isPlaying;
+              const isPassed = index < playIndex;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex-1 rounded-full transition-all duration-75 ease-out
+                  ${isCurrent 
+                    ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-110'
+                    : isPassed 
+                    ? 'bg-indigo-500/40' 
+                    : 'bg-linear-to-t from-indigo-600 to-purple-500'
+                  }`}
+                  style={{
+                    height: `${Math.max(4, level * 100)}px`,
+                    opacity: isCurrent ? 1 : isPassed ? 0.6 : 0.4 + level * 0.6,
+                    transform: isCurrent ? 'scaleY(1.1)' : 'scaleY(1)', 
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="font-mono text-4xl font-bold text-white mb-6 tracking-widest drop-shadow-lg">
+        {formatTime(recordingTime)}
+      </div>
+
+      <div className="flex items-center gap-6 md:gap-6 relative z-10">
+        
+        {mode === "record" && !isRecording && !recordedUrl && (
+          <button onClick={onStartRecording} className="group relative w-20 h-20 rounded-full flex items-center justify-center bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+            <div className="absolute inset-0 rounded-full border border-slate-200 animate-ping opacity-20"></div>
+            <FaMicrophone className="text-3xl text-indigo-600 group-hover:text-indigo-800 transition-colors" />
+          </button>
+        )}
+
+        {isRecording && (
+          <button onClick={onStopRecording} className="w-20 h-20 rounded-full flex items-center justify-center bg-red-500 hover:bg-red-600 hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(239,68,68,0.4)]">
+            <div className="w-8 h-8 bg-white rounded-md"></div>
+          </button>
+        )}
+
+        {!isRecording && recordedUrl && (
+          <>
+            <button onClick={onTogglePlay} className="w-20 h-20 rounded-full bg-indigo-500 hover:bg-indigo-400 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:scale-105 transition-all">
+              {isPlaying ? <FaPause className="text-2xl" /> : <FaPlay className="text-2xl ml-1" />}
+            </button>
+
+            <div className="relative" ref={speedMenuRef}>
+              <button onClick={() => setIsSpeedMenuOpen(!isSpeedMenuOpen)} className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-indigo-600/30 border border-white/5 hover:border-indigo-500/50 flex items-center justify-center transition-all cursor-pointer overflow-hidden">
+                {playbackRate === 1.0 ? <MdSpeed className="text-lg text-slate-300 group-hover:text-white" /> : <span className="text-xs font-bold text-indigo-300">{playbackRate}x</span>}
+              </button>
+
+              {isSpeedMenuOpen && (
+                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden py-1 z-100">
+                  {speedOptions.map((rate) => (
+                    <button
+                      key={rate}
+                      onClick={() => { onSpeedChange(rate); setIsSpeedMenuOpen(false); }}
+                      className={`block w-full text-center px-4 py-2.5 text-sm font-medium transition-colors duration-150
+                        ${rate === playbackRate ? 'bg-indigo-600 text-white' : 'text-black hover:bg-slate-200'}`}
+                    >
+                      {rate}x Hız
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+{/* Analyze Button (Absolute Bottom) */}
+      {!isRecording && recordedUrl && (
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20">
+          <button
+            onClick={onAnalyze}
+            className="px-8 py-4 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-indigo-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-3"
+          >
+            <FaMagic className="text-xl" />
+            Ses Analizini Yap
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AudioPlayer;
