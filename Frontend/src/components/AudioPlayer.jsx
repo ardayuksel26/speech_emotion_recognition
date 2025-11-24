@@ -1,6 +1,7 @@
 import { FaMicrophone, FaPlay, FaPause, FaMagic } from "react-icons/fa";
 import { MdSpeed } from "react-icons/md";
 import { useRef, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const AudioPlayer = ({
   mode,
@@ -22,6 +23,7 @@ const AudioPlayer = ({
 }) => {
   // const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false); // BU SATIRI SİLDİK, ARTIK PROP OLARAK GELİYOR
   
+  const { isDark } = useTheme();
   const speedMenuRef = useRef(null);
   const speedOptions = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
@@ -44,11 +46,21 @@ const AudioPlayer = ({
   return (
     <div className="w-full flex flex-col items-center animate-fade-in-up">
       
-      <div className="w-full h-40 bg-slate-800/60 rounded-2xl border border-white/5 p-4 mb-4 relative overflow-hidden flex items-center justify-center">
+      <div className={`w-full h-40 rounded-2xl border p-4 mb-4 relative overflow-hidden flex items-center justify-center ${
+        isDark 
+          ? "bg-slate-800/60 border-white/5" 
+          : "bg-purple-100 border-purple-200"
+      }`}>
         {!isRecording && !recordedUrl ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500 animate-pulse">
-            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2">
-              <FaMicrophone className="text-lg text-slate-400" />
+          <div className={`flex flex-col items-center justify-center h-full animate-pulse ${
+            isDark ? "text-slate-500" : "text-purple-600"
+          }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+              isDark ? "bg-white/5" : "bg-purple-200"
+            }`}>
+              <FaMicrophone className={`text-lg ${
+                isDark ? "text-slate-400" : "text-purple-600"
+              }`} />
             </div>
             <span className="text-xs tracking-wider uppercase font-semibold">Kayda Başlamak İçin Butona Tıkla</span>
           </div>
@@ -65,10 +77,16 @@ const AudioPlayer = ({
                   key={index}
                   className={`flex-1 rounded-full transition-all duration-75 ease-out
                   ${isCurrent 
-                    ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-110'
+                    ? isDark 
+                      ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-110'
+                      : 'bg-purple-700 shadow-[0_0_15px_rgba(147,51,234,0.8)] scale-110'
                     : isPassed 
-                    ? 'bg-indigo-500/40' 
-                    : 'bg-linear-to-t from-indigo-600 to-purple-500'
+                    ? isDark 
+                      ? 'bg-indigo-500/40'
+                      : 'bg-purple-400'
+                    : isDark
+                    ? 'bg-gradient-to-t from-indigo-600 to-purple-500'
+                    : 'bg-gradient-to-t from-purple-500 to-indigo-500'
                   }`}
                   style={{
                     height: `${Math.max(4, level * 100)}px`,
@@ -82,7 +100,9 @@ const AudioPlayer = ({
         )}
       </div>
 
-      <div className="font-mono text-4xl font-bold text-white mb-6 tracking-widest drop-shadow-lg">
+      <div className={`font-mono text-4xl font-bold mb-6 tracking-widest drop-shadow-lg ${
+        isDark ? "text-white" : "text-gray-800"
+      }`}>
         {formatTime(recordingTime)}
       </div>
 

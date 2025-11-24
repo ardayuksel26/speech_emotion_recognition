@@ -1,0 +1,20 @@
+{
+  "title": "Sesten Duygu Tanıma",
+  "upload_audio": "Ses Yükle",
+  "record_audio": "Ses Kaydet",
+  "emotion": "Duygu",
+  "angry": "Kızgın",
+  "calm": "Sakin",
+  "happy": "Mutlu",
+  "sad": "Üzgün",
+  "footer_text": "❤️ ile Geliştirildi, Senin Adın",
+  "discover_your_voice": "Sesini Keşfet",
+  "starting_analysis": "Ses analizi başlatılıyor... (Backend bağlantısı eklenecek)",
+  "mic_error": "Mikrofona erişilemiyor.",
+  "audio_processing_error": "Ses dosyası işlenirken hata:",
+  "audio_processing_failed": "Ses dosyası analiz edilemedi.",
+  "analyze_existing_recording": "Hazır bir ses kaydını analiz et",
+  "record_with_microphone": "Mikrofon ile şimdi kaydet",
+  "about_us": "Biz Kimiz",
+  "use_cases": "Kullanım Senaryoları"
+}

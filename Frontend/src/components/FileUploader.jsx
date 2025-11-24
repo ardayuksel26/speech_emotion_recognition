@@ -1,7 +1,11 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { FaUpload } from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext";
 
 const FileUploader = ({ onFileSelect, isDragging, setIsDragging }) => {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
   const fileInputRef = useRef(null);
 
   const handleDrop = (e) => {
@@ -11,7 +15,7 @@ const FileUploader = ({ onFileSelect, isDragging, setIsDragging }) => {
     if (file && file.type.startsWith("audio/")) {
       onFileSelect(file);
     } else {
-      alert("Lütfen geçerli bir ses dosyası bırakın.");
+      alert(t('drop_valid_audio_file'));
     }
   };
 
@@ -20,7 +24,7 @@ const FileUploader = ({ onFileSelect, isDragging, setIsDragging }) => {
     if (file && file.type.startsWith("audio/")) {
       onFileSelect(file);
     } else {
-      alert("Lütfen geçerli bir ses dosyası seçin.");
+      alert(t('select_valid_audio_file'));
     }
   };
 
@@ -30,15 +34,27 @@ const FileUploader = ({ onFileSelect, isDragging, setIsDragging }) => {
         className={`relative group border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer
           ${isDragging 
             ? "border-indigo-500 bg-indigo-500/10 scale-[1.02]" 
-            : "border-slate-600 hover:border-indigo-400 hover:bg-slate-800/50"}`}
+            : isDark 
+              ? "border-slate-600 hover:border-indigo-400 hover:bg-slate-800/50"
+              : "border-gray-300 hover:border-indigo-400 hover:bg-indigo-50"}`}
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
         onClick={() => fileInputRef.current.click()}
       >
-        <FaUpload className="text-5xl text-indigo-400 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300" />
-        <h3 className="text-xl font-semibold text-slate-200 mb-2">Dosyayı Sürükle veya Tıkla</h3>
-        <p className="text-slate-400 text-sm">MP3, WAV, OGG dosyaları desteklenir</p>
+        <FaUpload className={`text-5xl mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${
+          isDark ? "text-indigo-400" : "text-indigo-600"
+        }`} />
+        <h3 className={`text-xl font-semibold mb-2 ${
+          isDark ? "text-slate-200" : "text-gray-800"
+        }`}>
+          {t('drag_or_click_to_upload')}
+        </h3>
+        <p className={`text-sm ${
+          isDark ? "text-slate-400" : "text-gray-600"
+        }`}>
+          {t('supported_formats')}
+        </p>
         
         <input 
           ref={fileInputRef}

@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { FaChevronLeft } from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext";
 import ModeSelection from "./ModeSelection";
 import FileUploader from "./FileUploader";
 import AudioPlayer from "./AudioPlayer";
 
 const Hero = () => {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [mode, setMode] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -99,8 +103,8 @@ const Hero = () => {
       setSavedLevels(normalizedSamples);
 
     } catch (err) {
-      console.error("Ses dosyası işlenirken hata:", err);
-      alert("Ses dosyası analiz edilemedi.");
+      console.error(t('audio_processing_error'), err);
+      alert(t('audio_processing_failed'));
     }
   };
 
@@ -192,7 +196,7 @@ const Hero = () => {
 
     } catch (err) {
       console.error(err);
-      alert("Mikrofona erişilemiyor.");
+      alert(t('mic_error'));
     }
   };
 
@@ -266,7 +270,7 @@ const Hero = () => {
   };
 
   const handleAnalyze = () => {
-    alert("Ses analizi başlatılıyor... (Backend bağlantısı eklenecek)");
+    alert(t('starting_analysis'));
   };
 
   useEffect(() => {
@@ -277,7 +281,11 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-slate-900 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className={`relative w-full flex flex-col items-center justify-center overflow-hidden font-sans transition-colors duration-300 ${
+      isDark 
+        ? "bg-slate-900 selection:bg-indigo-500 selection:text-white" 
+        : "bg-gray-100 selection:bg-blue-500 selection:text-white"
+    }`}>
       
       {/* Arka Plan */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob"></div>
@@ -288,19 +296,31 @@ const Hero = () => {
         
       {/* Başlık */}
         <div className="relative text-center mb-10 -top-5">
-          <h1 className="py-6 pb-8 text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white via-indigo-100 to-indigo-200 tracking-tight overflow-visible">
-            Sesini Keşfet
+          <h1 className={`py-6 pb-8 text-4xl md:text-6xl font-extrabold tracking-tight overflow-visible ${
+            isDark 
+              ? "text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200" 
+              : "text-gray-800"
+          }`}>
+            {t('discover_your_voice')}
           </h1>
         </div>
 
         {/* Kart - Boyutu küçültüldü: min-h-[300px] */}
-        <div className={`w-full bg-slate-800/40 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 min-h-[400px] flex flex-col relative ${isSpeedMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
+        <div className={`w-full backdrop-blur-xl rounded-3xl shadow-2xl transition-all duration-500 min-h-[400px] flex flex-col relative ${
+          isDark 
+            ? "bg-slate-800/40 border border-white/10" 
+            : "bg-white/80 border border-gray-200"
+        } ${isSpeedMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
           
           {/* Geri Dön Butonu */}
           {mode && (
             <button 
               onClick={goBack} 
-              className="absolute top-4 left-4 z-50 w-10 h-10 grid place-items-center rounded-full bg-slate-700/30 hover:bg-slate-600/50 text-slate-300 hover:text-white transition-all duration-300 border border-white/5 group"
+              className={`absolute top-4 left-4 z-50 w-10 h-10 grid place-items-center rounded-full transition-all duration-300 group ${
+                isDark 
+                  ? "bg-slate-700/30 hover:bg-slate-600/50 text-slate-300 hover:text-white border border-white/5" 
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-900 border border-gray-300"
+              }`}
             >
               <FaChevronLeft className="text-base group-hover:scale-110 transition-transform" />
             </button>
