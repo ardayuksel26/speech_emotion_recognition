@@ -20,3 +20,13 @@ html, body {
   width: 100%;
   min-height: 100vh;
 }
+
+/* Scrollbar gizleme */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

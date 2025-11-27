@@ -11,7 +11,7 @@ const Footer = () => {
     <footer className={`w-full transition-colors duration-300 border-t ${
       isDark 
         ? "bg-slate-900 text-white border-slate-700 shadow-[0_-5px_15px_rgba(0,0,0,0.3)]" 
-        : "bg-gradient-to-r from-indigo-100 to-purple-100 text-gray-800 border-indigo-200 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]"
+        : "bg-linear-to-r from-indigo-100 to-purple-100 text-gray-800 border-indigo-200 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]"
     }`}>
       <div className="w-full py-8">
         <div className="flex flex-col items-center justify-center space-y-6">

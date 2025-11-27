@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 
 const MainPage = () => {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-100">
+    <div className="min-h-screen w-full flex flex-col bg-gray-100 overflow-x-hidden">
       <Header />
 
       {/* Hero’nun kalan alanı doldurması için main’e flex veriyoruz */}
