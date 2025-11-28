@@ -156,10 +156,10 @@ const Result = ({ result, onBack, audioUrl, waveformLevels = [] }) => {
         </button>
         
         {/* Sekme Butonları */}
-        <div className={`flex gap-4 rounded-full p-1.5 ${isDark ? "bg-slate-700/50" : "bg-gray-200"}`}>
+        <div className={`flex gap-4 rounded-xl p-2 ${isDark ? "bg-slate-700/50" : "bg-gray-200"}`}>
           <button
             onClick={() => setActiveTab("audio")}
-            className={`px-8 py-3 rounded-full font-bold text-base transition-all ${
+            className={`min-w-[140px] px-8 py-4 rounded-lg font-bold text-lg transition-all ${
               activeTab === "audio"
                 ? isDark
                   ? "bg-indigo-600 text-white shadow-lg"
@@ -173,7 +173,7 @@ const Result = ({ result, onBack, audioUrl, waveformLevels = [] }) => {
           </button>
           <button
             onClick={() => setActiveTab("results")}
-            className={`px-8 py-3 rounded-full font-bold text-base transition-all ${
+            className={`min-w-[140px] px-8 py-4 rounded-lg font-bold text-lg transition-all ${
               activeTab === "results"
                 ? isDark
                   ? "bg-indigo-600 text-white shadow-lg"
@@ -257,25 +257,36 @@ const Result = ({ result, onBack, audioUrl, waveformLevels = [] }) => {
               <div className="relative" ref={speedMenuRef}>
                 <button 
                   onClick={() => setIsSpeedMenuOpen(!isSpeedMenuOpen)} 
-                  className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-indigo-600/30 border border-white/5 hover:border-indigo-500/50 flex items-center justify-center transition-all cursor-pointer overflow-hidden"
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                    isDark
+                      ? "bg-indigo-600/80 hover:bg-indigo-500 border border-indigo-400/30"
+                      : "bg-indigo-500 hover:bg-indigo-400 border border-indigo-300"
+                  }`}
                 >
                   {playbackRate === 1.0 ? (
-                    <MdSpeed className="text-lg text-slate-300 group-hover:text-white" />
+                    <MdSpeed className="text-lg text-white" />
                   ) : (
-                    <span className="text-xs font-bold text-indigo-300">{playbackRate}x</span>
+                    <span className="text-xs font-bold text-white">{playbackRate}x</span>
                   )}
                 </button>
 
                 {isSpeedMenuOpen && (
-                  <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
+                  <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-xl shadow-2xl overflow-hidden py-1 z-[100] ${
+                    isDark ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
+                  }`}>
                     {speedOptions.map((rate) => (
                       <button
                         key={rate}
                         onClick={() => handleSpeedChange(rate)}
                         className={`block w-full text-center px-4 py-2.5 text-sm font-medium transition-colors duration-150
-                          ${rate === playbackRate ? 'bg-indigo-600 text-white' : 'text-white hover:bg-slate-700'}`}
+                          ${rate === playbackRate 
+                            ? 'bg-indigo-600 text-white' 
+                            : isDark 
+                              ? 'text-white hover:bg-slate-700' 
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
                       >
-                        {rate}x Hız
+                        {rate}x {t('speed') || 'Hız'}
                       </button>
                     ))}
                   </div>
@@ -349,18 +360,20 @@ const Result = ({ result, onBack, audioUrl, waveformLevels = [] }) => {
         </div>
 
         {/* Detaylı İstatistikler */}
-        <div className="space-y-4 mb-4">
-          <div className="flex items-center gap-2 mb-2 px-1">
+        <div className={`rounded-2xl p-5 shadow-xl ${
+          isDark ? "bg-slate-800/50" : "bg-white"
+        }`}>
+          <div className="flex items-center gap-2 mb-4">
              <FaChartBar className={isDark ? "text-indigo-400" : "text-indigo-600"} />
              <h3 className={`font-bold ${isDark ? "text-gray-200" : "text-gray-700"}`}>
                {t('probability_breakdown') || "Olasılık Dağılımı"}
              </h3>
           </div>
 
-          <div className="grid gap-3">
+          <div className="space-y-3">
             {sortedProbs.map(([emotion, score]) => (
-                <div key={emotion} className={`p-3 rounded-2xl flex items-center gap-4 transition-all hover:translate-x-1 ${
-                isDark ? "bg-white/5 hover:bg-white/10 border border-white/5" : "bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100"
+                <div key={emotion} className={`p-3 rounded-xl flex items-center gap-4 ${
+                isDark ? "bg-white/5 border border-white/5" : "bg-gray-50 border border-gray-100"
                 }`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gradient-to-br ${getEmotionColor(emotion)} bg-opacity-20`}>
                     {getEmotionEmoji(emotion)}

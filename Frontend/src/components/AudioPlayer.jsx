@@ -1,7 +1,8 @@
-import { FaMicrophone, FaPlay, FaPause, FaMagic } from "react-icons/fa";
+import { FaMicrophone, FaPlay, FaPause, FaMagic, FaChevronLeft } from "react-icons/fa";
 import { MdSpeed } from "react-icons/md";
 import { useRef, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 const AudioPlayer = ({
   mode,
@@ -17,13 +18,12 @@ const AudioPlayer = ({
   onTogglePlay,
   onSpeedChange,
   onAnalyze,
-  // --- DÜZELTME: Prop'ları buradan alıyoruz ---
+  onBack,
   isSpeedMenuOpen,
   setIsSpeedMenuOpen,
 }) => {
-  // const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false); // BU SATIRI SİLDİK, ARTIK PROP OLARAK GELİYOR
-  
   const { isDark } = useTheme();
+  const { t } = useTranslation();
   const speedMenuRef = useRef(null);
   const speedOptions = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
@@ -44,7 +44,19 @@ const AudioPlayer = ({
   }, [setIsSpeedMenuOpen]); // Dependency array güncellendi
 
   return (
-    <div className="w-full flex flex-col items-center animate-fade-in-up">
+    <div className="w-full flex flex-col items-center animate-fade-in-up relative">
+      
+      {/* Geri Butonu - Sadece kayıt yapıldıysa göster */}
+      {recordedUrl && !isRecording && (
+        <button 
+          onClick={onBack}
+          className={`absolute -top-6 left-0 p-3 rounded-full transition-colors flex items-center justify-center z-30 ${
+            isDark ? "hover:bg-white/10 text-gray-300" : "hover:bg-gray-100 text-gray-600"
+          }`}
+        >
+          <FaChevronLeft className="text-lg" />
+        </button>
+      )}
       
       <div className={`w-full h-40 rounded-2xl border p-4 mb-4 relative overflow-hidden flex items-center justify-center ${
         isDark 
@@ -106,7 +118,7 @@ const AudioPlayer = ({
         {formatTime(recordingTime)}
       </div>
 
-      <div className="flex items-center gap-6 md:gap-6 relative z-10">
+      <div className="flex items-center gap-6 md:gap-6 relative z-10 mb-6">
         
         {mode === "record" && !isRecording && !recordedUrl && (
           <button onClick={onStartRecording} className="group relative w-20 h-20 rounded-full flex items-center justify-center bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
@@ -128,20 +140,38 @@ const AudioPlayer = ({
             </button>
 
             <div className="relative" ref={speedMenuRef}>
-              <button onClick={() => setIsSpeedMenuOpen(!isSpeedMenuOpen)} className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-indigo-600/30 border border-white/5 hover:border-indigo-500/50 flex items-center justify-center transition-all cursor-pointer overflow-hidden">
-                {playbackRate === 1.0 ? <MdSpeed className="text-lg text-slate-300 group-hover:text-white" /> : <span className="text-xs font-bold text-indigo-300">{playbackRate}x</span>}
+              <button 
+                onClick={() => setIsSpeedMenuOpen(!isSpeedMenuOpen)} 
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                  isDark
+                    ? "bg-indigo-600/80 hover:bg-indigo-500 border border-indigo-400/30"
+                    : "bg-indigo-500 hover:bg-indigo-400 border border-indigo-300"
+                }`}
+              >
+                {playbackRate === 1.0 ? (
+                  <MdSpeed className={`text-lg ${isDark ? "text-white" : "text-white"}`} />
+                ) : (
+                  <span className="text-xs font-bold text-white">{playbackRate}x</span>
+                )}
               </button>
 
               {isSpeedMenuOpen && (
-                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden py-1 z-100">
+                <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-xl shadow-2xl overflow-hidden py-1 z-[100] ${
+                  isDark ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
+                }`}>
                   {speedOptions.map((rate) => (
                     <button
                       key={rate}
                       onClick={() => { onSpeedChange(rate); setIsSpeedMenuOpen(false); }}
                       className={`block w-full text-center px-4 py-2.5 text-sm font-medium transition-colors duration-150
-                        ${rate === playbackRate ? 'bg-indigo-600 text-white' : 'text-black hover:bg-slate-200'}`}
+                        ${rate === playbackRate 
+                          ? 'bg-indigo-600 text-white' 
+                          : isDark 
+                            ? 'text-white hover:bg-slate-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
                     >
-                      {rate}x Hız
+                      {rate}x {t('speed') || 'Hız'}
                     </button>
                   ))}
                 </div>
@@ -151,17 +181,19 @@ const AudioPlayer = ({
         )}
       </div>
 
-{/* Analyze Button (Absolute Bottom) */}
+      {/* Analyze Button - Kontrol butonlarının altında */}
       {!isRecording && recordedUrl && (
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20">
-          <button
-            onClick={onAnalyze}
-            className="px-8 py-4 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-indigo-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-3"
-          >
-            <FaMagic className="text-xl" />
-            Ses Analizini Yap
-          </button>
-        </div>
+        <button
+          onClick={onAnalyze}
+          className={`mt-4 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 ${
+            isDark
+              ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/40"
+              : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-indigo-400/40"
+          }`}
+        >
+          <FaMagic className="text-xl" />
+          {t('analyze_audio') || 'Ses Analizini Yap'}
+        </button>
       )}
     </div>
   );

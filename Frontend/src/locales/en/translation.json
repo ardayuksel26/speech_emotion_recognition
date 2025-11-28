@@ -39,5 +39,7 @@
   "comment_sad": "There's a bit of sadness in your tone. Don't forget to take time for yourself.",
   "audio": "Audio",
   "results": "Results",
-  "analyzed_audio": "Analyzed Audio"
+  "analyzed_audio": "Analyzed Audio",
+  "speed": "Speed",
+  "analyze_audio": "Analyze Audio"
 }

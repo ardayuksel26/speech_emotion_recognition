@@ -78,6 +78,7 @@ const Hero = () => {
   const audioElementRef = useRef(null);
   const playbackAnimationRef = useRef(null);
   const recordingIntervalRef = useRef(null);
+  const isRecordingRef = useRef(false);
   
   // WAV Kayıt Ref'leri
   const audioContextRef = useRef(null);
@@ -208,7 +209,7 @@ const Hero = () => {
       processorRef.current = processor;
 
       processor.onaudioprocess = (e) => {
-        if (!isRecording) return;
+        if (!isRecordingRef.current) return;
         const channelData = e.inputBuffer.getChannelData(0);
         audioDataRef.current.push(new Float32Array(channelData));
       };
@@ -218,6 +219,7 @@ const Hero = () => {
 
       startVisualizer();
       setIsRecording(true);
+      isRecordingRef.current = true;
 
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
@@ -231,29 +233,47 @@ const Hero = () => {
 
   const stopRecording = () => {
     if (!isRecording) return;
+    
+    // Önce recording'i durdur
     setIsRecording(false);
+    isRecordingRef.current = false;
     clearInterval(recordingIntervalRef.current);
     
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    // Animation'ı durdur
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
+    // Stream'i durdur
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    
+    // Audio processor'ı temizle
     if (processorRef.current) {
-        processorRef.current.disconnect();
-        processorRef.current = null;
+      processorRef.current.disconnect();
+      processorRef.current.onaudioprocess = null;
+      processorRef.current = null;
     }
+    
     if (audioInputRef.current) {
-        audioInputRef.current.disconnect();
-        audioInputRef.current = null;
+      audioInputRef.current.disconnect();
+      audioInputRef.current = null;
     }
-    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
+    // Kaydedilen veriyi işle
     if (audioDataRef.current.length > 0 && audioContextRef.current) {
+      try {
         const sampleRate = audioContextRef.current.sampleRate;
         const totalLength = audioDataRef.current.reduce((acc, buf) => acc + buf.length, 0);
         const result = new Float32Array(totalLength);
         
         let offset = 0;
         for (const buf of audioDataRef.current) {
-            result.set(buf, offset);
-            offset += buf.length;
+          result.set(buf, offset);
+          offset += buf.length;
         }
 
         const wavData = encodeWAV(result, sampleRate);
@@ -265,9 +285,16 @@ const Hero = () => {
 
         const fullWaveform = compressWaveform(allVisualizerDataRef.current, BAR_COUNT);
         setSavedLevels(fullWaveform);
+      } catch (error) {
+        console.error("Error processing recording:", error);
+      }
     }
 
-    if (audioContextRef.current) audioContextRef.current.close();
+    // Audio context'i kapat
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
   };
 
   const resetRecording = () => {
@@ -384,12 +411,18 @@ const Hero = () => {
         <div className={`w-full backdrop-blur-xl rounded-lg shadow-2xl transition-all duration-500 min-h-[400px] flex flex-col relative ${isDark ? "bg-slate-800/40 border border-white/10" : "bg-white/80 border border-gray-200"} ${isSpeedMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
           
           <div className="flex-1 p-8 flex flex-col items-center justify-center h-full">
-            {!mode && <ModeSelection onSelectMode={setMode} />}
-            {mode === "upload" && !recordedUrl && (
+            {!mode && !analysisResult && <ModeSelection onSelectMode={setMode} />}
+            
+            {mode === "upload" && !recordedUrl && !analysisResult && (
               <FileUploader onFileSelect={processUploadedFile} isDragging={isDragging} setIsDragging={setIsDragging} />
             )}
-            {((mode === "record") || (mode === "upload" && recordedUrl)) && (
-              <AudioPlayer mode={mode} isRecording={isRecording} recordedUrl={recordedUrl} recordingTime={recordingTime} levels={savedLevels} isPlaying={isPlaying} playProgress={playProgress} playbackRate={playbackRate} onStartRecording={startRecording} onStopRecording={stopRecording} onTogglePlay={togglePlayPause} onSpeedChange={handleSpeedChange} onAnalyze={handleAnalyze} isSpeedMenuOpen={isSpeedMenuOpen} setIsSpeedMenuOpen={setIsSpeedMenuOpen} isLoading={isAnalyzing} />
+            
+            {mode === "record" && !analysisResult && (
+              <AudioPlayer mode={mode} isRecording={isRecording} recordedUrl={recordedUrl} recordingTime={recordingTime} levels={savedLevels} isPlaying={isPlaying} playProgress={playProgress} playbackRate={playbackRate} onStartRecording={startRecording} onStopRecording={stopRecording} onTogglePlay={togglePlayPause} onSpeedChange={handleSpeedChange} onAnalyze={handleAnalyze} onBack={goBack} isSpeedMenuOpen={isSpeedMenuOpen} setIsSpeedMenuOpen={setIsSpeedMenuOpen} isLoading={isAnalyzing} />
+            )}
+            
+            {mode === "upload" && recordedUrl && !analysisResult && (
+              <AudioPlayer mode={mode} isRecording={isRecording} recordedUrl={recordedUrl} recordingTime={recordingTime} levels={savedLevels} isPlaying={isPlaying} playProgress={playProgress} playbackRate={playbackRate} onStartRecording={startRecording} onStopRecording={stopRecording} onTogglePlay={togglePlayPause} onSpeedChange={handleSpeedChange} onAnalyze={handleAnalyze} onBack={goBack} isSpeedMenuOpen={isSpeedMenuOpen} setIsSpeedMenuOpen={setIsSpeedMenuOpen} isLoading={isAnalyzing} />
             )}
             
             {/* Yükleniyor Göstergesi */}
@@ -402,17 +435,17 @@ const Hero = () => {
 
             {/* YENİ RESULT BİLEŞENİ ENTEGRASYONU */}
             {analysisResult && !isAnalyzing && (
-                <div className={`absolute inset-0 z-40 transition-all duration-300 ${isDark ? "bg-slate-800" : "bg-white"}`}>
+                <div className={`absolute inset-0 z-40 transition-all duration-300 rounded-lg ${isDark ? "bg-slate-800" : "bg-white"}`}>
                    <Result 
                      result={analysisResult} 
-                     onBack={() => setAnalysisResult(null)}
+                     onBack={goBack}
                      audioUrl={recordedUrl}
                      waveformLevels={savedLevels}
                    />
                 </div>
             )}
 
-            {recordedUrl && (
+            {recordedUrl && !analysisResult && (
               <audio ref={audioElementRef} src={recordedUrl} onEnded={() => { setIsPlaying(false); setPlayProgress(0); if (playbackAnimationRef.current) cancelAnimationFrame(playbackAnimationRef.current); if (audioElementRef.current) audioElementRef.current.currentTime = 0; }} className="hidden" />
             )}
           </div>
