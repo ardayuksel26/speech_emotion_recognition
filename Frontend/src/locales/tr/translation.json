@@ -39,5 +39,6 @@
   "results": "Sonuçlar",
   "analyzed_audio": "Analiz Edilen Ses",
   "speed": "Hız",
-  "analyze_audio": "Ses Analizini Yap"
+  "analyze_audio": "Ses Analizini Yap",
+  "detected_emotion": "Algılanan Duygu"
 }
