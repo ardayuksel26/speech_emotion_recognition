@@ -1,0 +1,4 @@
+# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\word_predictor.py
+# hypothesis_version: 6.148.5
+
+[0.4, 1.0, 'angry', 'calm', 'happy', 'imputer', 'label_encoder', 'model', 'rb', 'sad', 'scaler']

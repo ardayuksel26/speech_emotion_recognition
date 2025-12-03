@@ -1,0 +1,4 @@
+# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\aggregation_engine.py
+# hypothesis_version: 6.148.5
+
+[0.0, 0.5, 'angry', 'calm', 'confidence_threshold', 'happy', 'majority_voting', 'num_high_confidence', 'num_total', 'num_words', 'sad', 'strategy', 'temporal_weighted', 'threshold', 'total_weight', 'vote_counts', 'weighted_average']
