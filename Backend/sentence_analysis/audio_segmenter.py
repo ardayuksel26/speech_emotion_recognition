@@ -26,9 +26,9 @@ class AudioSegmenter:
     
     def __init__(
         self,
-        silence_threshold: float = 0.02,
-        min_silence_duration: float = 0.1,
-        segment_padding: float = 0.05,
+        silence_threshold: float = 0.005,      # Lower threshold to detect faint speech parts
+        min_silence_duration: float = 0.5,     # Don't split unless there's 0.5s silence
+        segment_padding: float = 0.5,          # Merge segments within 1.0s (0.5+0.5) gap
         fallback_window_size: float = 0.5,
         fallback_overlap: float = 0.25
     ):
@@ -62,8 +62,8 @@ class AudioSegmenter:
         # Try VAD-based segmentation first
         boundaries = self.detect_word_boundaries(audio, sr)
         
-        # If VAD fails (no boundaries or too few), use fallback windowing
-        if len(boundaries) < 2:
+        # If VAD fails (no boundaries found), use fallback windowing
+        if len(boundaries) == 0:
             return self._apply_fallback_windowing(audio, sr)
         
         # Extract segments from boundaries

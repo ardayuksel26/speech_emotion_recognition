@@ -110,6 +110,12 @@ class WordLevelPredictor:
             )
             
         except Exception as e:
+            # LOG THE ERROR
+            print("!!! PREDICTION ERROR !!!")
+            print(f"Error details: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
             # Fallback: return uniform distribution
             return self._get_fallback_prediction(str(e))
     

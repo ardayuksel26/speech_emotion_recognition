@@ -360,7 +360,7 @@ async def process_sentence_analysis(
                 request_id=request_id,
                 job_id=job_id
             )
-            audio, sr = librosa.load(audio_path, sr=None)
+            audio, sr = librosa.load(audio_path, sr=16000)
             audio_duration = len(audio) / sr
             
             log_with_context(
@@ -414,7 +414,7 @@ async def process_sentence_analysis(
                     features = feature_extractor.extract_features(
                         segment.audio_data,
                         segment.sample_rate,
-                        apply_scaling=True
+                        apply_scaling=False
                     )
                     
                     # Predict emotion
@@ -676,7 +676,7 @@ def create_sentence_analysis_app(
     async def analyze_sentence(
         request: Request,
         file: UploadFile = File(...),
-        aggregation_strategy: str = Form("weighted_average")
+        aggregation_strategy: str = Form("majority_voting")
     ):
         """
         Analyze Turkish sentence audio for emotion
