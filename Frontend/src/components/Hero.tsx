@@ -37,6 +37,8 @@ const Hero = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [savedLevels, setSavedLevels] = useState<number[]>([]);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -76,6 +78,7 @@ const Hero = () => {
   const updatePlayProgress = () => {
     if (audioElementRef.current) {
       setPlayProgress(audioElementRef.current.currentTime / audioElementRef.current.duration);
+      setCurrentTime(audioElementRef.current.currentTime);
       playbackAnimationRef.current = requestAnimationFrame(updatePlayProgress);
     }
   };
@@ -168,7 +171,7 @@ const Hero = () => {
   };
 
   return (
-    <div className={`relative w-full flex flex-col items-center justify-center overflow-hidden font-sans transition-colors duration-300 ${isDark ? "bg-slate-900" : "bg-gray-100"}`}>
+    <div className={`relative w-full flex-grow flex flex-col items-center justify-center overflow-hidden font-sans transition-colors duration-300 ${isDark ? "bg-slate-900" : "bg-gray-100"}`}>
       <div className="relative z-10 w-full max-w-5xl px-6 flex flex-col items-center py-20">
 
 
@@ -199,7 +202,9 @@ const Hero = () => {
               setIsSpeedMenuOpen={setIsSpeedMenuOpen}
               // Props not needed for simple preview but required by component signature:
               isRecording={false}
-              recordingTime={0}
+              recordingTime={currentTime > 0 ? currentTime : duration} // Hacky but works for now, ideally pass separate props
+              duration={duration}
+              currentTime={currentTime}
               onStartRecording={() => { }}
               onStopRecording={() => { }}
             />
@@ -224,7 +229,9 @@ const Hero = () => {
             <audio
               ref={audioElementRef}
               src={recordedUrl}
-              onEnded={() => { setIsPlaying(false); setPlayProgress(0); }}
+              onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+              onEnded={() => { setIsPlaying(false); setPlayProgress(0); setCurrentTime(0); }}
               className="hidden"
             />
           )}
