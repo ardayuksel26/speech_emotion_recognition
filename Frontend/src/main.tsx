@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
+import App from './App.tsx'
 import "./tailwind.css";
 import './i18n';
 import { I18nextProvider } from 'react-i18next';

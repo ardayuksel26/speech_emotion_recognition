@@ -37,9 +37,9 @@ const Header = () => {
     )}>
 
       {/* LEFT: Logo / Title */}
-      <Link to="/" className="z-20 flex items-center gap-2 group ml-4 md:ml-12">
+      <Link to="/" className="z-20 flex items-center gap-2 group ml-4 md:ml-12 no-underline">
         <h1 className={clsx(
-          "text-lg md:text-xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-sm transition-transform group-hover:scale-105",
+          "text-lg md:text-xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-sm transition-transform",
           isDark ? "text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200" : "text-gray-800"
         )}>
           {t('title')}
@@ -53,7 +53,7 @@ const Header = () => {
             key={link.key}
             to={link.path}
             className={clsx(
-              "text-sm font-semibold transition-colors duration-200 flex items-center gap-2",
+              "text-sm font-semibold transition-colors duration-200 flex items-center gap-2 no-underline hover:no-underline",
               location.pathname === link.path
                 ? (isDark ? "text-indigo-300" : "text-indigo-600")
                 : (isDark ? "text-slate-300 hover:text-white" : "text-gray-600 hover:text-indigo-600")
@@ -72,14 +72,14 @@ const Header = () => {
           <button
             onClick={() => setIsLangOpen(!isLangOpen)}
             className={clsx(
-              "flex items-center gap-2 rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-200",
+              "flex items-center gap-2 rounded-md px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-200",
               isDark ? "bg-slate-800 text-white hover:bg-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50"
             )}
           >
             <img
               src={languages[currentLanguage]?.flagUrl}
               alt={languages[currentLanguage]?.label}
-              className="w-5 h-5 rounded-full object-cover"
+              className="w-5 h-5 rounded-sm object-cover"
             />
             <span className="hidden md:inline text-sm font-bold">
               {currentLanguage.toUpperCase()}

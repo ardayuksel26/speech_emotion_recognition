@@ -78,5 +78,7 @@
   "word_by_word_analysis": "Word-by-Word Analysis",
   "click_segment_details": "Click segment for details",
   "dominant_emotion": "Dominant Emotion",
-  "confidence": "Confidence"
+  "confidence": "Confidence",
+  "analysis_result": "Analysis Result",
+  "timeline_analysis": "Timeline Analysis"
 }

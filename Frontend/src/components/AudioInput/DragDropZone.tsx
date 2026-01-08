@@ -63,7 +63,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     'flex flex-col items-center justify-center p-10 min-h-[300px]',
                     isDark
                         ? 'bg-slate-800/40 border-slate-600 hover:border-indigo-400'
-                        : 'bg-white/60 border-slate-300 hover:border-indigo-500',
+                        : 'bg-slate-50 border-slate-300 hover:border-indigo-500',
                     isDragging && (isDark ? 'bg-indigo-500/10 border-indigo-400' : 'bg-indigo-50 border-indigo-500'),
                     disabled && 'opacity-50 cursor-not-allowed grayscale'
                 ),

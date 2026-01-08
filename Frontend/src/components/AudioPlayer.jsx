@@ -52,7 +52,7 @@ const AudioPlayer = ({
       {recordedUrl && !isRecording && (
         <button
           onClick={onBack}
-          className={`absolute -top-6 left-0 p-3 rounded-full transition-colors flex items-center justify-center z-30 ${isDark ? "hover:bg-white/10 text-gray-300" : "hover:bg-gray-100 text-gray-600"
+          className={`absolute -top-16 left-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-sm hover:shadow-md hover:scale-105 ${isDark ? "bg-white/10 text-slate-200 hover:bg-white/20" : "bg-white/80 text-slate-600 hover:bg-white"
             }`}
         >
           <FaChevronLeft className="text-lg" />
@@ -182,7 +182,7 @@ const AudioPlayer = ({
       {!isRecording && recordedUrl && (
         <button
           onClick={onAnalyze}
-          className={`mt-4 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 ${isDark
+          className={`mt-6 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 ${isDark
             ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/40"
             : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-indigo-400/40"
             }`}

@@ -47,7 +47,7 @@ const Hero = () => {
   const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false);
 
   const audioElementRef = useRef<HTMLAudioElement>(null);
-  const playbackAnimationRef = useRef<number>();
+  const playbackAnimationRef = useRef<number | null>(null);
 
   const handleAudioReady = async (file: File) => {
     setAudioFile(file);
@@ -176,11 +176,16 @@ const Hero = () => {
 
 
 
-        <h1 className={`text-4xl md:text-6xl font-extrabold mb-10 ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h1 className={`text-4xl md:text-6xl font-extrabold mb-10 py-2 leading-relaxed text-center transition-all duration-500 ${isDark ? "text-white" : "text-gray-800"} ${analysisResult ? "scale-75 mb-4" : "mb-10"}`}>
           {t('discover_your_voice')}
         </h1>
 
-        <div className={`w-full backdrop-blur-xl rounded-2xl shadow-2xl p-8 transition-all min-h-[400px] flex flex-col items-center justify-center ${isDark ? "bg-slate-800/40 border border-white/10" : "bg-white/80 border border-gray-200"}`}>
+        <div className={`
+          relative w-full backdrop-blur-xl rounded-2xl shadow-2xl transition-all duration-500 ease-in-out
+          flex flex-col items-center justify-center
+          ${isDark ? "bg-slate-800/40 border border-white/10" : "bg-white/80 border border-gray-200"}
+          ${analysisResult ? "max-w-[95vw] lg:max-w-[1400px] min-h-[85vh] p-0 overflow-hidden" : "max-w-5xl min-h-[400px] p-8"}
+        `}>
 
           {!audioFile && (
             <AudioInput onAudioReady={handleAudioReady} />
@@ -211,18 +216,20 @@ const Hero = () => {
           )}
 
           {isAnalyzing && (
-            <div className="flex flex-col items-center animate-pulse">
+            <div className="flex flex-col items-center animate-pulse py-20">
               <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-xl font-medium text-indigo-500">{t('analyzing')}</p>
             </div>
           )}
 
           {analysisResult && (
-            <Result
-              result={analysisResult}
-              onBack={reset}
-              audioUrl={recordedUrl || undefined}
-            />
+            <div className="w-full h-full p-6 md:p-8 overflow-y-auto">
+              <Result
+                result={analysisResult}
+                onBack={reset}
+                audioUrl={recordedUrl || undefined}
+              />
+            </div>
           )}
 
           {recordedUrl && (

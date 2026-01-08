@@ -76,5 +76,7 @@
   "word_by_word_analysis": "Kelime Bazlı Analiz",
   "click_segment_details": "Detaylar için segmente tıklayın",
   "dominant_emotion": "Baskın Duygu",
-  "confidence": "Güven"
+  "confidence": "Güven",
+  "analysis_result": "Analiz Sonucu",
+  "timeline_analysis": "Zaman Çizelgesi Analizi"
 }
