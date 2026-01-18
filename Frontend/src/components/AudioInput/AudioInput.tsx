@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaMicrophone, FaStop, FaTimes, FaFileAudio, FaChevronLeft } from 'react-icons/fa';
+import { FaMicrophone, FaStop, FaFileAudio, FaChevronLeft } from 'react-icons/fa';
 import DragDropZone from './DragDropZone';
 import WaveformVisualizer from './WaveformVisualizer';
 // clsx import removed (unused)
@@ -65,12 +65,6 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
         }
-    };
-
-    const cancelRecording = () => {
-        stopRecording();
-        setMode('initial');
-        // setRecordedBlob(null);
     };
 
     const handleFileSelect = (file: File) => {

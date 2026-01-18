@@ -8,7 +8,6 @@ interface WaveformVisualizerProps {
 }
 
 const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
-    audioUrl,
     isRecording,
     recordingStream
 }) => {
@@ -16,10 +15,10 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
     const { isDark } = useTheme();
     // Persistent data for scrolling effect
     const dataHistoryRef = useRef<number[]>([]);
-    const animationRef = useRef<number>();
-    const audioContextRef = useRef<AudioContext>();
-    const analyserRef = useRef<AnalyserNode>();
-    const sourceRef = useRef<MediaStreamAudioSourceNode | MediaElementAudioSourceNode>();
+    const animationRef = useRef<number | null>(null);
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const sourceRef = useRef<MediaStreamAudioSourceNode | MediaElementAudioSourceNode | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current) return;

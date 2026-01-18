@@ -1,4 +1,0 @@
-# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\api.py
-# hypothesis_version: 6.148.5
-
-[0.01, 0.2, 0.4, 0.5, 0.7, 0.9, 30.0, 400, 404, 429, 500, 503, 8000, 48000, '*', '.wav', '/api/status/{job_id}', '/health', 'INTERNAL_ERROR', 'INVALID_AUDIO_FORMAT', 'JOB_NOT_FOUND', 'QUEUE_FULL', 'Queue is full', 'RATE_LIMIT_EXCEEDED', 'Rate limit', 'Sunucu hatası', 'aggregation_strategy', 'audio_duration', 'code', 'completed', 'confidence', 'emotion', 'end_time', 'has_mixed_emotions', 'healthy', 'is_mixed', 'is_uncertain', 'message', 'message_tr', 'metadata', 'num_words', 'primary_emotion', 'probabilities', 'processing_time', 'queue_size', 'queued', 'sample_rate', 'scaler', 'secondary_emotion', 'start_time', 'status', 'timestamp', 'unknown', 'weighted_average', 'word_index', 'word_predictions', 'İstek limiti aşıldı', 'İş bulunamadı']

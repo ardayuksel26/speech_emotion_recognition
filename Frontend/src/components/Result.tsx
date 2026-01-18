@@ -6,7 +6,7 @@ import { WordTimeline } from './Results/WordTimeline';
 import { ExportButton } from './Results/ExportButton';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaPlay, FaPause, FaDownload, FaShareAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaPause } from 'react-icons/fa';
 import { clsx } from 'clsx';
 import EmotionBadge from './Results/EmotionBadge';
 
@@ -146,6 +146,17 @@ const Result: React.FC<ResultProps> = ({
                     </div>
 
                 </MotionWrapper>
+
+                {/* Hidden Audio Element for Playback Logic */}
+                {audioUrl && (
+                    <audio
+                        ref={audioRef}
+                        src={audioUrl}
+                        onTimeUpdate={handleTimeUpdate}
+                        onEnded={handleEnded}
+                        className="hidden"
+                    />
+                )}
 
                 {/* Floating Player */}
                 {audioUrl && (
