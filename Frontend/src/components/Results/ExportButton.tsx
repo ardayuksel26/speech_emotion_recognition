@@ -41,9 +41,9 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ result, className })
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={clsx(
-                    "p-2 rounded-full transition-all duration-200",
-                    "hover:bg-gray-100 dark:hover:bg-gray-700",
-                    isOpen ? "bg-gray-100 dark:bg-gray-700 text-indigo-500" : "text-gray-500 dark:text-gray-400"
+                    "w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 !bg-transparent",
+                    "hover:scale-110",
+                    isOpen ? "text-indigo-500" : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
                 )}
                 title={t('export_results') || "Export Results"}
                 aria-label="Export results"

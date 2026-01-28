@@ -6,6 +6,7 @@ import AudioPlayer from "./AudioPlayer";
 import Result from "./Result";
 import axios from "axios";
 import { convertFileToWav } from "../utils/audioUtils";
+
 import { AnalysisResult } from "../types";
 
 // Helper to generate levels for visualization from a file
@@ -32,6 +33,20 @@ const Hero = () => {
   const { t } = useTranslation();
   const { isDark } = useTheme();
 
+  // Available models list
+  const MODELS = [
+    { id: 'catboost', name: 'CatBoost' },
+    { id: 'xgboost', name: 'XGBoost' },
+    { id: 'lightgbm', name: 'LightGBM' },
+    { id: 'rf', name: 'Random Forest' },
+    { id: 'knn', name: 'K-Nearest Neighbors (KNN)' },
+    { id: 'svm', name: 'Support Vector Machine (SVM)' },
+    { id: 'mlp', name: 'Multi-Layer Perceptron (MLP)' },
+    { id: 'gradient_boosting', name: 'Gradient Boosting' },
+    { id: 'dnn', name: 'Deep Neural Network (DNN)' },
+    { id: 'cnn1d', name: '1D Convolutional Neural Network' },
+  ];
+
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -39,6 +54,7 @@ const Hero = () => {
   const [savedLevels, setSavedLevels] = useState<number[]>([]);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [selectedModel, setSelectedModel] = useState('catboost');
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -102,60 +118,62 @@ const Hero = () => {
     try {
       const wavBlob = await convertFileToWav(audioFile);
       const formData = new FormData();
-      formData.append("file", wavBlob, "converted_audio.wav");
-      // Default strategy
-      formData.append("aggregation_strategy", "weighted_average");
+      formData.append("file", wavBlob, "converted_audio.wav"); // Send converted WAV
+      formData.append("model_type", selectedModel);
 
-      // 1. Start Analysis Job
-      const response = await axios.post("http://localhost:8000/api/analyze-sentence", formData, {
+      // Make API Request
+      // Using the new flask backend at port 5000
+      const response = await axios.post("http://localhost:5000/predict", formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const { job_id } = response.data;
+      const { emotion, confidence, all_scores } = response.data;
 
-      // 2. Poll for Results
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusRes = await axios.get(`http://localhost:8000/api/status/${job_id}`);
-          const { status, result, error } = statusRes.data;
+      // Parse confidence string (e.g., "%95.20" -> 95.20)
+      let confidenceValue = 0;
+      if (typeof confidence === 'string') {
+        confidenceValue = parseFloat(confidence.replace('%', ''));
+      } else if (typeof confidence === 'number') {
+        confidenceValue = confidence;
+      }
 
-          if (status === 'completed' && result) {
-            clearInterval(pollInterval);
-            // Map Backend Result to Frontend AnalysisResult
-            setAnalysisResult({
-              dominant_emotion: result.primary_emotion,
-              emotions: result.probabilities,
-              confidence: result.confidence,
-              word_timestamps: result.word_predictions?.map((w: any) => ({
-                word: `Word ${w.word_index}`, // Backend doesn't give text yet, just index/time
-                start: w.start_time,
-                end: w.end_time,
-                emotion: w.emotion,
-                confidence: w.confidence
-              }))
-            });
-            setIsAnalyzing(false);
-          } else if (status === 'failed' || status === 'timeout') {
-            clearInterval(pollInterval);
-            setIsAnalyzing(false);
-            alert(`Analysis failed: ${error?.message || 'Unknown error'}`);
-          }
-          // If 'queued' or 'processing', continue polling
-        } catch (err) {
-          console.error("Polling error", err);
-          clearInterval(pollInterval);
-          setIsAnalyzing(false);
-          alert("Error checking analysis status");
-        }
-      }, 1000);
+      // Backend returns 0-100 range, Frontend expects 0-1 range
+      const normalizedConfidence = confidenceValue / 100;
+
+      // Process all_scores if available (Backend returns 0-100)
+      const emotionsMap: { [key: string]: number; happy: number; sad: number; angry: number; calm: number; } = {
+        happy: 0,
+        sad: 0,
+        angry: 0,
+        calm: 0
+      };
+      if (all_scores) {
+        Object.entries(all_scores).forEach(([key, val]) => {
+          emotionsMap[key.toLowerCase()] = (val as number) / 100;
+        });
+      } else {
+        // Fallback for older backend response
+        emotionsMap[emotion.toLowerCase()] = normalizedConfidence;
+      }
+
+      setAnalysisResult({
+        dominant_emotion: emotion,
+        emotions: emotionsMap,
+        confidence: normalizedConfidence,
+        // Backend doesn't support word timestamps yet
+        word_timestamps: []
+      });
+
+      setIsAnalyzing(false);
 
     } catch (error: any) {
       console.error("Analysis Request Failed:", error);
       setIsAnalyzing(false);
       let msg = t('analysis_failed') || "Analiz hatası.";
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        msg += typeof detail === 'object' ? ` (${detail.message || JSON.stringify(detail)})` : ` (${detail})`;
+      if (error.response?.data?.error) {
+        msg = `Hata: ${error.response.data.error}`;
+      } else if (error.message) {
+        msg = `Hata: ${error.message}`;
       }
       alert(msg);
     }
@@ -192,33 +210,60 @@ const Hero = () => {
           )}
 
           {audioFile && recordedUrl && !analysisResult && !isAnalyzing && (
-            <AudioPlayer
-              mode="preview"
-              recordedUrl={recordedUrl}
-              levels={savedLevels}
-              isPlaying={isPlaying}
-              playProgress={playProgress}
-              playbackRate={playbackRate}
-              onTogglePlay={tooglePlayPause}
-              onSpeedChange={handleSpeedChange}
-              onAnalyze={handleAnalyze}
-              onBack={reset}
-              isSpeedMenuOpen={isSpeedMenuOpen}
-              setIsSpeedMenuOpen={setIsSpeedMenuOpen}
-              // Props not needed for simple preview but required by component signature:
-              isRecording={false}
-              recordingTime={currentTime > 0 ? currentTime : duration} // Hacky but works for now, ideally pass separate props
-              duration={duration}
-              currentTime={currentTime}
-              onStartRecording={() => { }}
-              onStopRecording={() => { }}
-            />
+            <div className="w-full max-w-2xl flex flex-col items-center animate-fadeIn">
+
+              {/* Model Selection UI */}
+              <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 text-center">
+                  🧠 Analiz Modelini Seçin
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {MODELS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => setSelectedModel(model.id)}
+                      className={`
+                        py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 border-2
+                        ${selectedModel === model.id
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 shadow-md transform scale-105'
+                          : 'border-transparent bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}
+                      `}
+                    >
+                      {model.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <AudioPlayer
+                mode="preview"
+                recordedUrl={recordedUrl}
+                levels={savedLevels}
+                isPlaying={isPlaying}
+                playProgress={playProgress}
+                playbackRate={playbackRate}
+                onTogglePlay={tooglePlayPause}
+                onSpeedChange={handleSpeedChange}
+                onAnalyze={handleAnalyze}
+                onBack={reset}
+                isSpeedMenuOpen={isSpeedMenuOpen}
+                setIsSpeedMenuOpen={setIsSpeedMenuOpen}
+                // Props not needed for simple preview but required by component signature:
+                isRecording={false}
+                recordingTime={currentTime > 0 ? currentTime : duration}
+                duration={duration}
+                currentTime={currentTime}
+                onStartRecording={() => { }}
+                onStopRecording={() => { }}
+              />
+            </div>
           )}
 
           {isAnalyzing && (
             <div className="flex flex-col items-center animate-pulse py-20">
               <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-xl font-medium text-indigo-500">{t('analyzing')}</p>
+              <p className="text-sm text-slate-400 mt-2">Seçilen Model: {MODELS.find(m => m.id === selectedModel)?.name}</p>
             </div>
           )}
 

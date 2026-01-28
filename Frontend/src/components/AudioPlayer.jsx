@@ -52,10 +52,10 @@ const AudioPlayer = ({
       {recordedUrl && !isRecording && (
         <button
           onClick={onBack}
-          className={`absolute -top-16 left-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-sm hover:shadow-md hover:scale-105 ${isDark ? "bg-white/10 text-slate-200 hover:bg-white/20" : "bg-white/80 text-slate-600 hover:bg-white"
+          className={`absolute top-2 left-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-sm hover:shadow-md hover:scale-105 ${isDark ? "bg-slate-700/50 text-slate-200 hover:bg-slate-600" : "bg-white/80 text-slate-600 hover:bg-white"
             }`}
         >
-          <FaChevronLeft className="text-lg" />
+          <FaChevronLeft className="text-sm" />
         </button>
       )}
 

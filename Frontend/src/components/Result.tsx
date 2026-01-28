@@ -80,8 +80,8 @@ const Result: React.FC<ResultProps> = ({
                     className="flex items-center gap-3 group"
                 >
                     <div className={clsx(
-                        "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110",
-                        isDark ? "bg-white/10 hover:bg-white/20 text-white" : "bg-white hover:bg-slate-50 text-slate-700 shadow-md hover:shadow-lg"
+                        "w-12 h-12 flex items-center justify-center transition-all duration-300 group-hover:scale-110 !bg-transparent !shadow-none !border-none",
+                        isDark ? "text-white hover:text-indigo-400" : "text-slate-700 hover:text-indigo-600"
                     )}>
                         <FaArrowLeft className="text-lg" />
                     </div>
@@ -140,7 +140,7 @@ const Result: React.FC<ResultProps> = ({
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 shadow-sm">
                             <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
                             <span className="text-sm font-bold tracking-widest uppercase opacity-80">
-                                {t('confidence')}: {(result.confidence * 100).toFixed(0)}%
+                                {t('confidence')}: {(result.confidence * 100).toFixed(2)}%
                             </span>
                         </div>
                     </div>
