@@ -3,7 +3,8 @@ import numpy as np
 import joblib
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from preprocessing import extract_features 
+from preprocessing import extract_features
+from Preprocessing.sentence_processing import SentenceProcessor 
 
 # TensorFlow imports for DL models
 try:
@@ -226,6 +227,138 @@ def predict():
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return jsonify({'error': f'Tahmin hatası: {str(e)}'}), 500
+
+@app.route('/predict-sentence', methods=['POST'])
+def predict_sentence():
+    """
+    Sentence-level prediction endpoint.
+    Splits the input audio into segments (words/phrases), predicts emotion for each,
+    and aggregates the results.
+    """
+    # 1. Frontend parameters
+    selected_model_key = request.form.get('model_type', 'catboost') # Default user preference
+    
+    # 2. Model check
+    if selected_model_key not in loaded_models:
+        return jsonify({
+            'error': f"Model '{selected_model_key}' not found.",
+            'available_models': list(loaded_models.keys())
+        }), 400
+        
+    tools = loaded_models[selected_model_key]
+    model = tools['model']
+    scaler = tools['scaler']
+    encoder = tools['encoder']
+
+    # 3. File check
+    if 'file' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+        
+    # Unique temp filename
+    import uuid
+    temp_filename = f"temp_sent_{uuid.uuid4().hex}.wav"
+    temp_path = os.path.join(BASE_DIR, temp_filename)
+    file.save(temp_path)
+    
+    segment_paths = []
+    
+    try:
+        # 4. Segmentation (The core "preprocessing step")
+        # Split sentence into word-like chunks using new Class
+        processor = SentenceProcessor(target_sr=22050, vad_db_threshold=40)
+        segment_paths = processor.process_audio(temp_path, output_dir=os.path.join(BASE_DIR, "temp_segments"))
+        
+        results = []
+        
+        # 5. Predict for each segment
+        for seg_path in segment_paths:
+            feats = extract_features(seg_path)
+            
+            if feats is None:
+                continue
+                
+            # Prepare features
+            feats = feats.reshape(1, -1)
+            feats_scaled = scaler.transform(feats)
+            
+            # Predict
+            if selected_model_key in ['cnn1d', 'dnn'] and 'cnn' in selected_model_key:
+                 feats_scaled = np.expand_dims(feats_scaled, axis=2)
+                 
+            # Logic similar to /predict but simplified for loop
+            if hasattr(model, 'predict_proba'):
+                probs = model.predict_proba(feats_scaled)[0]
+                pred_idx = np.argmax(probs)
+                conf = np.max(probs) * 100
+            else:
+                # Fallback for models without probability
+                pred = model.predict(feats_scaled)[0]
+                if isinstance(pred, (list, np.ndarray)):
+                    pred_idx = int(pred.item())
+                else:
+                    pred_idx = int(pred)
+                conf = 100.0 # Mock confidence
+                probs = np.zeros(len(encoder.classes_))
+                probs[pred_idx] = 1.0
+
+            label = encoder.inverse_transform([pred_idx])[0]
+            
+            results.append({
+                'segment': os.path.basename(seg_path),
+                'emotion': label,
+                'confidence': float(conf),
+                'probabilities': probs.tolist() # Keep simple list for frontend
+            })
+            
+        # 6. Aggregation
+        if not results:
+             return jsonify({'error': 'No valid segments extracted or feature extraction failed.'}), 500
+             
+        # Majority Vote (Legacy/Reference)
+        from collections import Counter
+        emotions = [r['emotion'] for r in results]
+        most_common = Counter(emotions).most_common(1)[0]
+        final_emotion_vote = most_common[0]
+        
+        # --- NEW: Weighted Voting Strategy via SentenceProcessor ---
+        weighted_result = processor.weighted_voting(results)
+        
+        if weighted_result:
+            final_emotion = weighted_result['final_emotion']
+            final_conf = weighted_result['confidence']
+            details = weighted_result['weighted_details']
+        else:
+            # Fallback
+            final_emotion = final_emotion_vote
+            final_conf = 0.0
+            details = {}
+
+        response = {
+            'final_emotion': final_emotion,
+            'confidence': f"%{final_conf:.2f}",
+            'segments_count': len(results),
+            'breakdown': results,
+            'voting_result': final_emotion_vote,
+            'weighted_details': details,
+            'model_used': selected_model_key.upper()
+        }
+        
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({'error': f"Sentence processing error: {str(e)}"}), 500
+        
+    finally:
+        # Cleanup
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        for p in segment_paths:
+            if os.path.exists(p):
+                os.remove(p)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

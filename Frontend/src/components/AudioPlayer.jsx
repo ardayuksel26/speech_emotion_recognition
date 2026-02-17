@@ -5,7 +5,8 @@ import { useTheme } from "../context/ThemeContext";
 import { useTranslation } from "react-i18next";
 
 const AudioPlayer = ({
-  mode,
+  mode, // 'record' or 'preview'
+  analysisMode, // 'word' or 'sentence' (passed from parent)
   isRecording,
   recordedUrl,
   recordingTime,
@@ -21,8 +22,8 @@ const AudioPlayer = ({
   onBack,
   isSpeedMenuOpen,
   setIsSpeedMenuOpen,
-  duration, // New prop
-  currentTime, // New prop
+  duration,
+  currentTime,
 }) => {
   const { isDark } = useTheme();
   const { t } = useTranslation();
@@ -33,6 +34,14 @@ const AudioPlayer = ({
     const m = String(Math.floor(seconds / 60)).padStart(2, "0");
     const s = String(Math.floor(seconds % 60)).padStart(2, "0");
     return `${m}:${s}`;
+  };
+
+  // Decide button text based on analysis mode
+  const getAnalyzeButtonText = () => {
+    if (analysisMode === 'sentence') {
+      return "CatBoost Cümle Analizi";
+    }
+    return t('analyze_audio') || 'Ses Analizini Yap';
   };
 
   useEffect(() => {
@@ -188,7 +197,7 @@ const AudioPlayer = ({
             }`}
         >
           <FaMagic className="text-xl" />
-          {t('analyze_audio') || 'Ses Analizini Yap'}
+          {getAnalyzeButtonText()}
         </button>
       )}
     </div>

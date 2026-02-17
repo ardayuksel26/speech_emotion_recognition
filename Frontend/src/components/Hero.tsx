@@ -55,6 +55,7 @@ const Hero = () => {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
+  const [mode, setMode] = useState<'word' | 'sentence'>('word');
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -122,12 +123,32 @@ const Hero = () => {
       formData.append("model_type", selectedModel);
 
       // Make API Request
+      // Make API Request
       // Using the new flask backend at port 5000
-      const response = await axios.post("http://localhost:5000/predict", formData, {
+      const endpoint = mode === 'word' ? '/predict' : '/predict-sentence';
+      const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const { emotion, confidence, all_scores } = response.data;
+      // Special handling for sentence mode response
+      let emotion, confidence, all_scores;
+      // let breakdown, weighted_details; // Placeholder for future use using breakdown and weighted details
+
+      if (mode === 'sentence') {
+        // Sentence endpoint returns different structure
+        emotion = response.data.final_emotion;
+        confidence = response.data.confidence;
+        // Use weighted details if available, otherwise fallback
+        if (response.data.weighted_details) {
+          all_scores = response.data.weighted_details;
+        }
+        // breakdown = response.data.breakdown;
+      } else {
+        // Standard /predict response
+        emotion = response.data.emotion;
+        confidence = response.data.confidence;
+        all_scores = response.data.all_scores;
+      }
 
       // Parse confidence string (e.g., "%95.20" -> 95.20)
       let confidenceValue = 0;
@@ -205,6 +226,30 @@ const Hero = () => {
           ${analysisResult ? "max-w-[95vw] lg:max-w-[1400px] min-h-[85vh] p-0 overflow-hidden" : "max-w-5xl min-h-[400px] p-8"}
         `}>
 
+          {/* Mode Switcher */}
+          {!analysisResult && (
+            <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-full mb-8 relative z-20">
+              <button
+                onClick={() => setMode('word')}
+                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'word'
+                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                  }`}
+              >
+                Kelime (Word)
+              </button>
+              <button
+                onClick={() => setMode('sentence')}
+                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'sentence'
+                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                  }`}
+              >
+                Cümle (Sentence)
+              </button>
+            </div>
+          )}
+
           {!audioFile && (
             <AudioInput onAudioReady={handleAudioReady} />
           )}
@@ -237,6 +282,7 @@ const Hero = () => {
 
               <AudioPlayer
                 mode="preview"
+                analysisMode={mode}
                 recordedUrl={recordedUrl}
                 levels={savedLevels}
                 isPlaying={isPlaying}

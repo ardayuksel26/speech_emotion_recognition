@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time  # Süre tutmak için ekledik
@@ -127,6 +129,7 @@ def run_benchmark():
         print("-" * 70)
 
     # --- GRAFİK ÇİZ ---
+    # --- GRAFİK ÇİZ ---
     print("\n📊 Grafik oluşturuluyor...")
     plt.figure(figsize=(12, 6))
     plt.boxplot(results, labels=names, patch_artist=True)
@@ -135,7 +138,9 @@ def run_benchmark():
     plt.xticks(rotation=45)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.show()
+    plt.savefig('benchmark_results.png')
+    print("Graph saved to benchmark_results.png")
+    # plt.show()
     print("🏁 İşlem Tamamlandı.")
 
 if __name__ == "__main__":
