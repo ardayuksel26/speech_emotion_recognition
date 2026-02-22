@@ -33,15 +33,15 @@ const Hero = () => {
   const { t } = useTranslation();
   const { isDark } = useTheme();
 
-  // Available models list
-  const MODELS = [
+  // Base models list
+  const BASE_MODELS = [
     { id: 'catboost', name: 'CatBoost' },
     { id: 'xgboost', name: 'XGBoost' },
     { id: 'lightgbm', name: 'LightGBM' },
     { id: 'rf', name: 'Random Forest' },
-    { id: 'knn', name: 'K-Nearest Neighbors (KNN)' },
-    { id: 'svm', name: 'Support Vector Machine (SVM)' },
-    { id: 'mlp', name: 'Multi-Layer Perceptron (MLP)' },
+    { id: 'knn', name: 'K-Nearest Neighbors' },
+    { id: 'svm', name: 'Support Vector Machine' },
+    { id: 'mlp', name: 'Multi-Layer Perceptron' },
     { id: 'gradient_boosting', name: 'Gradient Boosting' },
     { id: 'dnn', name: 'Deep Neural Network (DNN)' },
     { id: 'cnn1d', name: '1D Convolutional Neural Network' },
@@ -55,7 +55,17 @@ const Hero = () => {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
+  const [qualityMode, setQualityMode] = useState<'studio' | 'robust'>('robust');
   const [mode, setMode] = useState<'word' | 'sentence'>('word');
+
+  // Compute actual backend key
+  const activeModelKey = qualityMode === 'robust' ? `${selectedModel}_robust` : selectedModel;
+  const activeModelName = `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? 'Dış Ses/Gürültülü' : 'Stüdyo'})`;
+
+  // Segmentation and Next flow
+  const [sentenceSegments, setSentenceSegments] = useState<{ start: number, end: number }[] | null>(null);
+  const [isSegmenting, setIsSegmenting] = useState(false);
+  const [showModelSelection, setShowModelSelection] = useState(false);
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -74,7 +84,32 @@ const Hero = () => {
     // Generate levels for preview
     const levels = await generateWaveLevels(file, 60);
     setSavedLevels(levels);
+
+    if (mode === 'sentence') {
+      handleSegmentation(file);
+    } else {
+      setShowModelSelection(true);
+    }
   };
+
+  const handleSegmentation = async (file: File) => {
+    setIsSegmenting(true);
+    try {
+      const wavBlob = await convertFileToWav(file);
+      const formData = new FormData();
+      formData.append("file", wavBlob, "converted_audio.wav");
+
+      const response = await axios.post(`http://localhost:5000/segment-sentence`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSentenceSegments(response.data.segments);
+    } catch (err) {
+      console.error(err);
+      alert("Cümle ayrıştırma hatası.");
+    } finally {
+      setIsSegmenting(false);
+    }
+  }
 
   const tooglePlayPause = () => {
     if (!audioElementRef.current) return;
@@ -120,7 +155,7 @@ const Hero = () => {
       const wavBlob = await convertFileToWav(audioFile);
       const formData = new FormData();
       formData.append("file", wavBlob, "converted_audio.wav"); // Send converted WAV
-      formData.append("model_type", selectedModel);
+      formData.append("model_type", activeModelKey); // Pass computed model format
 
       // Make API Request
       // Make API Request
@@ -177,6 +212,14 @@ const Hero = () => {
         emotionsMap[emotion.toLowerCase()] = normalizedConfidence;
       }
 
+      // Normalize total so bars aren't broken if sum exceeds 100% due to weights
+      const totalSum = Object.values(emotionsMap).reduce((a, b) => a + b, 0);
+      if (totalSum > 0) {
+        Object.keys(emotionsMap).forEach(key => {
+          emotionsMap[key] = emotionsMap[key] / totalSum;
+        });
+      }
+
       setAnalysisResult({
         dominant_emotion: emotion,
         emotions: emotionsMap,
@@ -207,6 +250,8 @@ const Hero = () => {
     setSavedLevels([]);
     setIsPlaying(false);
     setPlayProgress(0);
+    setSentenceSegments(null);
+    setShowModelSelection(false);
   };
 
   return (
@@ -230,7 +275,7 @@ const Hero = () => {
           {!analysisResult && (
             <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-full mb-8 relative z-20">
               <button
-                onClick={() => setMode('word')}
+                onClick={() => { setMode('word'); setShowModelSelection(true); }}
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'word'
                   ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
@@ -239,7 +284,7 @@ const Hero = () => {
                 Kelime (Word)
               </button>
               <button
-                onClick={() => setMode('sentence')}
+                onClick={() => { setMode('sentence'); setShowModelSelection(false); setSentenceSegments(null); }}
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'sentence'
                   ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
@@ -257,33 +302,113 @@ const Hero = () => {
           {audioFile && recordedUrl && !analysisResult && !isAnalyzing && (
             <div className="w-full max-w-2xl flex flex-col items-center animate-fadeIn">
 
-              {/* Model Selection UI */}
-              <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 text-center">
-                  🧠 Analiz Modelini Seçin
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {MODELS.map((model) => (
+              {/* Model Selection UI - Matrix Format */}
+              {(mode === 'word' || showModelSelection) && (
+                <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm animate-fadeIn">
+                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4 text-center">
+                    🎧 Eğitim Kalitesini Seçin
+                  </label>
+
+                  {/* Quality Mode Toggle */}
+                  <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-xl mb-6 mx-auto max-w-sm relative">
                     <button
-                      key={model.id}
-                      onClick={() => setSelectedModel(model.id)}
-                      className={`
-                        py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 border-2
-                        ${selectedModel === model.id
-                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 shadow-md transform scale-105'
-                          : 'border-transparent bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}
-                      `}
+                      onClick={() => setQualityMode('studio')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 z-10 ${qualityMode === 'studio'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md transform scale-100'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                        }`}
                     >
-                      {model.name}
+                      🎙️ Stüdyo Kalitesi
                     </button>
-                  ))}
+                    <button
+                      onClick={() => setQualityMode('robust')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 z-10 ${qualityMode === 'robust'
+                          ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-md transform scale-100'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                        }`}
+                    >
+                      🌪️ Dış Ses / Gürültülü
+                    </button>
+                  </div>
+
+                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 text-center">
+                    🧠 Analiz Motorunu (Base Model) Seçin
+                  </label>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {BASE_MODELS.map((model) => (
+                      <button
+                        key={model.id}
+                        onClick={() => setSelectedModel(model.id)}
+                        className={`
+                          py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 border-2
+                          ${selectedModel === model.id
+                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-sm transform scale-[1.02]'
+                            : 'border-transparent bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}
+                        `}
+                      >
+                        {model.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Segmentation Preview UI */}
+              {mode === 'sentence' && !showModelSelection && (
+                <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm animate-fadeIn">
+                  {isSegmenting ? (
+                    <div className="flex flex-col items-center justify-center p-4">
+                      <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+                      <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">Ses kelimelere ayrıştırılıyor...</p>
+                    </div>
+                  ) : sentenceSegments ? (
+                    <div className="flex flex-col items-center">
+                      <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4 text-center">
+                        🎙️ Ayrıştırılan Kelimeler ({sentenceSegments.length} adet)
+                      </label>
+                      <div className="flex flex-wrap gap-2 justify-center mb-6">
+                        {sentenceSegments.map((seg, i) => (
+                          <button
+                            key={i}
+                            className="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-medium hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors shadow-sm"
+                            onClick={() => {
+                              if (audioElementRef.current) {
+                                audioElementRef.current.currentTime = seg.start;
+                                audioElementRef.current.play();
+                                setIsPlaying(true);
+                                setTimeout(() => {
+                                  if (audioElementRef.current) {
+                                    audioElementRef.current.pause();
+                                  }
+                                  setIsPlaying(false);
+                                }, (seg.end - seg.start) * 1000);
+                              }
+                            }}
+                          >
+                            Kelime {i + 1} ({seg.start.toFixed(1)}s - {seg.end.toFixed(1)}s)
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setShowModelSelection(true)}
+                        className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300 font-bold"
+                      >
+                        İleri Seç
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-center text-slate-500">Ayrıştırma sonucu bekleniyor...</p>
+                  )}
+                </div>
+              )}
 
               <AudioPlayer
                 mode="preview"
                 analysisMode={mode}
+                selectedModelName={activeModelName}
                 recordedUrl={recordedUrl}
+                showAnalyzeButton={mode === 'word' || showModelSelection}
                 levels={savedLevels}
                 isPlaying={isPlaying}
                 playProgress={playProgress}
@@ -309,7 +434,7 @@ const Hero = () => {
             <div className="flex flex-col items-center animate-pulse py-20">
               <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-xl font-medium text-indigo-500">{t('analyzing')}</p>
-              <p className="text-sm text-slate-400 mt-2">Seçilen Model: {MODELS.find(m => m.id === selectedModel)?.name}</p>
+              <p className="text-sm text-slate-400 mt-2">Kullanılan Motor: {activeModelName}</p>
             </div>
           )}
 

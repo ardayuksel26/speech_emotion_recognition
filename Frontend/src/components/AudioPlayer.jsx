@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 const AudioPlayer = ({
   mode, // 'record' or 'preview'
   analysisMode, // 'word' or 'sentence' (passed from parent)
+  selectedModelName, // The dynamically selected model to show in the action button
   isRecording,
   recordedUrl,
   recordingTime,
@@ -24,6 +25,7 @@ const AudioPlayer = ({
   setIsSpeedMenuOpen,
   duration,
   currentTime,
+  showAnalyzeButton = true,
 }) => {
   const { isDark } = useTheme();
   const { t } = useTranslation();
@@ -39,7 +41,7 @@ const AudioPlayer = ({
   // Decide button text based on analysis mode
   const getAnalyzeButtonText = () => {
     if (analysisMode === 'sentence') {
-      return "CatBoost Cümle Analizi";
+      return `${selectedModelName || 'CatBoost'} Cümle Analizi`;
     }
     return t('analyze_audio') || 'Ses Analizini Yap';
   };
@@ -188,7 +190,7 @@ const AudioPlayer = ({
       </div>
 
       {/* Analyze Button - Kontrol butonlarının altında */}
-      {!isRecording && recordedUrl && (
+      {!isRecording && recordedUrl && showAnalyzeButton && (
         <button
           onClick={onAnalyze}
           className={`mt-6 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 ${isDark

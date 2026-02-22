@@ -1,3 +1,4 @@
+# Force Auto-reload trigger for Perfect Confidence & Distribution UI Sync
 import os
 import numpy as np
 import joblib
@@ -16,12 +17,34 @@ except ImportError:
     TF_AVAILABLE = False
 
 import warnings
-warnings.filterwarnings('ignore')
+import logging
+
+# --- PRODUCTION LOGGING SETUP ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('SER_API')
 
 app = Flask(__name__)
-CORS(app)
+# Enable CORS securely for all origins
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# --- AYARLAR ---
+# ==============================================================================
+# VOCAL TONE CALIBRATION (Turkish Emotion Priorities)
+# ==============================================================================
+# Microphones often dynamically compress high frequencies, making energetic 
+# Turkish "Happy" (Mutlu) expressions acoustically misclassify as "Sad" (Üzgün).
+# Tweak these global multipliers if the models are continuously biasing toward one.
+VOCAL_CALIBRATION = {
+    'happy': 1.30,  # +30% Boost: En zor tespit edilen duygu, mikrofon bass'ı yutuyor.
+    'sad': 0.80,    # -20% Penalty: Boğuk mikrofon sesi genelde "üzgün" sanılır, bunu bastırıyoruz.
+    'angry': 1.10,  # +10% Boost: Yüksek enerji gerektiren kelimeleri daha net yakalasın.
+    'calm': 0.90    # -10% Penalty: Düz/cansız seslerin hemen 'sakin' sanılmasını önler.
+}
+
+# --- AYARLAR / DIRECTORIES ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, '../Models')
 
@@ -33,40 +56,80 @@ MODEL_CONFIG = {
         'scaler': os.path.join(MODELS_DIR, 'CatBoost/scaler_cb.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'CatBoost/label_encoder_cb.pkl')
     },
+    'catboost_robust': {
+        'model': os.path.join(MODELS_DIR, 'CatBoost_Robust/catboost_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'CatBoost_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'CatBoost_Robust/label_encoder_robust.pkl')
+    },
     'xgboost': {
         'model': os.path.join(MODELS_DIR, 'XGBoost/xgboost_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'XGBoost/scaler_xgb.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'XGBoost/label_encoder_xgb.pkl')
+    },
+    'xgboost_robust': {
+        'model': os.path.join(MODELS_DIR, 'XGBoost_Robust/xgboost_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'XGBoost_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'XGBoost_Robust/label_encoder_robust.pkl')
     },
     'lightgbm': {
         'model': os.path.join(MODELS_DIR, 'LightGBM/lightgbm_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'LightGBM/scaler_lgb.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'LightGBM/label_encoder_lgb.pkl')
     },
+    'lightgbm_robust': {
+        'model': os.path.join(MODELS_DIR, 'LightGBM_Robust/lightgbm_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'LightGBM_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'LightGBM_Robust/label_encoder_robust.pkl')
+    },
     'rf': {
         'model': os.path.join(MODELS_DIR, 'Random Forest/random_forest_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'Random Forest/scaler_rf.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'Random Forest/label_encoder_rf.pkl')
+    },
+    'rf_robust': {
+        'model': os.path.join(MODELS_DIR, 'Random Forest_Robust/random_forest_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'Random Forest_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'Random Forest_Robust/label_encoder_robust.pkl')
     },
     'knn': {
         'model': os.path.join(MODELS_DIR, 'KNN/knn_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'KNN/scaler_knn.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'KNN/label_encoder_knn.pkl')
     },
+    'knn_robust': {
+        'model': os.path.join(MODELS_DIR, 'KNN_Robust/knn_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'KNN_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'KNN_Robust/label_encoder_robust.pkl')
+    },
     'svm': {
         'model': os.path.join(MODELS_DIR, 'SVM/svm_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'SVM/scaler_svm.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'SVM/label_encoder_svm.pkl')
+    },
+    'svm_robust': {
+        'model': os.path.join(MODELS_DIR, 'SVM_Robust/svm_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'SVM_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'SVM_Robust/label_encoder_robust.pkl')
     },
     'mlp': {
         'model': os.path.join(MODELS_DIR, 'MLP/mlp_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'MLP/scaler_mlp.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'MLP/label_encoder_mlp.pkl')
     },
+    'mlp_robust': {
+        'model': os.path.join(MODELS_DIR, 'MLP_Robust/mlp_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'MLP_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'MLP_Robust/label_encoder_robust.pkl')
+    },
     'gradient_boosting': {
         'model': os.path.join(MODELS_DIR, 'GradientBoosting/gradboost_model.pkl'),
         'scaler': os.path.join(MODELS_DIR, 'GradientBoosting/scaler_gb.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'GradientBoosting/label_encoder_gb.pkl')
+    },
+    'gradient_boosting_robust': {
+        'model': os.path.join(MODELS_DIR, 'GradientBoosting_Robust/gradboost_robust.pkl'),
+        'scaler': os.path.join(MODELS_DIR, 'GradientBoosting_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'GradientBoosting_Robust/label_encoder_robust.pkl')
     },
     # Deep Learning Models
     'dnn': {
@@ -74,30 +137,39 @@ MODEL_CONFIG = {
         'scaler': os.path.join(MODELS_DIR, 'DNN/scaler_dnn.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'DNN/label_encoder_dnn.pkl')
     },
+    'dnn_robust': {
+        'model': os.path.join(MODELS_DIR, 'DNN_Robust/dnn_robust.h5'),
+        'scaler': os.path.join(MODELS_DIR, 'DNN_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'DNN_Robust/label_encoder_robust.pkl')
+    },
     'cnn1d': {
         'model': os.path.join(MODELS_DIR, 'CNN1D/cnn1d_model.h5'),
         'scaler': os.path.join(MODELS_DIR, 'CNN1D/scaler_cnn1d.pkl'),
         'encoder': os.path.join(MODELS_DIR, 'CNN1D/label_encoder_cnn1d.pkl')
+    },
+    'cnn1d_robust': {
+        'model': os.path.join(MODELS_DIR, 'CNN1D_Robust/cnn1d_robust.h5'),
+        'scaler': os.path.join(MODELS_DIR, 'CNN1D_Robust/scaler_robust.pkl'),
+        'encoder': os.path.join(MODELS_DIR, 'CNN1D_Robust/label_encoder_robust.pkl')
     }
 }
 
 # --- TÜM MODELLERİ YÜKLE (LOADER) ---
 loaded_models = {}
 
-print("⏳ Modeller yükleniyor, lütfen bekleyin...")
+logger.info("Modeller başlatılıyor. Lütfen bekleyin...")
 
 for key, paths in MODEL_CONFIG.items():
     try:
-        # Dosyalar var mı kontrol et
-        # .h5 dosyası için özel kontrol yok, load_model halleder ama dosya yoksa hata verir.
+        # Check if the primary model file exists
         if os.path.exists(paths['model']):
             
-            # Model yükleme (PKL vs H5)
+            # Load according to extension
             if paths['model'].endswith('.h5'):
                 if TF_AVAILABLE:
                     model_obj = load_model(paths['model'])
                 else:
-                    print(f"   ⚠️ {key.upper()} atlanıyor (TensorFlow yok).")
+                    logger.warning(f"[{key.upper()}] Atlanıyor (TensorFlow bağımlılığı bulunamadı).")
                     continue
             else:
                 model_obj = joblib.load(paths['model'])
@@ -107,13 +179,13 @@ for key, paths in MODEL_CONFIG.items():
                 'scaler': joblib.load(paths['scaler']),
                 'encoder': joblib.load(paths['encoder'])
             }
-            print(f"   ✅ {key.upper()} yüklendi.")
+            logger.info(f"[{key.upper()}] Model ve preprocessors başarıyla yüklendi.")
         else:
-            print(f"   ⚠️ {key.upper()} dosyaları bulunamadı, atlanıyor. ({paths['model']})")
+            logger.warning(f"[{key.upper()}] Dosyaları bulunamadı, atlanıyor. ({paths['model']})")
     except Exception as e:
-        print(f"   ❌ {key.upper()} yüklenirken hata: {e}")
+        logger.error(f"[{key.upper()}] Yüklenirken kritik hata: {e}")
 
-print(f"🚀 Toplam {len(loaded_models)} model kullanıma hazır!")
+logger.info(f"Sistem hazır. Toplam {len(loaded_models)} model aktifleştirildi!")
 
 
 @app.route('/', methods=['GET'])
@@ -197,20 +269,43 @@ def predict():
                 probabilities = None
                 confidence = 0.0
 
-        predicted_label = encoder.inverse_transform([int(prediction_index)])[0]
-
         # Olasılık (Confidence) ve Tüm Skorlar
         all_scores = {}
         if probabilities is not None:
             # Sınıf isimlerini al
             class_names = encoder.classes_
             
-            # Her sınıf için skoru kaydet
+            # --- APPLY VOCAL TONE CALIBRATION ---
+            raw_scores = {}
             for i, class_name in enumerate(class_names):
-                all_scores[class_name] = float(probabilities[i] * 100)
+                cat = class_name.lower()
+                if cat != 'neutral': # Ignore any legacy neutral output
+                    # Apply global calibration multiplier
+                    multiplier = VOCAL_CALIBRATION.get(cat, 1.0)
+                    raw_scores[cat] = float(probabilities[i] * 100) * multiplier
+                    
+            # Re-normalize out of 100%
+            total = sum(raw_scores.values())
+            target_scores = {}
+            if total > 0:
+                for k, v in raw_scores.items():
+                    target_scores[k] = (v / total) * 100
+            else:
+                target_scores = raw_scores
+                
+            all_scores = target_scores
+            
+            # Update final prediction based on calibrated scores
+            predicted_label = max(all_scores.items(), key=lambda x: x[1])[0]
+            confidence = all_scores[predicted_label]
+            
         else:
-             # Probability yoksa sadece tahmin edilene 100 ver
+             # Probability yoksa sadece tahmin edilene (önceden hesaplanan) 100 ver
+             predicted_label = encoder.inverse_transform([int(prediction_index)])[0].lower()
+             if predicted_label == 'neutral':
+                 predicted_label = 'calm' # Force fallback
              all_scores = {predicted_label: 100.0}
+             confidence = 100.0
 
         # Temizlik
         if os.path.exists(temp_path):
@@ -227,6 +322,40 @@ def predict():
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return jsonify({'error': f'Tahmin hatası: {str(e)}'}), 500
+
+@app.route('/segment-sentence', methods=['POST'])
+def segment_sentence():
+    """
+    Returns only the segment timestamps (start, end) without doing model predictions.
+    Used for the frontend segment viewer in sentence mode.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+        
+    # Unique temp filename
+    import uuid
+    temp_filename = f"temp_segmentation_{uuid.uuid4().hex}.wav"
+    temp_path = os.path.join(BASE_DIR, temp_filename)
+    file.save(temp_path)
+    
+    try:
+        processor = SentenceProcessor(target_sr=22050, vad_db_threshold=30)
+        segments = processor.extract_segments_info(temp_path)
+        
+        return jsonify({
+            'segments': segments
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f"Segmentation error: {str(e)}"}), 500
+        
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @app.route('/predict-sentence', methods=['POST'])
 def predict_sentence():
@@ -290,10 +419,26 @@ def predict_sentence():
                  feats_scaled = np.expand_dims(feats_scaled, axis=2)
                  
             # Logic similar to /predict but simplified for loop
+            all_scores_dict = {}
             if hasattr(model, 'predict_proba'):
                 probs = model.predict_proba(feats_scaled)[0]
                 pred_idx = np.argmax(probs)
-                conf = np.max(probs) * 100
+                
+                # Fetch dictionary of probabilities for all classes
+                for i, class_name in enumerate(encoder.classes_):
+                    cat = class_name.lower()
+                    if cat != 'neutral':
+                        all_scores_dict[cat] = float(probs[i]) * 100.0
+                        
+                # Normalize out of 100
+                total_prob = sum(all_scores_dict.values())
+                if total_prob > 0:
+                    all_scores_dict = {k: (v / total_prob) * 100.0 for k,v in all_scores_dict.items()}
+                else:
+                    all_scores_dict = {k: 0.0 for k in all_scores_dict.keys()}
+                
+                label = max(all_scores_dict.items(), key=lambda x: x[1])[0]
+                conf = all_scores_dict[label]
             else:
                 # Fallback for models without probability
                 pred = model.predict(feats_scaled)[0]
@@ -302,16 +447,14 @@ def predict_sentence():
                 else:
                     pred_idx = int(pred)
                 conf = 100.0 # Mock confidence
-                probs = np.zeros(len(encoder.classes_))
-                probs[pred_idx] = 1.0
+                label = encoder.inverse_transform([pred_idx])[0].lower()
+                all_scores_dict = {label: 100.0}
 
-            label = encoder.inverse_transform([pred_idx])[0]
-            
             results.append({
                 'segment': os.path.basename(seg_path),
                 'emotion': label,
                 'confidence': float(conf),
-                'probabilities': probs.tolist() # Keep simple list for frontend
+                'all_scores': all_scores_dict
             })
             
         # 6. Aggregation

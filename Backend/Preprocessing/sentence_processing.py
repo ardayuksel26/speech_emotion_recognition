@@ -20,9 +20,78 @@ class SentenceProcessor:
         self.target_sr = target_sr
         self.vad_db_threshold = vad_db_threshold
 
+    def _advanced_vad_segmentation(self, y, sr):
+        """
+        Gelişmiş Kelime/Hece Bölütleme (Advanced VAD).
+        Sürekli ve hızlı konuşmalarda standart sessizlik kesicileri kelimeleri ayıramaz.
+        Bu algoritma uzun nefessiz blokları algılayıp, kelimelerin/hecelerin 
+        enerji patlamalarını (onset) bularak kelime sınırlarından matematiksel olarak keser.
+        """
+        # 1. Standart Sessizlik Temizliği (top_db=25 ile yutulmuş nefesleri daha iyi yakala)
+        intervals = librosa.effects.split(y, top_db=25, frame_length=2048, hop_length=512)
+        
+        final_intervals = []
+        max_duration = 1.0  # 1 Saniyeden uzun, duraksaması olmayan bloklar muhtemelen birden çok kelimedir
+        
+        for start, end in intervals:
+            duration = (end - start) / sr
+            
+            if duration > max_duration:
+                # 2. Hızlı Konuşmayı Parçalama (Onset / Vuruş ve Hece Analizi)
+                segment = y[start:end]
+                
+                # Sesin enerjisindeki ani patlamaları (hece/sessiz-sesli harf vuruşlarını) bulur
+                onsets = librosa.onset.onset_detect(
+                    y=segment, 
+                    sr=sr, 
+                    units='samples',
+                    hop_length=512,
+                    backtrack=True, # Vuruşun tam olarak başladığı o sessiz milisaniyeye (kelime başına) geri sarar
+                    pre_max=20,     # Ön pencereleme
+                    post_max=20,    # Arka pencereleme
+                    pre_avg=100,    # Ortalama ses filtresi (pürüzleri yumuşatmak için)
+                    delta=0.15,     # Duyarlılık: Sadece belirgin farklarda hece kes (çok absürt de bölmesin)
+                    wait=int(sr * 0.3) # Kelime içi saçmalama yapmasın diye min 0.3sn nefes/durma bekleme şartı
+                )
+                
+                valid_onsets = [o for o in onsets if o > sr * 0.3 and (len(segment) - o) > sr * 0.3]
+                
+                if len(valid_onsets) > 0:
+                    current_pos = 0
+                    for onset in valid_onsets:
+                        final_intervals.append([start + current_pos, start + onset])
+                        current_pos = onset
+                    final_intervals.append([start + current_pos, end])
+                else:
+                    final_intervals.append([start, end])
+            else:
+                final_intervals.append([start, end])
+                
+        # 3. Nefes, Tıkırtı veya Yarım Heceleri (Çok Kısa Parçaları) Önle ve Onar
+        merged_intervals = []
+        for s, e in final_intervals:
+            if not merged_intervals:
+                merged_intervals.append([s, e])
+                continue
+                
+            last_s, last_e = merged_intervals[-1]
+            dur = (e - s) / sr
+            last_dur = (last_e - last_s) / sr
+            
+            # Eğer bir kelime 0.25sn'den daha kısa kaldıysa (Yutulmuş kelime/yanlış hece),
+            # kopartmak yerine yanındaki makul komşusuna ekleyip bütünlüğü koru.
+            if dur < 0.25:
+                merged_intervals[-1][1] = e
+            elif last_dur < 0.25:
+                merged_intervals[-1][1] = e
+            else:
+                merged_intervals.append([s, e])
+                
+        return merged_intervals
+
     def process_audio(self, file_path, output_dir="temp_segments"):
         """
-        Full pipeline: Load -> Resample -> VAD -> Segment -> Save Segments.
+        Full pipeline: Load -> Resample -> Advanced VAD -> Segment -> Save Segments.
         Returns a list of segment file paths.
         """
         if not os.path.exists(output_dir):
@@ -32,35 +101,29 @@ class SentenceProcessor:
             # 1. Load & Resample
             y, sr = librosa.load(file_path, sr=self.target_sr)
             
-            # 2. VAD & Segmentation (Silence-Based)
-            # top_db=40 matches the user requirement "below 40dB"
-            intervals = librosa.effects.split(y, top_db=self.vad_db_threshold)
+            # 2. Akıllı VAD & Kelime Parçalama (Yeni Nesil Motor)
+            intervals = self._advanced_vad_segmentation(y, sr)
             
             segment_paths = []
             
-            # If no intervals found (too quiet), process the whole file
             if len(intervals) == 0:
-                print("⚠️ No speech detected above threshold, using full audio.")
+                print("⚠️ Sürekli akış çok belirsiz, tek blok analiz ediliyor.")
                 intervals = [[0, len(y)]]
 
             for i, (start, end) in enumerate(intervals):
-                # Extract segment
                 segment = y[start:end]
                 
-                # Filter extremely short segments (e.g. < 0.2s) that might be clicks/noise
+                # Çok cılız tıkırtıları (örn: 0.2sn altı) anlamsız dosyalar olmaması adına atla
                 if len(segment) / sr < 0.2:
                     continue
                     
-                # Generate unique filename
                 seg_name = f"seg_{uuid.uuid4().hex[:8]}_{i}.wav"
                 seg_path = os.path.join(output_dir, seg_name)
                 
-                # Save
                 sf.write(seg_path, segment, sr)
                 segment_paths.append(seg_path)
             
             if not segment_paths:
-                # Fallback if all segments were filtered out
                  return [file_path]
 
             return segment_paths
@@ -69,65 +132,102 @@ class SentenceProcessor:
             print(f"❌ Error in sentence processing: {e}")
             return [file_path]
 
+    def extract_segments_info(self, file_path):
+        """
+        Frontend'in görsel arayüzde (UI) kelimeleri hap/kutu şeklinde
+        milisaniyesine kadar isabetli gösterebilmesi için zamanları çıkartır.
+        """
+        try:
+            y, sr = librosa.load(file_path, sr=self.target_sr)
+            
+            # Aynı akıllı motoru burada da UI çizimi için çağırıyoruz
+            intervals = self._advanced_vad_segmentation(y, sr)
+            segments = []
+            
+            if len(intervals) == 0:
+                return [{"start": 0.0, "end": float(len(y) / sr)}]
+
+            for start, end in intervals:
+                start_time = float(start) / sr
+                end_time = float(end) / sr
+                
+                if end_time - start_time < 0.2:
+                    continue
+                    
+                segments.append({
+                    "start": round(start_time, 3),
+                    "end": round(end_time, 3)
+                })
+            
+            if not segments:
+                 return [{"start": 0.0, "end": float(len(y) / sr)}]
+
+            return segments
+
+        except Exception as e:
+            print(f"❌ Error in frontend processing (extracting info): {e}")
+            return []
+
     def weighted_voting(self, results):
         """
-        Implements the 'Emotion-Weighted Voting Algorithm'.
-        
-        Logic:
-        - High Arousal (Anger, Happy) get higher weights.
-        - Weight is multiplied by confidence/probability.
-        - Neutral/Calm get standard or lower weights depending on context.
-        
-        Args:
-            results (list): List of dicts with 'emotion' and 'confidence' (0-100) and 'probabilities'.
-        
-        Returns:
-            dict: The final aggregated result.
+        Gelişmiş Cümle Analizi ve Duygu Oylaması (Weighted Voting + Realistic Confidence).
+        Eski mantıktaki 'toplam oy oranı üzerinden 100% güvenilirlik' hatasını çözer.
+        Oy oranını ve modelin gerçek eminlik düzeyini (confidence) harmanlar.
         """
         if not results:
             return None
             
-        # Weights based on "High Arousal Priority"
-        # The prompt says: "reduces the neutral words... increasing the dominant angry word"
-        # We assign multipliers.
+        # Nötr/sakin kelimeler genelde dolgu kelimesidir. O yüzden tepe duyguları daha çok çarpmalıyız.
         EMOTION_MULTIPLIERS = {
-            'angry': 1.5,
-            'happy': 1.2,
-            'sad': 1.0,
-            'calm': 0.8,
-            'neutral': 0.8 
+            'angry': 1.6,
+            'happy': 1.5,
+            'sad': 1.1,
+            'calm': 0.7
         }
 
-        # Initialize score accumulators
+        # Accumulators
         weighted_scores = {e: 0.0 for e in EMOTION_MULTIPLIERS.keys()}
+        emotion_counts = {e: 0 for e in EMOTION_MULTIPLIERS.keys()}
+        raw_confidences = {e: [] for e in EMOTION_MULTIPLIERS.keys()}
         
-        for res in results:
-            emotion = res['emotion'].lower()
-            confidence = res['confidence'] / 100.0 # Normalize to 0-1
-            
-            # If we have full probability distribution, use it? 
-            # The prompt implies looking at the specific predicted emotion's confidence.
-            # "coefficient for the emotion with a higher confidence level is increased"
-            
-            multiplier = EMOTION_MULTIPLIERS.get(emotion, 1.0)
-            
-            # Score = Confidence * Multiplier
-            score = confidence * multiplier
-            
-            if emotion in weighted_scores:
-                weighted_scores[emotion] += score
-            else:
-                weighted_scores[emotion] = score
+        total_segments = len(results)
 
-        # Find the emotion with the highest total weighted score
+        for res in results:
+            winning_emotion = res['emotion'].lower()
+            
+            if winning_emotion in EMOTION_MULTIPLIERS:
+                emotion_counts[winning_emotion] += 1
+                raw_confidences[winning_emotion].append(res['confidence'])
+                
+            # Adım 0: Gerçek Olasılık Dağılımının İçine Gir (Full Probability Accumulation)
+            # Modelin bu kelime için ürettiği "tüm" % ihtimallerin ortalamasını yansıt.
+            segment_scores = res.get('all_scores', {winning_emotion: res['confidence']})
+            
+            for em_key, prob_val in segment_scores.items():
+                if em_key in EMOTION_MULTIPLIERS:
+                    multiplier = EMOTION_MULTIPLIERS[em_key]
+                    # Olasılığı (0-100) -> (0-1) yapıp ağırlıkla çarparak pastaya ekle
+                    weighted_scores[em_key] += (prob_val / 100.0) * multiplier
+
+        # 1. Hangi Duygu Kazandı? (En yüksek ağırlıklı puana sahip olan)
         final_emotion = max(weighted_scores, key=weighted_scores.get)
         
-        # Calculate a pseudo-confidence for the final result
-        total_score = sum(weighted_scores.values())
-        final_conf = (weighted_scores[final_emotion] / total_score * 100) if total_score > 0 else 0.0
+        # 2. Duygu Dağılımını Yüzdeye Çevir (Frontend Bar'ları İçin)
+        # Sadece kazananı değil, cümlenin içerisindeki tüm duyguların yüzdelik payını çıkarır
+        total_weight = sum(weighted_scores.values())
+        emotion_distribution = {}
+        if total_weight > 0:
+            for k, v in weighted_scores.items():
+                emotion_distribution[k] = round(float((v / total_weight) * 100.0), 2)
+        else:
+            emotion_distribution = {k: 0.0 for k in weighted_scores.keys()}
+            
+        # Ana "Confidence" skoru doğrudan kazanan duygunun pastadaki payı olsun
+        # Böylece ekrandaki bar ile yukarıdaki ana yüzde birebir uyuşur.
+        final_conf = emotion_distribution.get(final_emotion, 0.0)
         
         return {
             'final_emotion': final_emotion,
             'confidence': final_conf,
-            'weighted_details': weighted_scores
+            'weighted_details': emotion_distribution
         }

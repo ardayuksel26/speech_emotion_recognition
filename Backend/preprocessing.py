@@ -1,47 +1,82 @@
 import opensmile
 import numpy as np
 import os
+import logging
+import soundfile as sf
+import noisereduce as nr
+import uuid
 
-# Initialize OpenSMILE once to avoid overhead
-# IS10 feature set (1582 features) matches the training data
+logger = logging.getLogger('SER_API.preprocessing')
+
+# =====================================================================
+# GLOBAL OPENSMILE INITIALIZATION
+# =====================================================================
 try:
     smile = opensmile.Smile(
         feature_set=opensmile.FeatureSet.IS10,
         feature_level=opensmile.FeatureLevel.Functionals,
     )
-    print("✅ OpenSMILE initialized successfully (IS10)")
+    logger.info("✅ OpenSMILE (IS10) motoru başarıyla başlatıldı.")
 except Exception as e:
-    print(f"❌ Failed to initialize OpenSMILE: {e}")
+    logger.error(f"❌ OpenSMILE başlatılamadı: {e}")
     smile = None
 
 def extract_features(file_path):
     """
-    Extracts 1582 features using OpenSMILE IS10 config.
-    Returns a 1D numpy array.
+    1. Denoises incoming audio (removes static background mic noise).
+    2. Extracts 1582 acoustic features using OpenSMILE IS10 config.
+    3. Formats to 1584 dimensions for prediction.
     """
     if smile is None:
-        print("OpenSMILE not available.")
+        logger.error("OpenSMILE modülü aktif değil. Özellik çıkarımı yapılamaz.")
         return None
 
+    if not os.path.exists(file_path):
+        logger.error(f"Ses dosyası bulunamadı: {file_path}")
+        return None
+
+    # Temporary file path for cleaned audio
+    clean_audio_path = os.path.join(os.path.dirname(file_path), f"temp_clean_{uuid.uuid4().hex[:8]}.wav")
+
     try:
-        # process_file returns a DataFrame
-        df = smile.process_file(file_path)
+        # --- 1. REAL-TIME DENOISING ---
+        # Read raw recording
+        audio_data, rate = sf.read(file_path)
         
-        # Convert to numpy array and flatten
+        # Apply stationary noise reduction algorithms
+        logger.info(f"Yapay Zeka gürültü azaltma (Denoising) uygulanıyor: {file_path}")
+        reduced_noise_audio = nr.reduce_noise(y=audio_data, sr=rate, prop_decrease=0.7)
+        
+        # Save temporary cleaned version
+        sf.write(clean_audio_path, reduced_noise_audio, rate)
+
+        # --- 2. OPENSMILE FEATURE EXTRACTION ---
+        df = smile.process_file(clean_audio_path)
+        
+        if df is None or df.empty:
+            logger.warning(f"Bağlam çıkarılamadı (Dosya bozuk veya aşırı kısa olabilir): {file_path}")
+            return None
+            
         features = df.to_numpy().flatten()
         
-        # ⚠️ CRITICAL FIX: The models were trained with 'id' (col 0) and 'class' (last col) included!
-        # Total expected: 1584 (1 + 1582 + 1)
-        # We must pad the 1582 OpenSMILE features to match 1584 to avoid crash.
-        # We use 0.0 as dummy values for ID and Class.
+        if len(features) != 1582:
+            logger.warning(f"OpenSMILE beklenmeyen boyutta (%d) özellik döndürdü: {file_path}", len(features))
+            return None
         
-        features_padded = np.zeros(1584)
-        features_padded[1:1583] = features # Fill middle with real features
-        # features_padded[0] is 0.0 (dummy id)
-        # features_padded[1583] is 0.0 (dummy class)
+        # --- 3. DIMENSIONAL FIX ---
+        features_padded = np.zeros(1584, dtype=np.float32)
+        features_padded[1:1583] = features  
         
         return features_padded
         
     except Exception as e:
-        print(f"Error extracting features (OpenSMILE): {e}")
+        logger.error(f"Özellik çıkarma/gürültü silme hatası ({file_path}): {e}")
         return None
+        
+    finally:
+        # Prevent temporary cleaned files from piling up
+        if os.path.exists(clean_audio_path):
+            try:
+                os.remove(clean_audio_path)
+            except:
+                pass
