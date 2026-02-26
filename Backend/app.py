@@ -5,7 +5,11 @@ import joblib
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from preprocessing import extract_features
-from Preprocessing.sentence_processing import SentenceProcessor 
+import sys
+# Cümleleştirme mantığı artık root/Sentence klasöründe olduğu için sys.path ekliyoruz
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Sentence.sentence_processing import SentenceProcessor
+from Voting.majority_voting import calculate_majority_vote, MODEL_WEIGHTS
 
 # TensorFlow imports for DL models
 try:
@@ -323,6 +327,118 @@ def predict():
             os.remove(temp_path)
         return jsonify({'error': f'Tahmin hatası: {str(e)}'}), 500
 
+@app.route('/analyze_voting', methods=['POST'])
+def analyze_voting():
+    """
+    Majority Voting endpoint: runs ALL models for the selected quality mode,
+    collects predictions, applies weighted voting, and returns the final result.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    quality = request.form.get('quality', 'robust')  # 'studio' or 'robust'
+
+    import uuid
+    temp_filename = f"temp_voting_{uuid.uuid4().hex}.wav"
+    temp_path = os.path.join(BASE_DIR, temp_filename)
+    file.save(temp_path)
+
+    try:
+        # 1. Extract features ONCE
+        features = extract_features(temp_path)
+        if features is None:
+            return jsonify({'error': 'Ses özellikleri çıkarılamadı'}), 500
+        features = features.reshape(1, -1)
+
+        # 2. Determine which model keys to use based on quality
+        base_keys = ['catboost', 'xgboost', 'lightgbm', 'rf', 'knn', 'svm',
+                      'mlp', 'gradient_boosting', 'dnn', 'cnn1d']
+        if quality == 'robust':
+            target_keys = [f"{k}_robust" for k in base_keys]
+        else:
+            target_keys = base_keys
+
+        # 3. Run predictions on all available models
+        model_predictions = {}
+        for model_key in target_keys:
+            if model_key not in loaded_models:
+                continue
+            try:
+                tools = loaded_models[model_key]
+                model = tools['model']
+                scaler = tools['scaler']
+                encoder = tools['encoder']
+
+                features_scaled = scaler.transform(features)
+
+                probabilities = None
+                if model_key.replace('_robust', '') in ['cnn1d']:
+                    features_3d = np.expand_dims(features_scaled, axis=2)
+                    probabilities = model.predict(features_3d, verbose=0)[0]
+                elif model_key.replace('_robust', '') in ['dnn']:
+                    probabilities = model.predict(features_scaled, verbose=0)[0]
+                else:
+                    try:
+                        probabilities = model.predict_proba(features_scaled)[0]
+                    except Exception:
+                        # Model doesn't support predict_proba
+                        pred_idx = model.predict(features_scaled)[0]
+                        if isinstance(pred_idx, (list, np.ndarray)):
+                            pred_idx = pred_idx.item()
+                        pred_label = encoder.inverse_transform([int(pred_idx)])[0].lower()
+                        scores = {e: 0.0 for e in ['happy', 'sad', 'angry', 'calm']}
+                        if pred_label in scores:
+                            scores[pred_label] = 100.0
+                        model_predictions[model_key] = scores
+                        continue
+
+                if probabilities is not None:
+                    class_names = encoder.classes_
+                    raw_scores = {}
+                    for i, class_name in enumerate(class_names):
+                        cat = class_name.lower()
+                        if cat != 'neutral':
+                            multiplier = VOCAL_CALIBRATION.get(cat, 1.0)
+                            raw_scores[cat] = float(probabilities[i] * 100) * multiplier
+                    # Re-normalize to 100%
+                    total = sum(raw_scores.values())
+                    if total > 0:
+                        for k in raw_scores:
+                            raw_scores[k] = (raw_scores[k] / total) * 100
+                    model_predictions[model_key] = raw_scores
+
+            except Exception as e:
+                logger.warning(f"[VOTING] {model_key} tahmin hatası: {e}")
+                continue
+
+        # 4. Calculate majority vote
+        if not model_predictions:
+            return jsonify({'error': 'Hiçbir model tahmin yapamadı'}), 500
+
+        result = calculate_majority_vote(model_predictions)
+
+        # Cleanup
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+        return jsonify({
+            'emotion': result['final_emotion'],
+            'confidence': f"%{result['confidence']:.2f}",
+            'all_scores': result['all_scores'],
+            'model_used': 'MAJORITY_VOTING',
+            'model_details': result['model_details']
+        })
+
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        logger.error(f"[VOTING] Genel hata: {e}")
+        return jsonify({'error': f'Voting hatası: {str(e)}'}), 500
+
 @app.route('/segment-sentence', methods=['POST'])
 def segment_sentence():
     """
@@ -504,4 +620,6 @@ def predict_sentence():
                 os.remove(p)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # use_reloader=False ekleyerek klasördeki dosya değişikliklerinin (veya yeni kütüphane yüklemelerinin)
+    # sunucuyu aniden resetlemesini engelliyoruz.
+    app.run(debug=True, use_reloader=False, port=5000)

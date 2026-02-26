@@ -1,4 +1,0 @@
-# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\feature_extractor.py
-# hypothesis_version: 6.148.5
-
-[128, 'rb', 'rms_mean', 'rms_std', 'scaler', 'zcr_mean', 'zcr_std']

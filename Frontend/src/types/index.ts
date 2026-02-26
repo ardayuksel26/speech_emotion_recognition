@@ -22,6 +22,14 @@ export interface AnalysisResult {
         emotion: string;
         confidence: number;
     }>;
+    model_details?: Array<{
+        model: string;
+        key: string;
+        weight: number;
+        prediction: string;
+        confidence: number;
+        scores: { [key: string]: number };
+    }>;
 }
 
 export interface ProcessingStatus {

@@ -1,4 +1,0 @@
-# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\logging_config.py
-# hypothesis_version: 6.148.5
-
-['INFO', 'Z', 'context', 'duration_seconds', 'exception', 'info', 'job_id', 'level', 'logger', 'message', 'metrics', 'operation', 'request_id', 'sentence_analysis', 'stack_trace', 'timestamp', 'traceback', 'type']

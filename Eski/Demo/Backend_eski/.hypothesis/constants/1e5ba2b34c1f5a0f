@@ -1,4 +1,0 @@
-# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\audio_segmenter.py
-# hypothesis_version: 6.148.5
-
-[0.005, 0.01, 0.02, 0.025, 0.1, 0.25, 0.5, 'constant', 'edge']

@@ -72,36 +72,58 @@ const Header = () => {
           <button
             onClick={() => setIsLangOpen(!isLangOpen)}
             className={clsx(
-              "flex items-center gap-2 rounded-md px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-200",
+              "flex items-center gap-2.5 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-200",
               isDark ? "bg-slate-800 text-white hover:bg-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50"
             )}
           >
             <img
               src={languages[currentLanguage]?.flagUrl}
               alt={languages[currentLanguage]?.label}
-              className="w-5 h-5 rounded-sm object-cover"
+              className="w-6 h-6 rounded-sm object-cover"
             />
-            <span className="hidden md:inline text-sm font-bold">
+            <span className="hidden md:inline text-base font-bold">
               {currentLanguage.toUpperCase()}
             </span>
-            <FaChevronDown className={clsx("text-xs transition-transform duration-200", isLangOpen && "rotate-180")} />
+            <FaChevronDown className={clsx("text-sm transition-transform duration-200", isLangOpen && "rotate-180")} />
           </button>
 
           {isLangOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsLangOpen(false)}></div>
-              <div className="absolute right-0 mt-2 w-40 bg-white text-slate-800 rounded-2xl shadow-xl py-2 z-50 animate-fade-in-down">
-                {Object.keys(languages).map((code) => (
+              <div
+                className="absolute right-0 mt-2 z-50 overflow-hidden"
+                style={{
+                  width: '190px',
+                  backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                  color: isDark ? '#f1f5f9' : '#1e293b',
+                  border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  boxShadow: isDark ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.12)',
+                }}
+              >
+                {Object.keys(languages).map((code, index) => (
                   <button
                     key={code}
                     onClick={() => changeLanguage(code)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-blue-50 text-sm transition-colors"
+                    className="w-full flex items-center justify-between text-sm"
+                    style={{
+                      color: 'inherit',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      padding: '12px 16px',
+                      borderBottom: index < Object.keys(languages).length - 1
+                        ? (isDark ? '1px solid #334155' : '1px solid #f1f5f9')
+                        : 'none',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#334155' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
                     <div className="flex items-center gap-3">
-                      <img src={languages[code].flagUrl} alt="" className="w-5 h-5 rounded-full" />
-                      <span className="font-medium">{languages[code].label}</span>
+                      <img src={languages[code].flagUrl} alt="" style={{ width: '22px', height: '22px', borderRadius: '4px', objectFit: 'cover' }} />
+                      <span style={{ fontWeight: 500 }}>{languages[code].label}</span>
                     </div>
-                    {currentLanguage === code && <span className="text-green-500 font-bold">✓</span>}
+                    {currentLanguage === code && <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓</span>}
                   </button>
                 ))}
               </div>
@@ -109,18 +131,40 @@ const Header = () => {
           )}
         </div>
 
-        {/* Theme Switcher (Visible on Mobile & Desktop per request) */}
+        {/* Theme Switcher */}
         <button
           onClick={toggleTheme}
-          className={clsx(
-            "relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none border border-white/30 shadow-inner",
-            isDark ? "bg-slate-800" : "bg-indigo-100"
-          )}
+          className="focus:outline-none"
+          style={{
+            position: 'relative',
+            width: '56px',
+            height: '28px',
+            borderRadius: '9999px',
+            backgroundColor: isDark ? '#1e293b' : '#e0e7ff',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+            transition: 'background-color 0.3s',
+          }}
         >
-          <div className={clsx(
-            "absolute top-0.5 left-0.5 w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center text-[10px]",
-            isDark ? "translate-x-6 bg-slate-700 text-indigo-300" : "translate-x-0 bg-white text-amber-500"
-          )}>
+          <div
+            style={{
+              position: 'absolute',
+              top: '2px',
+              left: '2px',
+              width: '24px',
+              height: '24px',
+              borderRadius: '9999px',
+              backgroundColor: isDark ? '#334155' : '#ffffff',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              transform: isDark ? 'translateX(28px)' : 'translateX(0)',
+              transition: 'transform 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              color: isDark ? '#818cf8' : '#f59e0b',
+            }}
+          >
             {isDark ? <FaMoon /> : <FaSun />}
           </div>
         </button>

@@ -41,7 +41,7 @@ const AudioPlayer = ({
   // Decide button text based on analysis mode
   const getAnalyzeButtonText = () => {
     if (analysisMode === 'sentence') {
-      return `${selectedModelName || 'CatBoost'} Cümle Analizi`;
+      return `${selectedModelName || 'CatBoost'} ${t('sentence_analysis')}`;
     }
     return t('analyze_audio') || 'Ses Analizini Yap';
   };
@@ -82,7 +82,7 @@ const AudioPlayer = ({
               <FaMicrophone className={`text-lg ${isDark ? "text-slate-400" : "text-purple-600"
                 }`} />
             </div>
-            <span className="text-xs tracking-wider uppercase font-semibold">Kayda Başlamak İçin Butona Tıkla</span>
+            <span className="text-xs tracking-wider uppercase font-semibold">{t('click_to_record')}</span>
           </div>
         ) : (
           <div className="flex items-center justify-center gap-1 w-full h-full">
@@ -193,12 +193,15 @@ const AudioPlayer = ({
       {!isRecording && recordedUrl && showAnalyzeButton && (
         <button
           onClick={onAnalyze}
-          className={`mt-6 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 ${isDark
-            ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/40"
-            : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-indigo-400/40"
-            }`}
+          className="transition-all duration-300 rounded-xl text-base font-bold hover:scale-[1.02]"
+          style={{
+            marginTop: '24px',
+            padding: '14px 48px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            color: 'white',
+            boxShadow: '0 4px 15px rgba(99,102,241,0.3)',
+          }}
         >
-          <FaMagic className="text-xl" />
           {getAnalyzeButtonText()}
         </button>
       )}

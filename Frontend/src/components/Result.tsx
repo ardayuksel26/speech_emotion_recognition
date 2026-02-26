@@ -231,6 +231,72 @@ const Result: React.FC<ResultProps> = ({
 
             </div>
 
+            {/* 4. VOTING DETAILS (only when majority voting was used) */}
+            {result.model_details && result.model_details.length > 0 && (
+                <div className="w-full px-4 md:px-0 pb-20 max-w-5xl mx-auto">
+                    <MotionWrapper delay={0.5}>
+                        <div className={clsx(
+                            "p-8 rounded-[2.5rem] shadow-lg border backdrop-blur-xl",
+                            isDark ? "bg-slate-800/40 border-slate-700/50" : "bg-white/60 border-white/80"
+                        )}>
+                            <h3 className="text-xs font-black uppercase tracking-widest opacity-40 mb-6 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                {t('voting_details')}
+                            </h3>
+                            <div className="space-y-3">
+                                {result.model_details.map((detail, idx) => {
+                                    const emotionColors: Record<string, string> = {
+                                        angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981'
+                                    };
+                                    const dotColor = emotionColors[detail.prediction] || '#8b5cf6';
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={clsx(
+                                                "flex items-center gap-4 p-3 rounded-xl transition-all",
+                                                isDark ? "bg-slate-700/30" : "bg-slate-50"
+                                            )}
+                                        >
+                                            {/* Model Name & Weight */}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold truncate">{detail.model}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <div
+                                                        className="h-1.5 rounded-full"
+                                                        style={{
+                                                            width: `${detail.weight * 100}%`,
+                                                            maxWidth: '80px',
+                                                            background: 'linear-gradient(90deg, #f59e0b, #ef4444)',
+                                                        }}
+                                                    />
+                                                    <span className="text-[10px] font-bold opacity-50">
+                                                        {t('weight')}: {detail.weight}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {/* Prediction */}
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className="w-2.5 h-2.5 rounded-full"
+                                                    style={{ backgroundColor: dotColor }}
+                                                />
+                                                <span className="text-sm font-semibold capitalize">
+                                                    {t(detail.prediction)}
+                                                </span>
+                                            </div>
+                                            {/* Confidence */}
+                                            <span className="text-sm font-bold opacity-60 whitespace-nowrap">
+                                                {detail.confidence.toFixed(1)}%
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </MotionWrapper>
+                </div>
+            )}
+
         </div>
     );
 };

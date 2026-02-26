@@ -59,8 +59,12 @@ const Hero = () => {
   const [mode, setMode] = useState<'word' | 'sentence'>('word');
 
   // Compute actual backend key
-  const activeModelKey = qualityMode === 'robust' ? `${selectedModel}_robust` : selectedModel;
-  const activeModelName = `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? 'Dış Ses/Gürültülü' : 'Stüdyo'})`;
+  const activeModelKey = selectedModel === 'majority_voting'
+    ? 'majority_voting'
+    : (qualityMode === 'robust' ? `${selectedModel}_robust` : selectedModel);
+  const activeModelName = selectedModel === 'majority_voting'
+    ? t('majority_voting')
+    : `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? 'Dış Ses/Gürültülü' : 'Stüdyo'})`;
 
   // Segmentation and Next flow
   const [sentenceSegments, setSentenceSegments] = useState<{ start: number, end: number }[] | null>(null);
@@ -86,7 +90,8 @@ const Hero = () => {
     setSavedLevels(levels);
 
     if (mode === 'sentence') {
-      handleSegmentation(file);
+      // Ayrıştırma için butona basılmasını bekle
+      setShowModelSelection(false);
     } else {
       setShowModelSelection(true);
     }
@@ -154,30 +159,38 @@ const Hero = () => {
     try {
       const wavBlob = await convertFileToWav(audioFile);
       const formData = new FormData();
-      formData.append("file", wavBlob, "converted_audio.wav"); // Send converted WAV
-      formData.append("model_type", activeModelKey); // Pass computed model format
+      formData.append("file", wavBlob, "converted_audio.wav");
+      formData.append("model_type", activeModelKey);
+      formData.append("quality", qualityMode);
 
-      // Make API Request
-      // Make API Request
-      // Using the new flask backend at port 5000
-      const endpoint = mode === 'word' ? '/predict' : '/predict-sentence';
+      // Determine endpoint
+      let endpoint: string;
+      if (selectedModel === 'majority_voting') {
+        endpoint = '/analyze_voting';
+      } else if (mode === 'word') {
+        endpoint = '/predict';
+      } else {
+        endpoint = '/predict-sentence';
+      }
       const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Special handling for sentence mode response
+      // Parse response based on endpoint type
       let emotion, confidence, all_scores;
-      // let breakdown, weighted_details; // Placeholder for future use using breakdown and weighted details
 
-      if (mode === 'sentence') {
+      if (selectedModel === 'majority_voting') {
+        // Voting endpoint returns standard format: { emotion, confidence, all_scores, model_details }
+        emotion = response.data.emotion;
+        confidence = response.data.confidence;
+        all_scores = response.data.all_scores;
+      } else if (mode === 'sentence') {
         // Sentence endpoint returns different structure
         emotion = response.data.final_emotion;
         confidence = response.data.confidence;
-        // Use weighted details if available, otherwise fallback
         if (response.data.weighted_details) {
           all_scores = response.data.weighted_details;
         }
-        // breakdown = response.data.breakdown;
       } else {
         // Standard /predict response
         emotion = response.data.emotion;
@@ -224,8 +237,8 @@ const Hero = () => {
         dominant_emotion: emotion,
         emotions: emotionsMap,
         confidence: normalizedConfidence,
-        // Backend doesn't support word timestamps yet
-        word_timestamps: []
+        word_timestamps: [],
+        model_details: response.data.model_details || undefined
       });
 
       setIsAnalyzing(false);
@@ -268,29 +281,33 @@ const Hero = () => {
           relative w-full backdrop-blur-xl rounded-2xl shadow-2xl transition-all duration-500 ease-in-out
           flex flex-col items-center justify-center
           ${isDark ? "bg-slate-800/40 border border-white/10" : "bg-white/80 border border-gray-200"}
-          ${analysisResult ? "max-w-[95vw] lg:max-w-[1400px] min-h-[85vh] p-0 overflow-hidden" : "max-w-5xl min-h-[400px] p-8"}
-        `}>
+          ${analysisResult ? "max-w-[95vw] lg:max-w-[1400px] min-h-[85vh] p-0 overflow-hidden" : "max-w-5xl min-h-[400px]"}
+        `}
+          style={!analysisResult ? { padding: '16px 40px 40px 40px' } : undefined}
+        >
 
           {/* Mode Switcher */}
           {!analysisResult && (
-            <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-full mb-8 relative z-20">
+            <div className="flex relative z-20" style={{ gap: '20px', marginBottom: '20px' }}>
               <button
                 onClick={() => { setMode('word'); setShowModelSelection(true); }}
-                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'word'
-                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                className={`rounded-xl text-base font-bold transition-all duration-300 border-2 ${mode === 'word'
+                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
                   }`}
+                style={{ padding: '10px 32px' }}
               >
-                Kelime (Word)
+                {t('mode_word')}
               </button>
               <button
                 onClick={() => { setMode('sentence'); setShowModelSelection(false); setSentenceSegments(null); }}
-                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${mode === 'sentence'
-                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-md'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                className={`rounded-xl text-base font-bold transition-all duration-300 border-2 ${mode === 'sentence'
+                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
                   }`}
+                style={{ padding: '10px 32px' }}
               >
-                Cümle (Sentence)
+                {t('mode_sentence')}
               </button>
             </div>
           )}
@@ -304,52 +321,76 @@ const Hero = () => {
 
               {/* Model Selection UI - Matrix Format */}
               {(mode === 'word' || showModelSelection) && (
-                <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm animate-fadeIn">
-                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4 text-center">
-                    🎧 Eğitim Kalitesini Seçin
-                  </label>
+                <div className="w-full mb-8 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg animate-fadeIn overflow-hidden"
+                  style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.95) 100%)' }}
+                >
+                  {/* Dark mode override */}
+                  <div className="hidden dark:block absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.95) 100%)' }} />
 
-                  {/* Quality Mode Toggle */}
-                  <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-xl mb-6 mx-auto max-w-sm relative">
-                    <button
-                      onClick={() => setQualityMode('studio')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 z-10 ${qualityMode === 'studio'
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md transform scale-100'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-                        }`}
-                    >
-                      🎙️ Stüdyo Kalitesi
-                    </button>
-                    <button
-                      onClick={() => setQualityMode('robust')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 z-10 ${qualityMode === 'robust'
-                          ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-md transform scale-100'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-                        }`}
-                    >
-                      🌪️ Dış Ses / Gürültülü
-                    </button>
+                  {/* Quality Section */}
+                  <div className="relative p-5 pb-4">
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 text-center">
+                      {t('training_quality')}
+                    </p>
+                    <div className="flex justify-center" style={{ gap: '16px' }}>
+                      <button
+                        onClick={() => setQualityMode('studio')}
+                        className="text-sm font-bold transition-all duration-300 rounded-xl"
+                        style={qualityMode === 'studio'
+                          ? { padding: '10px 32px', background: 'linear-gradient(135deg, #6366f1, #818cf8)', color: 'white', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }
+                          : { padding: '10px 32px', color: '#94a3b8', border: '1px solid #e2e8f0' }
+                        }
+                      >
+                        {t('studio')}
+                      </button>
+                      <button
+                        onClick={() => setQualityMode('robust')}
+                        className="text-sm font-bold transition-all duration-300 rounded-xl"
+                        style={qualityMode === 'robust'
+                          ? { padding: '10px 32px', background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)', color: 'white', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }
+                          : { padding: '10px 32px', color: '#94a3b8', border: '1px solid #e2e8f0' }
+                        }
+                      >
+                        {t('noisy')}
+                      </button>
+                    </div>
                   </div>
 
-                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 text-center">
-                    🧠 Analiz Motorunu (Base Model) Seçin
-                  </label>
+                  {/* Divider */}
+                  <div className="border-t border-slate-200/60 dark:border-slate-700/60" />
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {BASE_MODELS.map((model) => (
-                      <button
-                        key={model.id}
-                        onClick={() => setSelectedModel(model.id)}
-                        className={`
-                          py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 border-2
-                          ${selectedModel === model.id
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-sm transform scale-[1.02]'
-                            : 'border-transparent bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}
-                        `}
-                      >
-                        {model.name}
-                      </button>
-                    ))}
+                  {/* Model Grid */}
+                  <div className="relative p-5 pt-4">
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 text-center">
+                      {t('analysis_engine')}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {BASE_MODELS.map((model) => (
+                        <button
+                          key={model.id}
+                          onClick={() => setSelectedModel(model.id)}
+                          className="transition-all duration-200 rounded-lg text-xs sm:text-sm font-semibold"
+                          style={selectedModel === model.id
+                            ? { padding: '10px 8px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', boxShadow: '0 4px 15px rgba(99,102,241,0.3)' }
+                            : { padding: '10px 8px', background: 'transparent', color: '#64748b', border: '1px solid #e2e8f0' }
+                          }
+                        >
+                          {model.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Majority Voting Button */}
+                    <button
+                      onClick={() => setSelectedModel('majority_voting')}
+                      className="w-full transition-all duration-200 rounded-lg text-sm font-bold"
+                      style={selectedModel === 'majority_voting'
+                        ? { marginTop: '10px', padding: '12px 8px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: 'white', boxShadow: '0 4px 15px rgba(245,158,11,0.35)' }
+                        : { marginTop: '10px', padding: '12px 8px', background: 'transparent', color: '#f59e0b', border: '2px dashed #f59e0b' }
+                      }
+                    >
+                      {t('majority_voting')}
+                    </button>
                   </div>
                 </div>
               )}
@@ -360,14 +401,14 @@ const Hero = () => {
                   {isSegmenting ? (
                     <div className="flex flex-col items-center justify-center p-4">
                       <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
-                      <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">Ses kelimelere ayrıştırılıyor...</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">{t('segmenting')}</p>
                     </div>
                   ) : sentenceSegments ? (
                     <div className="flex flex-col items-center">
                       <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4 text-center">
-                        🎙️ Ayrıştırılan Kelimeler ({sentenceSegments.length} adet)
+                        {t('segmented_words')} ({sentenceSegments.length} {t('pieces')})
                       </label>
-                      <div className="flex flex-wrap gap-2 justify-center mb-6">
+                      <div className="flex flex-wrap gap-2 justify-center">
                         {sentenceSegments.map((seg, i) => (
                           <button
                             key={i}
@@ -386,19 +427,27 @@ const Hero = () => {
                               }
                             }}
                           >
-                            Kelime {i + 1} ({seg.start.toFixed(1)}s - {seg.end.toFixed(1)}s)
+                            {t('word_label')} {i + 1} ({seg.start.toFixed(1)}s - {seg.end.toFixed(1)}s)
                           </button>
                         ))}
                       </div>
-                      <button
-                        onClick={() => setShowModelSelection(true)}
-                        className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300 font-bold"
-                      >
-                        İleri Seç
-                      </button>
                     </div>
                   ) : (
-                    <p className="text-center text-slate-500">Ayrıştırma sonucu bekleniyor...</p>
+                    <div className="flex flex-col items-center justify-center p-2">
+                      <p className="text-center text-slate-500 dark:text-slate-400 mb-4">{t('segment_prompt')}</p>
+                      <button
+                        onClick={() => audioFile && handleSegmentation(audioFile)}
+                        className="transition-all duration-300 rounded-xl text-sm font-bold"
+                        style={{
+                          padding: '10px 32px',
+                          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                          color: 'white',
+                          boxShadow: '0 4px 15px rgba(99,102,241,0.3)',
+                        }}
+                      >
+                        {t('segment_button')}
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
@@ -427,6 +476,23 @@ const Hero = () => {
                 onStartRecording={() => { }}
                 onStopRecording={() => { }}
               />
+
+              {/* İleri button - below AudioPlayer */}
+              {mode === 'sentence' && !showModelSelection && sentenceSegments && (
+                <button
+                  onClick={() => setShowModelSelection(true)}
+                  className="transition-all duration-300 rounded-xl text-base font-bold hover:scale-[1.02]"
+                  style={{
+                    marginTop: '24px',
+                    padding: '14px 48px',
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    color: 'white',
+                    boxShadow: '0 4px 15px rgba(99,102,241,0.3)',
+                  }}
+                >
+                  {t('next_select')}
+                </button>
+              )}
             </div>
           )}
 
@@ -434,7 +500,7 @@ const Hero = () => {
             <div className="flex flex-col items-center animate-pulse py-20">
               <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-xl font-medium text-indigo-500">{t('analyzing')}</p>
-              <p className="text-sm text-slate-400 mt-2">Kullanılan Motor: {activeModelName}</p>
+              <p className="text-sm text-slate-400 mt-2">{t('engine_used')}: {activeModelName}</p>
             </div>
           )}
 

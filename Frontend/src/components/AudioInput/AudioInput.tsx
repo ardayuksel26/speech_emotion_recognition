@@ -83,31 +83,31 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full animate-fadeIn">
                     <button
                         onClick={() => setMode('upload')}
-                        className="group relative flex flex-col items-center justify-center p-10 h-80 rounded-[2rem] bg-white dark:bg-slate-800 border-2 border-transparent hover:border-indigo-500 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+                        className="group relative flex flex-col items-center justify-center p-7 h-60 rounded-[2rem] bg-white dark:bg-slate-800 border-2 border-transparent hover:border-indigo-500 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
                     >
-                        <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                            <FaFileAudio className="text-5xl text-indigo-600 dark:text-indigo-400" />
+                        <div className="w-18 h-18 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300" style={{ width: '72px', height: '72px' }}>
+                            <FaFileAudio className="text-4xl text-indigo-600 dark:text-indigo-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             {t('upload_file')}
                         </h3>
-                        <p className="text-gray-500 dark:text-slate-400 text-center px-4">
-                            WAV, MP3, OGG formatındaki ses dosyalarını yükle
+                        <p className="text-gray-500 dark:text-slate-400 text-center text-sm px-4">
+                            {t('upload_desc')}
                         </p>
                     </button>
 
                     <button
                         onClick={() => setMode('record')}
-                        className="group relative flex flex-col items-center justify-center p-10 h-80 rounded-[2rem] bg-white dark:bg-slate-800 border-2 border-transparent hover:border-rose-500 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+                        className="group relative flex flex-col items-center justify-center p-7 h-60 rounded-[2rem] bg-white dark:bg-slate-800 border-2 border-transparent hover:border-rose-500 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
                     >
-                        <div className="w-24 h-24 rounded-full bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                            <FaMicrophone className="text-5xl text-rose-600 dark:text-rose-400" />
+                        <div className="w-18 h-18 rounded-full bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300" style={{ width: '72px', height: '72px' }}>
+                            <FaMicrophone className="text-4xl text-rose-600 dark:text-rose-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             {t('record_voice')}
                         </h3>
-                        <p className="text-gray-500 dark:text-slate-400 text-center px-4">
-                            Mikrofonu kullanarak anlık ses kaydı al
+                        <p className="text-gray-500 dark:text-slate-400 text-center text-sm px-4">
+                            {t('record_desc')}
                         </p>
                     </button>
                 </div>

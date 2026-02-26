@@ -1,4 +1,0 @@
-# file: C:\Users\win10pro\Desktop\SER_Project\Backend\sentence_analysis\job_queue.py
-# hypothesis_version: 6.148.5
-
-[0.0, 0.1, 1.0, 3600, 'completed', 'failed', 'processing', 'queued', 'timeout', 'unknown']
