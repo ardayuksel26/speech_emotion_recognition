@@ -99,5 +99,11 @@
   "engine_used": "Kullanılan Motor",
   "majority_voting": "Ortak Karar (Majority Voting)",
   "voting_details": "Oylama Detayları",
-  "weight": "Ağırlık"
+  "weight": "Ağırlık",
+  "stt_engine": "Kelime Ayrıştırma Motoru",
+  "stt_vad": "Eski Yöntem (VAD)",
+  "stt_none": "Yok",
+  "stt_vosk": "Vosk (Hızlı/Offline)",
+  "stt_whisperx": "WhisperX (Hassas)",
+  "transcribing": "Kelimeler ayrıştırılıyor..."
 }

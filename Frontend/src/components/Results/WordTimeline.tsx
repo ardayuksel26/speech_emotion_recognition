@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AnalysisResult } from '../../types';
 import { EMOTION_COLORS } from '../../constants/design';
 import clsx from 'clsx';
@@ -97,6 +97,11 @@ export const WordTimeline: React.FC<WordTimelineProps> = ({
                                     {/* Tooltip */}
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max hidden group-hover:block z-20">
                                         <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-xl backdrop-blur-sm bg-opacity-90">
+                                            {word.word && (
+                                                <div className="font-bold text-sm mb-1 text-center text-white">
+                                                    "{word.word}"
+                                                </div>
+                                            )}
                                             <div className="font-bold mb-1 capitalize text-center" style={{ color }}>
                                                 {word.emotion}
                                             </div>

@@ -101,5 +101,11 @@
   "engine_used": "Engine Used",
   "majority_voting": "Majority Voting",
   "voting_details": "Voting Details",
-  "weight": "Weight"
+  "weight": "Weight",
+  "stt_engine": "Word Segmentation Engine",
+  "stt_vad": "Old Method (VAD)",
+  "stt_none": "None",
+  "stt_vosk": "Vosk (Fast/Offline)",
+  "stt_whisperx": "WhisperX (Accurate)",
+  "transcribing": "Transcribing words..."
 }

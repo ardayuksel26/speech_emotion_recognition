@@ -21,6 +21,10 @@ lightgbm
 # --- Deep Learning ---
 tensorflow
 
+# --- Speech-to-Text ---
+vosk
+whisperx
+
 # --- Utilities ---
 tqdm
 pyyaml

@@ -10,6 +10,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Sentence.sentence_processing import SentenceProcessor
 from Voting.majority_voting import calculate_majority_vote, MODEL_WEIGHTS
+from stt_service import transcribe
 
 # TensorFlow imports for DL models
 try:
@@ -311,21 +312,167 @@ def predict():
              all_scores = {predicted_label: 100.0}
              confidence = 100.0
 
+        # --- STT (Speech-to-Text) Integration ---
+        stt_engine = request.form.get('stt_engine', None)
+        word_timestamps = []
+        if stt_engine and stt_engine in ('vosk', 'whisperx'):
+            try:
+                # STT işlemi için orijinal dosyayı tekrar kaydet (predict zaten temp_path'e kaydetti)
+                # Ancak dosya silinmiş olabilir, kontrol et
+                stt_temp = os.path.join(BASE_DIR, f'temp_stt_{selected_model_key}.wav')
+                # Orijinal dosyayı tekrar kaydet
+                request.files['file'].seek(0)
+                request.files['file'].save(stt_temp)
+                
+                stt_words = transcribe(stt_temp, engine=stt_engine)
+                
+                # Frontend'in beklediği formata dönüştür
+                for w in stt_words:
+                    word_timestamps.append({
+                        'word': w['word'],
+                        'start': w['start'],
+                        'end': w['end'],
+                        'emotion': predicted_label,
+                        'confidence': float(confidence) / 100.0
+                    })
+                
+                if os.path.exists(stt_temp):
+                    os.remove(stt_temp)
+                    
+            except Exception as stt_err:
+                logger.warning(f"STT hatası ({stt_engine}): {stt_err}")
+
         # Temizlik
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-        return jsonify({
+        response_data = {
             'emotion': predicted_label,
             'confidence': f"%{confidence:.2f}",
             'all_scores': all_scores,
             'model_used': selected_model_key.upper()
-        })
+        }
+        if word_timestamps:
+            response_data['word_timestamps'] = word_timestamps
+
+        return jsonify(response_data)
 
     except Exception as e:
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return jsonify({'error': f'Tahmin hatası: {str(e)}'}), 500
+
+def _predict_emotions_for_segments(audio_path, segments, start_key='start', end_key='end', model_key='catboost'):
+    """
+    Kelimelerin veya cümle parçalarının başlangıç/bitiş zamanlarını kullanarak hızlı bir model 
+    üzerinden (varsayılan: catboost) her kelimenin duygusunu tahmin eder ve segment içine 'emotion' ekler.
+    """
+    if not segments:
+        return segments
+    try:
+        import librosa
+        import soundfile as sf
+        import tempfile
+        import numpy as np
+
+        tools = loaded_models.get(model_key)
+        if not tools:
+            for s in segments: s['emotion'] = 'neutral'
+            return segments
+
+        model, scaler, encoder = tools['model'], tools['scaler'], tools['encoder']
+        y, sr = librosa.load(audio_path, sr=22050)
+
+        for seg in segments:
+            start_s = float(seg.get(start_key, 0))
+            end_s = float(seg.get(end_key, 0))
+            if end_s - start_s < 0.1:
+                seg['emotion'] = 'neutral'
+                continue
+
+            start_idx = int(start_s * sr)
+            end_idx = int((end_s + 0.1) * sr) # Add a small buffer for very short words
+            y_seg = y[start_idx:end_idx]
+
+            fd, tmp_path = tempfile.mkstemp(suffix=".wav")
+            os.close(fd)
+            
+            try:
+                sf.write(tmp_path, y_seg, sr)
+                feats = extract_features(tmp_path)
+                
+                if feats is None:
+                    seg['emotion'] = 'neutral'
+                else:
+                    feats = feats.reshape(1, -1)
+                    feats_scaled = scaler.transform(feats)
+                    
+                    if hasattr(model, 'predict_proba'):
+                        probs = model.predict_proba(feats_scaled)[0]
+                        pred_idx = np.argmax(probs)
+                    else:
+                        pred = model.predict(feats_scaled)[0]
+                        pred_idx = int(pred.item()) if isinstance(pred, np.ndarray) else int(pred)
+                        
+                    label = encoder.inverse_transform([pred_idx])[0].lower()
+                    seg['emotion'] = label
+            except Exception as e:
+                seg['emotion'] = 'error'
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                    
+        return segments
+    except Exception as e:
+        logger.error(f"[ENHANCE] Emotion prediction failed for segments: {e}")
+        for s in segments: s.setdefault('emotion', '?')
+        return segments
+
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    """
+    Standalone Speech-to-Text endpoint.
+    Ses dosyasını Vosk veya WhisperX ile kelimelere ayırır ve zaman damgalarını döndürür.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    stt_engine = request.form.get('stt_engine', 'vosk')
+    if stt_engine not in ('vosk', 'whisperx'):
+        return jsonify({'error': f"Geçersiz STT motoru: '{stt_engine}'. 'vosk' veya 'whisperx' kullanın."}), 400
+
+    import uuid
+    temp_filename = f"temp_transcribe_{uuid.uuid4().hex}.wav"
+    temp_path = os.path.join(BASE_DIR, temp_filename)
+    file.save(temp_path)
+
+    try:
+        import time as _time
+        _start = _time.time()
+        words = transcribe(temp_path, engine=stt_engine)
+        
+        # Kelimelere duygu ekle
+        fast_model = request.form.get('model_type', 'xgboost') # Varsayılan olarak xgboost ile hızlı test et
+        words = _predict_emotions_for_segments(temp_path, words, start_key='start', end_key='end', model_key=fast_model)
+        
+        _elapsed = round(_time.time() - _start, 2)
+        return jsonify({
+            'words': words,
+            'stt_engine': stt_engine,
+            'word_count': len(words),
+            'elapsed_seconds': _elapsed
+        })
+    except Exception as e:
+        logger.error(f"[TRANSCRIBE] Hata ({stt_engine}): {e}")
+        return jsonify({'error': f'Transkripsiyon hatası: {str(e)}'}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @app.route('/analyze_voting', methods=['POST'])
 def analyze_voting():
@@ -459,11 +606,20 @@ def segment_sentence():
     file.save(temp_path)
     
     try:
+        import time as _time
+        _start = _time.time()
         processor = SentenceProcessor(target_sr=22050, vad_db_threshold=30)
         segments = processor.extract_segments_info(temp_path)
         
+        # Segmentlere duygu ekle
+        fast_model = request.form.get('model_type', 'xgboost')
+        segments = _predict_emotions_for_segments(temp_path, segments, start_key='start', end_key='end', model_key=fast_model)
+        
+        _elapsed = round(_time.time() - _start, 2)
+        
         return jsonify({
-            'segments': segments
+            'segments': segments,
+            'elapsed_seconds': _elapsed
         })
         
     except Exception as e:
