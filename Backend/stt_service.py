@@ -128,7 +128,9 @@ def transcribe_with_whisperx(audio_path: str, device: str = "cpu") -> list:
     # Model'i lazy-load et
     if _whisperx_model is None:
         logger.info("WhisperX modeli yükleniyor...")
-        _whisperx_model = whisperx.load_model("base", device)
+        # CPU için int8 zorunludur çünkü float16 desteklenmez. CUDA varsa float16 veya float32 kullanılabilir.
+        compute_type = "int8" if device == "cpu" else "float16" 
+        _whisperx_model = whisperx.load_model("base", device, compute_type=compute_type)
         logger.info("WhisperX modeli başarıyla yüklendi.")
 
     # 1. Sesi yükle — ffmpeg yerine librosa kullan (Windows uyumluluğu)
