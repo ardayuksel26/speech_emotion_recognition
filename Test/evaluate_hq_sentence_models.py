@@ -50,8 +50,8 @@ except ImportError as e:
 # --- CONF AYARLARI ---
 EMOTION_FOLDERS = {"angry": "Angry", "calm": "Calm", "happy": "Happy", "sad": "Sad"}
 
-# STT İşlemleri (Vosk, Whisper) çok yavaş olduğu için performans açısından test sentence sayısını kısıtlıyoruz
-NUM_SENTENCES_PER_EMOTION = 15 # Toplam 60 test cümlesi
+# WhisperX performansı düştüğü / hata verdiği için örneklem sayısını 10'da tutuyoruz.
+NUM_SENTENCES_PER_EMOTION = 10 
 SAMPLE_RATE = 16000
 MIN_LEN_SEC = 3.0
 MAX_LEN_SEC = 5.0
@@ -193,21 +193,27 @@ for key, paths in MODEL_CONFIG.items():
 
 def create_synthetic_sentence(files, sr=SAMPLE_RATE, min_len=MIN_LEN_SEC, max_len=MAX_LEN_SEC):
     """
-    Rastgele seçilen kelimeleri birleştirir, arka plan gürültüsü ve kesintiler ekler.
-    Tıpkı gerçek dünyada mikrofondan alınmış gibi bozulmalar (degradation) uygulanır.
+    Orta-Üst Segment Mikrofon Simülasyonu.
+    Daha yüksek kelime yoğunluğu (3-5 sn içinde 5 ila 9 kelime).
+    Çok kısa sessizlikler (0.03sn - 0.2sn).
+    Çok hafif dip gürültüsü ve temiz aktarım.
     """
-    num_words = random.randint(3, 6)
+    num_words = random.randint(5, 9)
     chosen = random.sample(files, min(num_words, len(files)))
-    sentence_audio = [np.zeros(int(random.uniform(0.1, 0.4) * sr))]
+    
+    # Çok kısa bir yutkunma/nefes payı (0.05sn - 0.1sn)
+    sentence_audio = [np.zeros(int(random.uniform(0.05, 0.1) * sr))]
     
     for f in chosen:
         try:
             y, _ = librosa.load(f, sr=sr)
-            y_trimmed, _ = librosa.effects.trim(y, top_db=25)
+            # Daha hassas trim (daha çok sesi korur)
+            y_trimmed, _ = librosa.effects.trim(y, top_db=30) 
             sentence_audio.append(y_trimmed)
         except Exception:
             continue
-        gap_len = random.uniform(0.1, 0.5)
+        # Kelime arası sessizlik çok daha kısa (akıcı konuşma simülasyonu)
+        gap_len = random.uniform(0.03, 0.2)
         sentence_audio.append(np.zeros(int(gap_len * sr)))
         
     if not sentence_audio: return None
@@ -219,12 +225,17 @@ def create_synthetic_sentence(files, sr=SAMPLE_RATE, min_len=MIN_LEN_SEC, max_le
     if (len(final_audio) / sr) > max_len:
         final_audio = final_audio[:int(max_len * sr)]
         
-    # --- RASTGELE ROBUST (DIŞ DÜNYA) EFEKTLERİ ---
-    final_audio = final_audio * random.uniform(0.4, 1.3) # Volume
-    if random.random() < 0.70: # Gaussian Noise
-        final_audio += np.random.normal(0, random.uniform(0.005, 0.03), len(final_audio))
-    if random.random() < 0.20: # Drop (Paket Kaybı)
-        drop_dur = int(sr * random.uniform(0.1, 0.3))
+    # --- YÜKSEK KALİTE (HQ) MİKROFON EFEKTLERİ ---
+    # İstikrarlı ses çıkışı
+    final_audio = final_audio * random.uniform(0.85, 1.1) 
+    
+    # %20 ihtimalle çok hafif, ortamın doğal beyaz gürültüsü
+    if random.random() < 0.20: 
+        final_audio += np.random.normal(0, random.uniform(0.001, 0.003), len(final_audio))
+        
+    # %5 ihtimalle minik USB veya Bluetooth gecikme cızırtısı
+    if random.random() < 0.05: 
+        drop_dur = int(sr * random.uniform(0.02, 0.05))
         drop_start = random.randint(0, max(0, len(final_audio) - drop_dur))
         final_audio[drop_start:drop_start+drop_dur] = 0.0
 
@@ -250,24 +261,23 @@ def extract_features(audio_data, sr):
 
 def build_datasets_for_methods():
     print(f"\n{'-'*60}")
-    print(" 🛠️ ADIM 1: SENTETİK CÜMLELER ÜRETİLİYOR VE 2 FARKLI METOT İLE KELİMELER PARÇALANIYOR")
+    print(" 🛠️ ADIM 1: YÜKSEK KALİTE CÜMLELER ÜRETİLİYOR (HQ MIC)")
     print("   Metotlar: 1) Energy-Based VAD  2) Vosk STT")
     print(f"{'-'*60}")
     
     methods = ["VAD", "VOSK"] if STT_AVAILABLE else ["VAD"]
     
     # Her metot içindeki test sonuçlarını tutacak ana veri yapısı
-    # Yapı: test_data[method] = [ {'ground_truth': str, 'segments_features': [feat1, feat2, ...]} ]
     test_data = {m: [] for m in methods}
     
-    temp_wav = os.path.join(BASE_DIR, "temp_bench_sentence.wav")
+    temp_wav = os.path.join(BASE_DIR, "temp_bench_sentence_hq.wav")
     
     for emo_label, folder_name in EMOTION_FOLDERS.items():
         folder_path = os.path.join(SOUND_DIR, folder_name)
         if not os.path.exists(folder_path): continue
         wav_files = glob.glob(os.path.join(folder_path, "*.wav"))
         
-        print(f"⏳ {emo_label.upper()} kategorisinden {NUM_SENTENCES_PER_EMOTION} zorlu cümle ayrıştırılıyor...")
+        print(f"⏳ {emo_label.upper()} kategorisinden {NUM_SENTENCES_PER_EMOTION} yüksek kalite cümle ayrıştırılıyor...")
         count = 0
         attempts = 0
         while count < NUM_SENTENCES_PER_EMOTION and attempts < NUM_SENTENCES_PER_EMOTION * 3:
@@ -275,10 +285,8 @@ def build_datasets_for_methods():
             audio_array = create_synthetic_sentence(wav_files, sr=SAMPLE_RATE)
             if audio_array is None: continue
             
-            # Cümleyi geçici wav olarak kaydet (Vosk/WhisperX ve librosa yüklemesi için)
             sf.write(temp_wav, audio_array, SAMPLE_RATE)
             
-            # Bu cümlenin her metot için çıkardığı segment özelliklerini depolayalım
             method_features = {m: [] for m in methods}
             valid_sentence_for_all_methods = True
             
@@ -289,15 +297,13 @@ def build_datasets_for_methods():
                     elif m == "VOSK":
                         segments_info = transcribe(temp_wav, engine="vosk")
                         
-                    # Eğer metot kelime bulamadıysa (boş döndüyse), bütün cümleyi %100 kullanmasını sağla
                     if not segments_info:
                         segments_info = [{'start': 0.0, 'end': len(audio_array)/SAMPLE_RATE}]
                         
-                    # Bulunan kelimelerin zamanlarından sesi kesip openSMILE özelliğini çıkart
                     feats_list = []
                     for seg in segments_info:
                         start_idx = int(seg['start'] * SAMPLE_RATE)
-                        end_idx = int((seg['end'] + 0.1) * SAMPLE_RATE) # Ufak tampon payı
+                        end_idx = int((seg['end'] + 0.1) * SAMPLE_RATE)
                         seg_audio = audio_array[start_idx:end_idx]
                         
                         if len(seg_audio) > (0.1 * SAMPLE_RATE):
@@ -306,7 +312,6 @@ def build_datasets_for_methods():
                                 feats_list.append(f)
                                 
                     if not feats_list:
-                        # Eğer kelimelerden hiç feature çıkmazsa fallback olarak bütün cümlenin feature'ını al
                         f = extract_features(audio_array, SAMPLE_RATE)
                         if f is not None: feats_list.append(f)
                         else: valid_sentence_for_all_methods = False; break
@@ -333,10 +338,6 @@ def build_datasets_for_methods():
     return test_data, methods
 
 def predict_segments_and_vote(model_data, model_key, segments_features, ground_truth):
-    """
-    Kelimelerin özelliklerini modele sokup tahmin alır ve SentenceProcessor'daki 
-    Ağırlıklı Oylama (Weighted Voting) kullanarak cümleyi nihai bir duyguyla sonuçlandırır.
-    """
     model = model_data['model']
     scaler = model_data['scaler']
     encoder = model_data['encoder']
@@ -374,7 +375,6 @@ def predict_segments_and_vote(model_data, model_key, segments_features, ground_t
                 label = encoder.inverse_transform([pred_idx])[0].lower()
                 all_scores_dict = {label: 100.0}
 
-        # Normalize score
         total = sum(all_scores_dict.values())
         if total > 0:
             all_scores_dict = {k: (v/total)*100 for k,v in all_scores_dict.items()}
@@ -388,7 +388,6 @@ def predict_segments_and_vote(model_data, model_key, segments_features, ground_t
             'all_scores': all_scores_dict
         })
         
-    # Tüm kelimeler bitince OYLAMA (VOTING) YAP
     if not results:
         return 'unknown'
         
@@ -399,17 +398,17 @@ def predict_segments_and_vote(model_data, model_key, segments_features, ground_t
 
 def run_benchmarks(test_data, methods):
     print(f"\n{'-'*60}")
-    print(" 🚀 ADIM 2: MODELLER CÜMLE DÜZEYİNDE OYLANARAK DEĞERLENDİRİLİYOR")
+    print(" 🚀 ADIM 2: MODELLER YÜKSEK KALİTE CÜMLELERDE DEĞERLENDİRİLİYOR")
     print(f"{'-'*60}")
     
     unique_emotions = sorted(list(EMOTION_FOLDERS.keys()))
     
-    # Ana rapor çıkarma
     results_text = []
     results_text.append("================================================================================")
-    results_text.append(" PROFESYONEL CÜMLE METODOLOJİLERİ KARŞILAŞTIRMA RAPORU ")
+    results_text.append(" PROFESYONEL HQ CÜMLE METODOLOJİLERİ KARŞILAŞTIRMA RAPORU ")
+    results_text.append(" Orta/Üst Segment Mikrofon Simülasyonu (Az gürültü, yüksek kelime yoğunluğu)")
     results_text.append("================================================================================")
-    results_text.append(f"Parametreler: {NUM_SENTENCES_PER_EMOTION} Cümle/Duygu.")
+    results_text.append(f"Parametreler: {NUM_SENTENCES_PER_EMOTION} Cümle/Duygu, 5-9 Kelime/Cümle, 3-5s uzunluk.")
     results_text.append("Metotlar: Energy-Based VAD, Vosk STT, WhisperX STT\n\n")
     
     full_metrics = {m: [] for m in methods}
@@ -469,19 +468,14 @@ def run_benchmarks(test_data, methods):
             
             full_metrics[method].append(m_data)
 
-    # Raporu Kaydet
-    txt_path = os.path.join(BASE_DIR, "sentence_methods_benchmark_results.txt")
+    txt_path = os.path.join(BASE_DIR, "sentence_hq_methods_benchmark_results.txt")
     with open(txt_path, 'w', encoding='utf-8') as f:
          f.write("\n".join(results_text))
-    print(f"\n✅ Akademik Metin Raporu Kaydedildi: {txt_path}")
+    print(f"\n✅ Akademik HQ Metin Raporu Kaydedildi: {txt_path}")
 
-    # Grafik Çiz
     plot_methods_comparison(full_metrics, methods)
 
 def plot_methods_comparison(full_metrics, methods):
-    """
-    Her bir metodun genel başarı grafiğini (Accuracy) yan yana tek görselde çizer.
-    """
     if not full_metrics or not list(full_metrics.values())[0]:
         return
         
@@ -495,19 +489,19 @@ def plot_methods_comparison(full_metrics, methods):
     for i, method in enumerate(methods):
         accs = [m['acc'] for m in full_metrics[method]]
         offset = (i - 1) * width
-        label = f"{method} Yöntemi"
+        label = f"{method} Yöntemi (HQ)"
         plt.bar(x + offset, accs, width, label=label, color=colors[i % len(colors)], edgecolor='black', alpha=0.9)
         
     plt.xlabel('Seri (Modeller)', fontweight='bold', fontsize=12)
     plt.ylabel('Cümle Bütünü Duygu Tahmini Doğruluğu (Accuracy)', fontweight='bold', fontsize=12)
-    plt.title('VAD, Vosk ve WhisperX Parçalama Yöntemlerinin Model Başarılarına Etkisi', fontweight='bold', fontsize=16)
+    plt.title('HQ Mikrofon Simülasyonunda VAD, Vosk ve WhisperX Parçalama Yöntemlerinin Karşılaştırılması', fontweight='bold', fontsize=16)
     plt.xticks(x, model_names, rotation=45, ha='right', fontsize=10)
     plt.yticks(np.arange(0, 1.1, 0.1))
     plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     
     plt.tight_layout()
-    img_path = os.path.join(BASE_DIR, "sentence_methods_comparison.png")
+    img_path = os.path.join(BASE_DIR, "sentence_hq_methods_comparison.png")
     plt.savefig(img_path, dpi=300)
     print(f"📸 Grafikler Kaydedildi: {img_path}")
 
