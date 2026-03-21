@@ -670,6 +670,7 @@ def predict_sentence():
     try:
         # 4. Segmentation (The core "preprocessing step")
         # Split sentence into word-like chunks using new Class
+        global_feats = extract_features(temp_path)
         processor = SentenceProcessor(target_sr=22050, vad_db_threshold=40)
         segment_paths = processor.process_audio(temp_path, output_dir=os.path.join(BASE_DIR, "temp_segments"))
         
@@ -722,11 +723,15 @@ def predict_sentence():
                 label = encoder.inverse_transform([pred_idx])[0].lower()
                 all_scores_dict = {label: 100.0}
 
+            import librosa
+            dur = librosa.get_duration(path=seg_path)
+
             results.append({
                 'segment': os.path.basename(seg_path),
                 'emotion': label,
                 'confidence': float(conf),
-                'all_scores': all_scores_dict
+                'all_scores': all_scores_dict,
+                'duration': dur
             })
             
         # 6. Aggregation
@@ -739,16 +744,62 @@ def predict_sentence():
         most_common = Counter(emotions).most_common(1)[0]
         final_emotion_vote = most_common[0]
         
-        # --- NEW: Weighted Voting Strategy via SentenceProcessor ---
+        # --- NEW: Ensemble Global & Segment Strategies ---
+        voted_scores = {}
         weighted_result = processor.weighted_voting(results)
-        
         if weighted_result:
-            final_emotion = weighted_result['final_emotion']
-            final_conf = weighted_result['confidence']
-            details = weighted_result['weighted_details']
+            voted_scores = weighted_result.get('weighted_details', {})
+            
+        # Global Prediction
+        global_scores = {}
+        if global_feats is not None:
+            global_f_reshaped = global_feats.reshape(1, -1)
+            global_f_scaled = scaler.transform(global_f_reshaped)
+            
+            if selected_model_key in ['cnn1d', 'dnn'] and 'cnn' in selected_model_key:
+                global_f_scaled = np.expand_dims(global_f_scaled, axis=2)
+                
+            probs = None
+            if hasattr(model, 'predict_proba'):
+                probs = model.predict_proba(global_f_scaled)[0]
+            elif selected_model_key in ['cnn1d', 'dnn', 'cnn1d_robust', 'dnn_robust']:
+                probs = model.predict(global_f_scaled, verbose=0)[0]
+                
+            if probs is not None:
+                for i, class_name in enumerate(encoder.classes_):
+                    cat = class_name.lower()
+                    if cat != 'neutral':
+                        global_scores[cat] = float(probs[i]) * 100.0
+                t = sum(global_scores.values())
+                if t > 0: global_scores = {k: (v/t)*100 for k,v in global_scores.items()}
+            else:
+                 pred = model.predict(global_f_scaled)[0]
+                 pred_idx = int(pred.item()) if isinstance(pred, (list, np.ndarray)) else int(pred)
+                 lbl = encoder.inverse_transform([pred_idx])[0].lower()
+                 global_scores = {lbl: 100.0}
+
+        # Blending 
+        final_combined = {}
+        GLOBAL_WEIGHT = 0.60
+        SEGMENT_WEIGHT = 0.40
+        
+        valid_classes = [c.lower() for c in encoder.classes_ if c.lower() != 'neutral']
+        if voted_scores and global_scores:
+            for emo in valid_classes:
+                val_g = global_scores.get(emo, 0.0) * GLOBAL_WEIGHT
+                val_s = voted_scores.get(emo, 0.0) * SEGMENT_WEIGHT
+                final_combined[emo] = val_g + val_s
+        elif voted_scores:
+            final_combined = voted_scores
+        elif global_scores:
+            final_combined = global_scores
+            
+        if final_combined:
+            final_emotion = max(final_combined.items(), key=lambda x: x[1])[0]
+            final_conf = final_combined[final_emotion]
+            details = final_combined
         else:
-            # Fallback
-            final_emotion = final_emotion_vote
+            final_emotion = 'unknown'
             final_conf = 0.0
             details = {}
 

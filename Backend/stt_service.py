@@ -62,7 +62,8 @@ def transcribe_with_vosk(audio_path: str) -> list:
     global _vosk_model
 
     try:
-        from vosk import Model, KaldiRecognizer
+        from vosk import Model, KaldiRecognizer, SetLogLevel
+        SetLogLevel(-1) # Vosk'un C++ loglarını tamamen gizle
     except ImportError:
         raise RuntimeError("Vosk kütüphanesi yüklü değil. 'pip install vosk' komutunu çalıştırın.")
 
@@ -122,6 +123,11 @@ def transcribe_with_whisperx(audio_path: str, device: str = "cpu") -> list:
 
     try:
         import whisperx
+        import logging
+        logging.getLogger("whisperx").setLevel(logging.ERROR)
+        logging.getLogger("whisperx.vads.pyannote").setLevel(logging.ERROR)
+        logging.getLogger("whisperx.asr").setLevel(logging.ERROR)
+        logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
     except ImportError:
         raise RuntimeError("WhisperX kütüphanesi yüklü değil. 'pip install whisperx' komutunu çalıştırın.")
 
@@ -137,7 +143,7 @@ def transcribe_with_whisperx(audio_path: str, device: str = "cpu") -> list:
     try:
         audio = whisperx.load_audio(audio_path)
     except (FileNotFoundError, OSError) as e:
-        logger.warning(f"whisperx.load_audio başarısız (ffmpeg yok?): {e}. librosa ile yükleniyor...")
+        # ffmpeg yoksa sessizce librosa fallback yap
         import librosa
         import numpy as np
         audio_np, sr = librosa.load(audio_path, sr=16000, mono=True)

@@ -177,12 +177,15 @@ class SentenceProcessor:
         if not results:
             return None
             
-        # Nötr/sakin kelimeler genelde dolgu kelimesidir. O yüzden tepe duyguları daha çok çarpmalıyız.
+        # 1. Aşama İyileştirmesi: Statik Duygu Çarpanlarının Sıfırlanması (Pure Soft-Voting)
+        # Eski sistemdeki sabit çarpanlar (Angry 1.6, Calm 0.7 vb.) Calm ve Sad gibi duyguların
+        # Recall (Duyarlılık) değerlerini düşürüp Cümle F1 skorunu bozuyordu.
+        # Artık her duygunun modelden gelen saf olasılığı ağırlık olarak kabul ediliyor.
         EMOTION_MULTIPLIERS = {
-            'angry': 1.6,
-            'happy': 1.5,
-            'sad': 1.1,
-            'calm': 0.7
+            'angry': 1.0,
+            'happy': 1.0,
+            'sad': 1.0,
+            'calm': 1.0
         }
 
         # Accumulators
@@ -195,6 +198,12 @@ class SentenceProcessor:
         for res in results:
             winning_emotion = res['emotion'].lower()
             
+            # 3. Aşama İyileştirmesi: Gürültü/Nefes Susturma (Confidence Thresholding)
+            # Eğer makinenin bu kelime için hiçbir duyguya olan güvenilirlik skoru %40'ı geçemiyorsa
+            # o kelime ya çok bulanıktır ya da tamamen gürültü/nefes sesidir. Oylamayı zehirlemesini engelliyoruz.
+            if res.get('confidence', 0.0) < 40.0:
+                continue
+                
             if winning_emotion in EMOTION_MULTIPLIERS:
                 emotion_counts[winning_emotion] += 1
                 raw_confidences[winning_emotion].append(res['confidence'])
@@ -203,11 +212,16 @@ class SentenceProcessor:
             # Modelin bu kelime için ürettiği "tüm" % ihtimallerin ortalamasını yansıt.
             segment_scores = res.get('all_scores', {winning_emotion: res['confidence']})
             
+            # 2. Aşama İyileştirmesi: Segment Süresine Göre Oylama (Duration-Based Weighting)
+            # 0.2 saniyelik bir nefes veya yutulmuş kelime ile 1.5 saniyelik net bir kelimenin oyu aynı olamaz.
+            # Tahmin olasılığını, o kelimenin saniye cinsinden süresiyle çarparak adaleti sağlıyoruz.
+            segment_duration = res.get('duration', 1.0)
+            
             for em_key, prob_val in segment_scores.items():
                 if em_key in EMOTION_MULTIPLIERS:
                     multiplier = EMOTION_MULTIPLIERS[em_key]
-                    # Olasılığı (0-100) -> (0-1) yapıp ağırlıkla çarparak pastaya ekle
-                    weighted_scores[em_key] += (prob_val / 100.0) * multiplier
+                    # Olasılığı (0-100) -> (0-1) yapıp ağırlık ve kelime SÜRESİ (duration) ile çarparak pastaya ekle
+                    weighted_scores[em_key] += (prob_val / 100.0) * multiplier * segment_duration
 
         # 1. Hangi Duygu Kazandı? (En yüksek ağırlıklı puana sahip olan)
         final_emotion = max(weighted_scores, key=weighted_scores.get)

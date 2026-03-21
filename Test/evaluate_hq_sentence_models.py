@@ -265,7 +265,7 @@ def build_datasets_for_methods():
     print("   Metotlar: 1) Energy-Based VAD  2) Vosk STT")
     print(f"{'-'*60}")
     
-    methods = ["VAD", "VOSK"] if STT_AVAILABLE else ["VAD"]
+    methods = ["VAD", "VOSK", "WHISPERX"] if STT_AVAILABLE else ["VAD"]
     
     # Her metot içindeki test sonuçlarını tutacak ana veri yapısı
     test_data = {m: [] for m in methods}
@@ -296,6 +296,8 @@ def build_datasets_for_methods():
                         segments_info = processor.extract_segments_info(temp_wav)
                     elif m == "VOSK":
                         segments_info = transcribe(temp_wav, engine="vosk")
+                    elif m == "WHISPERX":
+                        segments_info = transcribe(temp_wav, engine="whisperx")
                         
                     if not segments_info:
                         segments_info = [{'start': 0.0, 'end': len(audio_array)/SAMPLE_RATE}]
@@ -309,14 +311,21 @@ def build_datasets_for_methods():
                         if len(seg_audio) > (0.1 * SAMPLE_RATE):
                             f = extract_features(seg_audio, SAMPLE_RATE)
                             if f is not None:
-                                feats_list.append(f)
+                                feats_list.append({
+                                    'feature': f,
+                                    'duration': len(seg_audio) / SAMPLE_RATE
+                                })
                                 
-                    if not feats_list:
-                        f = extract_features(audio_array, SAMPLE_RATE)
-                        if f is not None: feats_list.append(f)
-                        else: valid_sentence_for_all_methods = False; break
+                    global_f = extract_features(audio_array, SAMPLE_RATE)
+                    if global_f is None:
+                        valid_sentence_for_all_methods = False
+                        break
                         
-                    method_features[m] = feats_list
+                    method_features[m] = {
+                        'segments': feats_list,
+                        'global': global_f,
+                        'audio_duration': len(audio_array) / SAMPLE_RATE
+                    }
                 except Exception as e:
                     print(f"Uyarı: {m} segmentation hatası: {e}")
                     valid_sentence_for_all_methods = False
@@ -342,9 +351,15 @@ def predict_segments_and_vote(model_data, model_key, segments_features, ground_t
     scaler = model_data['scaler']
     encoder = model_data['encoder']
     
+    # 1. PARÇALANMIŞ KELİME TAHMİNLERİ
     results = []
+    segments_data = segments_features.get('segments', [])
+    global_f = segments_features.get('global', None)
     
-    for f in segments_features:
+    for seg_data in segments_data:
+        f = seg_data['feature']
+        dur = seg_data['duration']
+        
         f_reshaped = f.reshape(1, -1)
         f_scaled = scaler.transform(f_reshaped)
         
@@ -385,15 +400,64 @@ def predict_segments_and_vote(model_data, model_key, segments_features, ground_t
         results.append({
             'emotion': label,
             'confidence': conf,
-            'all_scores': all_scores_dict
+            'all_scores': all_scores_dict,
+            'duration': dur
         })
         
-    if not results:
-        return 'unknown'
+    # Segment Oylamasını Yap
+    voted_res = processor.weighted_voting(results) if results else None
+    voted_scores = voted_res['weighted_details'] if voted_res else {}
+    
+    # 2. TÜM CÜMLE TAHMİNİ (GLOBAL INFERENCE)
+    global_scores = {}
+    if global_f is not None:
+        f_reshaped = global_f.reshape(1, -1)
+        f_scaled = scaler.transform(f_reshaped)
         
-    voted_res = processor.weighted_voting(results)
-    if voted_res:
-        return voted_res['final_emotion']
+        if model_key in ['cnn1d', 'cnn1d_robust']:
+            f_3d = np.expand_dims(f_scaled, axis=2)
+            probs = model.predict(f_3d, verbose=0)[0]
+        elif model_key in ['dnn', 'dnn_robust']:
+            probs = model.predict(f_scaled, verbose=0)[0]
+        else:
+            if hasattr(model, 'predict_proba'):
+                probs = model.predict_proba(f_scaled)[0]
+            else:
+                pred = model.predict(f_scaled)[0]
+                pred_idx = int(pred.item()) if isinstance(pred, (list, np.ndarray)) else int(pred)
+                label = encoder.inverse_transform([pred_idx])[0].lower()
+                probs = np.zeros(len(encoder.classes_))
+                probs[pred_idx] = 1.0
+
+        for i, c_name in enumerate(encoder.classes_):
+            if c_name.lower() != 'neutral':
+                global_scores[c_name.lower()] = float(probs[i] * 100)
+                
+        # Normalize
+        t = sum(global_scores.values())
+        if t > 0: global_scores = {k: (v/t)*100 for k,v in global_scores.items()}
+
+    # 3. HARMANLAMA (ENSEMBLE BLENDING)
+    # %60 Bütün Cümlenin İfadesi (Prosody) + %40 İçindeki Kelimelerin Oy Kullanımı
+    GLOBAL_WEIGHT = 0.60
+    SEGMENT_WEIGHT = 0.40
+    
+    final_combined = {}
+    valid_classes = [c.lower() for c in encoder.classes_ if c.lower() != 'neutral']
+    
+    if voted_scores and global_scores:
+        for emo in valid_classes:
+             val_global = global_scores.get(emo, 0.0) * GLOBAL_WEIGHT
+             val_seg = voted_scores.get(emo, 0.0) * SEGMENT_WEIGHT
+             final_combined[emo] = val_global + val_seg
+    elif voted_scores:
+        final_combined = voted_scores
+    elif global_scores:
+        final_combined = global_scores
+        
+    if final_combined:
+        return max(final_combined.items(), key=lambda x: x[1])[0]
+        
     return 'unknown'
 
 def run_benchmarks(test_data, methods):
