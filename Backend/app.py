@@ -826,6 +826,171 @@ def predict_sentence():
             if os.path.exists(p):
                 os.remove(p)
 
+# ==============================================================================
+# 🧠 THE MASTERMIND (ÜST AKIL) ENDPOINT
+# ==============================================================================
+@app.route('/api/predict_mastermind', methods=['POST'])
+def predict_mastermind():
+    """
+    Sıfır parametre. Yalnızca ses dosyası bağla.
+    Tüm kalabalıkları ve hatalı modelleri reddeden, F1 skoru en yüksek VOSK 
+    ve CatBoost/XGBoost (%60/%40) birleşimini kullanıp, 'Sad' için RF_Robust vetosuna
+    başvuran nihai üretim (production) API uç noktasıdır.
+    """
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file part'}), 400
+        
+    file = request.files['audio']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+        
+    required_models = ['catboost', 'xgboost', 'rf_robust']
+    missing = [m for m in required_models if m not in loaded_models]
+    if missing:
+        return jsonify({'error': f"Gerekli 'Üst Akıl' modelleri eksik: {missing}"}), 500
+         
+    import tempfile
+    import soundfile as sf
+    import librosa
+    
+    temp_path = ""
+    segment_paths = []
+    
+    try:
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.wav')
+        os.close(temp_fd)
+        file.save(temp_path)
+        
+        # 1. GLOBAL ÖZELLİKLERİ ÇIKAR
+        global_f = extract_features(temp_path)
+        if global_f is None:
+            return jsonify({'error': 'Global ses vektörü çıkarılamadı (Aşırı gürültü veya sessiz).'}), 400
+            
+        y_global, sr = librosa.load(temp_path, sr=22050)
+            
+        # 2. VOSK İLE KELİMELERİ (SEGMENTLERİ) AYIKLA
+        # WhisperX ve VAD testlerde F1 skalasında VOSK'un gerisinde kaldığı için elendi.
+        segments_info = transcribe(temp_path, engine="vosk")
+        if not segments_info:
+             segments_info = [{'start': 0.0, 'end': len(y_global)/sr}]
+             
+        feats_list = []
+        for i, seg in enumerate(segments_info):
+            start_s = float(seg.get('start', 0.0))
+            end_s = float(seg.get('end', 0.0))
+            start_idx = int(start_s * sr)
+            end_idx = int((end_s + 0.1) * sr) # +100ms güvenli bant
+            
+            seg_audio = y_global[start_idx:end_idx]
+            
+            if len(seg_audio) > int(0.1 * sr):
+                seg_path = os.path.join(tempfile.gettempdir(), f"master_seg_{i}_{os.urandom(4).hex()}.wav")
+                sf.write(seg_path, seg_audio, sr)
+                segment_paths.append(seg_path)
+                
+                f = extract_features(seg_path)
+                if f is not None:
+                     feats_list.append(f)
+                     
+        # 3. 'ÜST AKIL' HESAPLAMA MOTORU (Model Skorlayıcı Fonksiyon)
+        def score_model(m_key):
+             m_data = loaded_models[m_key]
+             m = m_data['model']
+             s = m_data['scaler']
+             e = m_data['encoder']
+             
+             # Global Melodi tahmini (%60 gücünde olacak)
+             global_f_scaled = s.transform(global_f.reshape(1, -1))
+             if hasattr(m, 'predict_proba'):
+                 g_probs = m.predict_proba(global_f_scaled)[0]
+             else:
+                 g_probs = np.zeros(len(e.classes_))
+                 pred = int(m.predict(global_f_scaled)[0])
+                 g_probs[list(e.transform(e.classes_)).index(pred)] = 1.0
+             
+             # Kelime ortalama tahmini (%40 gücünde olacak)
+             seg_probs_sum = np.zeros(len(e.classes_))
+             if feats_list:
+                 for sf_vec in feats_list:
+                     sf_scaled = s.transform(sf_vec.reshape(1, -1))
+                     if hasattr(m, 'predict_proba'):
+                         p = m.predict_proba(sf_scaled)[0]
+                     else:
+                         p = np.zeros(len(e.classes_))
+                         pred = int(m.predict(sf_scaled)[0])
+                         p[list(e.transform(e.classes_)).index(pred)] = 1.0
+                     seg_probs_sum += np.array(p)
+                 seg_probs_avg = seg_probs_sum / len(feats_list)
+             else:
+                 seg_probs_avg = np.array(g_probs) # Eğer kelime bulamadıysa (sadece sessizlikse)
+                 
+             # 60/40 Altın Oran Harmanlaması (Global Melodi + Saf Kelime Duygusu)
+             # Not: Testlerde en yüksek skoru bu sabit oran vermiştir. Dinamik eşikler elenmiştir.
+             combined = 0.60 * np.array(g_probs) + 0.40 * seg_probs_avg
+             
+             # Sınıf isimlerine göre eşleştirme yapıp 100 üzerinden normalize et
+             scores = {}
+             valid_classes = [c.lower() for c in e.classes_ if c.lower() != 'neutral']
+             for i, class_name in enumerate(e.classes_):
+                 cat = class_name.lower()
+                 if cat in valid_classes:
+                      scores[cat] = float(combined[i]) * 100.0
+             
+             # Toplamı %100'e kilitle
+             total_s = sum(scores.values())
+             if total_s > 0: 
+                 scores = {k: (v/total_s)*100.0 for k,v in scores.items()}
+             return scores
+             
+        # CatBoost ve XGBoost'u yarıştırıp ortak bir kanaat (ortalama) oluşturuyoruz.
+        # Neden ikisi? Çünkü Angry ve Happy testlerinde zirveyi onlar paylaşıyor.
+        cb_scores = score_model('catboost')
+        xgb_scores = score_model('xgboost')
+        
+        main_scores = {}
+        for k in cb_scores.keys():
+            main_scores[k] = (cb_scores[k] + xgb_scores[k]) / 2.0
+            
+        primary_emotion = max(main_scores.items(), key=lambda x: x[1])[0]
+        primary_conf = main_scores[primary_emotion]
+        
+        # 4. RF_ROBUST Sad Detector (VETO SİSTEMİ)
+        # Testlerde SAD'ı bozmadan %55 orana ulaştıran tek kahraman buydu.
+        rf_scores = score_model('rf_robust')
+        sad_val_from_rf = rf_scores.get('sad', 0.0)
+        rf_primary_emotion = max(rf_scores.items(), key=lambda x: x[1])[0] if rf_scores else 'unknown'
+        
+        final_emotion = primary_emotion
+        final_conf = primary_conf
+        is_vetoed = False
+        
+        # Eğer RF_Robust modeli incelenen seste "Sad" oranını kritik eşik (>=%30.0) üzerinde görürse,
+        # CatBoost ve XGBoost'un bütün Angry/Calm yanılgılarını eziyoruz. 
+        if primary_emotion != 'sad' and sad_val_from_rf >= 30.0:
+            final_emotion = 'sad'
+            final_conf = sad_val_from_rf
+            is_vetoed = True
+            
+        # Frontend için görsel sonuç formatı
+        return jsonify({
+             'final_emotion': final_emotion,
+             'confidence': f"%{final_conf:.2f}",
+             'veto_applied': is_vetoed,
+             'rf_sad_score': f"%{sad_val_from_rf:.2f}",
+             'main_scores': main_scores,
+             'segments_analyzed': len(feats_list)
+        })
+        
+    except Exception as e:
+        logger.error(f"Mastermind Error: {e}")
+        return jsonify({'error': str(e)}), 500
+        
+    finally:
+        if temp_path and os.path.exists(temp_path):
+             os.remove(temp_path)
+        for p in segment_paths:
+             if os.path.exists(p): os.remove(p)
+
 if __name__ == '__main__':
     # use_reloader=False ekleyerek klasördeki dosya değişikliklerinin (veya yeni kütüphane yüklemelerinin)
     # sunucuyu aniden resetlemesini engelliyoruz.

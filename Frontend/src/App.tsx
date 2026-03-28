@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import AboutPage from './Pages/AboutPage';
 import UseCasesPage from './Pages/UseCasesPage';
 import TechnicalInfoPage from './Pages/TechnicalInfoPage';
+import ExperimentalPage from './Pages/ExperimentalPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <main className="flex-grow flex flex-col">
             <Routes>
               <Route path="/" element={<MainPage />} />
+              <Route path="/experimental" element={<ExperimentalPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/use-cases" element={<UseCasesPage />} />
               <Route path="/technical-info" element={<TechnicalInfoPage />} />

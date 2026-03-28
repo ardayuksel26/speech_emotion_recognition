@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FaMoon, FaSun, FaChevronDown, FaBars, FaTimes, FaInfoCircle, FaBullseye, FaGlobe, FaCogs } from "react-icons/fa";
+import { FaMoon, FaSun, FaChevronDown, FaBars, FaTimes, FaInfoCircle, FaBullseye, FaFlask, FaCogs } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
 import { Link, useLocation } from "react-router-dom";
 import { clsx } from "clsx";
@@ -25,6 +25,7 @@ const Header = () => {
   const currentLanguage = i18n.language.split('-')[0];
 
   const navLinks = [
+    { key: 'Deneysel Modeller', path: '/experimental', icon: <FaFlask /> },
     { key: 'about_us', path: '/about', icon: <FaInfoCircle /> },
     { key: 'use_cases', path: '/use-cases', icon: <FaBullseye /> },
     { key: 'technical_info', path: '/technical-info', icon: <FaCogs /> },

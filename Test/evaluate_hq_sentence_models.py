@@ -261,8 +261,8 @@ def extract_features(audio_data, sr):
 
 def build_datasets_for_methods():
     print(f"\n{'-'*60}")
-    print(" 🛠️ ADIM 1: YÜKSEK KALİTE CÜMLELER ÜRETİLİYOR (HQ MIC)")
-    print("   Metotlar: 1) Energy-Based VAD  2) Vosk STT")
+    print(" 🛠️ ADIM 1: YÜKSEK KALİTE CÜMLELER YÜKLENİYOR (HQ MIC)")
+    print("   Metotlar: 1) Energy-Based VAD  2) Vosk STT  3) WhisperX STT")
     print(f"{'-'*60}")
     
     methods = ["VAD", "VOSK", "WHISPERX"] if STT_AVAILABLE else ["VAD"]
@@ -272,20 +272,17 @@ def build_datasets_for_methods():
     
     temp_wav = os.path.join(BASE_DIR, "temp_bench_sentence_hq.wav")
     
-    for emo_label, folder_name in EMOTION_FOLDERS.items():
-        folder_path = os.path.join(SOUND_DIR, folder_name)
+    for emo_label in EMOTION_FOLDERS.keys():
+        folder_path = os.path.join(BASE_DIR, "sentencevoice", emo_label)
         if not os.path.exists(folder_path): continue
         wav_files = glob.glob(os.path.join(folder_path, "*.wav"))
         
-        print(f"⏳ {emo_label.upper()} kategorisinden {NUM_SENTENCES_PER_EMOTION} yüksek kalite cümle ayrıştırılıyor...")
+        print(f"⏳ {emo_label.upper()} kategorisinden sabit {len(wav_files)} test cümlesi yükleniyor...")
         count = 0
-        attempts = 0
-        while count < NUM_SENTENCES_PER_EMOTION and attempts < NUM_SENTENCES_PER_EMOTION * 3:
-            attempts += 1
-            audio_array = create_synthetic_sentence(wav_files, sr=SAMPLE_RATE)
-            if audio_array is None: continue
-            
-            sf.write(temp_wav, audio_array, SAMPLE_RATE)
+        
+        for wav_path in wav_files:
+            audio_array, _ = librosa.load(wav_path, sr=SAMPLE_RATE)
+            temp_wav = wav_path
             
             method_features = {m: [] for m in methods}
             valid_sentence_for_all_methods = True
