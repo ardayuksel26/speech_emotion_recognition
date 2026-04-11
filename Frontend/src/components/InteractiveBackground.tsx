@@ -108,7 +108,8 @@ const InteractiveBackground: React.FC = () => {
             ref={canvasRef}
             className="fixed inset-0 w-full h-full pointer-events-none z-0"
             style={{ 
-                filter: 'blur(3xl)'
+                filter: 'blur(3xl)',
+                clipPath: 'inset(0)'
             }}
         />
     );

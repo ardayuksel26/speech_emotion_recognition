@@ -41,11 +41,11 @@ export const LanguageSwitcher: React.FC = () => {
         <div className="relative z-50" ref={containerRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label="Change Language"
             >
-                <span className="text-xl">{currentLang.flag}</span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200 uppercase">{currentLang.code}</span>
+                <span className="text-2xl leading-none flex items-center justify-center">{currentLang.flag}</span>
+                <span className="text-base font-bold text-gray-700 dark:text-gray-200 uppercase">{currentLang.code}</span>
             </button>
 
             <AnimatePresence>
@@ -66,7 +66,7 @@ export const LanguageSwitcher: React.FC = () => {
                                     i18n.language === lang.code && "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
                                 )}
                             >
-                                <span className="text-lg">{lang.flag}</span>
+                                <span className="text-2xl leading-none flex items-center justify-center">{lang.flag}</span>
                                 <span className="font-medium">{lang.label}</span>
                             </button>
                         ))}

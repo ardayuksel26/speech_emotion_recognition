@@ -4,6 +4,7 @@ import { FaMoon, FaSun, FaChevronDown, FaBars, FaTimes, FaInfoCircle, FaBullseye
 import { useTheme } from "../context/ThemeContext";
 import { Link, useLocation } from "react-router-dom";
 import { clsx } from "clsx";
+import { createPortal } from "react-dom";
 
 const Header = () => {
   const { t, i18n } = useTranslation();
@@ -25,7 +26,7 @@ const Header = () => {
   const currentLanguage = i18n.language.split('-')[0];
 
   const navLinks = [
-    { key: 'Deneysel Modeller', path: '/experimental', icon: <FaFlask /> },
+    { key: 'experimental_models', path: '/experimental', icon: <FaFlask /> },
     { key: 'about_us', path: '/about', icon: <FaInfoCircle /> },
     { key: 'use_cases', path: '/use-cases', icon: <FaBullseye /> },
     { key: 'technical_info', path: '/technical-info', icon: <FaCogs /> },
@@ -36,9 +37,11 @@ const Header = () => {
       "relative w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] sticky top-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between backdrop-blur-md",
       isDark ? "bg-slate-900/80 text-white border-b border-slate-700/50" : "bg-white/80 text-gray-800 border-b border-indigo-200"
     )}>
+      {/* Mobile Spacer to ensure justify-between pushes controls to the right */}
+      <div className="w-8 h-8 lg:hidden"></div>
 
       {/* LEFT: Logo / Title */}
-      <Link to="/" className="z-20 flex items-center gap-2 group ml-4 md:ml-12 no-underline">
+      <Link to="/" className="z-20 flex items-center gap-2 group no-underline absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none lg:ml-4">
         <h1 className={clsx(
           "text-lg md:text-xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-sm transition-transform",
           isDark ? "text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200" : "text-gray-800"
@@ -48,7 +51,7 @@ const Header = () => {
       </Link>
 
       {/* CENTER: Desktop Navigation */}
-      <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+      <nav className="hidden lg:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
         {navLinks.map((link) => (
           <Link
             key={link.key}
@@ -66,23 +69,23 @@ const Header = () => {
       </nav>
 
       {/* RIGHT: Controls (Lang, Theme, Hamburger) */}
-      <div className="flex items-center gap-3 z-20">
+      <div className="flex items-center gap-3 z-20 ml-auto lg:ml-0">
 
-        {/* Language Switcher (Visible on Mobile & Desktop per request) */}
-        <div className="relative">
+        {/* Language Switcher (Desktop Only) */}
+        <div className="relative hidden lg:block">
           <button
             onClick={() => setIsLangOpen(!isLangOpen)}
             className={clsx(
-              "flex items-center gap-2.5 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-200",
-              isDark ? "bg-slate-800 text-white hover:bg-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50"
+              "flex items-center justify-center gap-2.5 rounded-[14px] min-h-[40px] px-4 md:px-5 shadow-sm hover:shadow-md transition-all duration-200 border",
+              isDark ? "bg-slate-800 text-white hover:bg-slate-700 border-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50 border-indigo-100"
             )}
           >
             <img
               src={languages[currentLanguage]?.flagUrl}
               alt={languages[currentLanguage]?.label}
-              className="w-6 h-6 rounded-sm object-cover"
+              className="w-6 h-4 rounded-[2px] object-cover shadow-sm bg-slate-200"
             />
-            <span className="hidden md:inline text-base font-bold">
+            <span className="hidden md:block text-base font-bold">
               {currentLanguage.toUpperCase()}
             </span>
             <FaChevronDown className={clsx("text-sm transition-transform duration-200", isLangOpen && "rotate-180")} />
@@ -135,34 +138,35 @@ const Header = () => {
         {/* Theme Switcher */}
         <button
           onClick={toggleTheme}
-          className="focus:outline-none"
+          className="hidden lg:block focus:outline-none"
           style={{
             position: 'relative',
-            width: '56px',
-            height: '28px',
+            width: '76px',
+            height: '40px',
             borderRadius: '9999px',
             backgroundColor: isDark ? '#1e293b' : '#e0e7ff',
             border: '1px solid rgba(255,255,255,0.2)',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
             transition: 'background-color 0.3s',
+            cursor: 'pointer'
           }}
         >
           <div
             style={{
               position: 'absolute',
-              top: '2px',
-              left: '2px',
-              width: '24px',
-              height: '24px',
+              top: '4px',
+              left: '4px',
+              width: '32px',
+              height: '32px',
               borderRadius: '9999px',
               backgroundColor: isDark ? '#334155' : '#ffffff',
               boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-              transform: isDark ? 'translateX(28px)' : 'translateX(0)',
+              transform: isDark ? 'translateX(36px)' : 'translateX(0)',
               transition: 'transform 0.3s',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '12px',
+              fontSize: '15px',
               color: isDark ? '#818cf8' : '#f59e0b',
             }}
           >
@@ -174,59 +178,129 @@ const Header = () => {
         <button
           onClick={() => setIsMenuOpen(true)}
           className={clsx(
-            "md:hidden p-2 rounded-lg transition-all duration-200",
-            isDark ? "text-white hover:bg-slate-800" : "text-indigo-700 hover:bg-indigo-50"
+            "lg:hidden p-2.5 rounded-lg transition-all duration-200 bg-transparent flex items-center justify-center border",
+            isDark ? "text-slate-200 border-slate-700 hover:bg-slate-800" : "text-slate-700 border-slate-200 hover:bg-slate-100"
           )}
         >
           <FaBars className="text-xl" />
         </button>
       </div>
 
-      {/* Mobile Menu Drawer */}
-      <div className={clsx(
-        "fixed inset-0 z-50 transform transition-transform duration-300 md:hidden",
-        isMenuOpen ? "translate-x-0" : "translate-x-full"
-      )}>
-        {/* Backdrop */}
-        <div
-          className={clsx("absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity", isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
-          onClick={() => setIsMenuOpen(false)}
-        />
-
-        {/* Drawer Content */}
+      {/* Mobile Menu Drawer via Portal to escape backdrop-filter containing block */}
+      {createPortal(
         <div className={clsx(
-          "absolute right-0 h-full w-64 shadow-2xl flex flex-col p-6 transition-colors duration-300",
-          isDark ? "bg-slate-900 border-l border-slate-800" : "bg-white border-l border-gray-100"
+          "fixed inset-0 z-[9999] transform transition-transform duration-300 lg:hidden",
+          isMenuOpen ? "translate-x-0" : "translate-x-full"
         )}>
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-lg font-bold">{t('title')}</h2>
-            <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
-              <FaTimes />
-            </button>
-          </div>
+          {/* Backdrop */}
+          <div
+            className={clsx("absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity", isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+            onClick={() => setIsMenuOpen(false)}
+          />
 
-          <nav className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.key}
-                to={link.path}
-                onClick={() => setIsMenuOpen(false)}
+          {/* Drawer Content */}
+          <div className={clsx(
+            "absolute right-0 h-full w-full shadow-2xl flex flex-col p-6 md:p-8 transition-colors duration-300 overflow-y-auto",
+            isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"
+          )}>
+            <div className="flex justify-between items-start mb-12 shrink-0 gap-6">
+              <h2 className="text-xl font-bold leading-snug">{t('title')}</h2>
+              <button 
+                onClick={() => setIsMenuOpen(false)} 
                 className={clsx(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                  location.pathname === link.path
-                    ? (isDark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-50 text-indigo-600")
-                    : (isDark ? "text-slate-300 hover:bg-white/5" : "text-gray-600 hover:bg-gray-50")
+                  "p-3 rounded-full transition-colors flex items-center justify-center",
+                  isDark ? "bg-slate-800/50 hover:bg-slate-700 text-white" : "bg-slate-100/50 hover:bg-slate-200 text-slate-900"
                 )}
               >
-                <span className="text-lg opacity-80">{link.icon}</span>
-                <span className="font-medium">{t(link.key)}</span>
-              </Link>
-            ))}
-          </nav>
+                <FaTimes size={20} />
+              </button>
+            </div>
 
-          {/* Note: Lang/Theme settings are REMOVED from here as per request ("remove from there they will stay at header only") */}
-        </div>
-      </div>
+            <nav className="flex flex-col gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.key}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={clsx(
+                    "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-semibold no-underline hover:no-underline",
+                    location.pathname === link.path
+                      ? (isDark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-50 text-indigo-600")
+                      : (isDark ? "text-slate-300 hover:bg-white/5" : "text-gray-600 hover:bg-gray-50")
+                  )}
+                >
+                  <span className="text-xl opacity-80">{link.icon}</span>
+                  <span className="text-lg">{t(link.key)}</span>
+                </Link>
+              ))}
+            </nav>
+
+            <div className="mt-auto pt-8 flex flex-col gap-10 shrink-0">
+              <div className="flex flex-col items-center gap-4">
+                <span className="font-bold text-lg text-slate-700 dark:text-slate-300">{t('theme')}</span>
+                <button
+                  onClick={toggleTheme}
+                  className="focus:outline-none"
+                  style={{
+                    position: 'relative',
+                    width: '76px',
+                    height: '40px',
+                    borderRadius: '9999px',
+                    backgroundColor: isDark ? '#1e293b' : '#e0e7ff',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'background-color 0.3s',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      left: '4px',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '9999px',
+                      backgroundColor: isDark ? '#334155' : '#ffffff',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      transform: isDark ? 'translateX(36px)' : 'translateX(0)',
+                      transition: 'transform 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '15px',
+                      color: isDark ? '#818cf8' : '#f59e0b',
+                    }}
+                  >
+                    {isDark ? <FaMoon /> : <FaSun />}
+                  </div>
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                <span className="font-bold text-lg text-slate-700 dark:text-slate-300">{t('language')}</span>
+                <div className="flex gap-3 w-full">
+                  {Object.keys(languages).map(code => (
+                    <button
+                      key={code}
+                      onClick={() => { i18n.changeLanguage(code); }}
+                      className={clsx(
+                        "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all text-base",
+                        currentLanguage === code 
+                          ? (isDark ? "bg-indigo-500/20 border-indigo-500/50 text-white" : "bg-indigo-50 border-indigo-200 text-indigo-700")
+                          : (isDark ? "bg-transparent border-slate-700 text-slate-400 hover:bg-slate-800" : "bg-transparent border-slate-200 text-slate-500 hover:bg-slate-50")
+                      )}
+                    >
+                      <img src={languages[code].flagUrl} alt="" className="w-5 h-3.5 rounded-sm object-cover" />
+                      <span className="font-bold uppercase">{code}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>, document.body
+      )}
 
     </header>
   );

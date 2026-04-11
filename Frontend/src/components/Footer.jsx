@@ -1,8 +1,10 @@
 import { FaGithub } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
   const { isDark } = useTheme();
+  const { t } = useTranslation();
 
   return (
     // DEĞİŞİKLİKLER:
@@ -33,7 +35,7 @@ const Footer = () => {
 
           {/* Copyright */}
           <div className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            © 2026 Sesten Duygu Analizi. Tüm hakları saklıdır.
+            {t('footer_copyright')}
           </div>
 
         </div>

@@ -677,7 +677,7 @@ const Hero = () => {
           )}
 
           {analysisResult && (
-            <div className="w-full h-full p-2 md:p-4 overflow-y-auto custom-scrollbar">
+            <div className="w-full p-2 md:p-4 animate-fadeIn">
               <Result
                 result={analysisResult}
                 onBack={reset}

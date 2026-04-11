@@ -228,7 +228,7 @@ const Result: React.FC<ResultProps> = ({
                                 </h3>
                             </div>
                             
-                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="flex-1">
                                 <ProbabilityChart probabilities={result.emotions} />
                             </div>
                         </div>

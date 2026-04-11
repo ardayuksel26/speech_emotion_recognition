@@ -203,7 +203,7 @@ const Hero = () => {
       {/* Interactive Background Canvas */}
       <InteractiveBackground />
 
-      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-24 mb-10">
+      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-20 mb-10">
 
         <h1 className={`font-outfit text-6xl md:text-8xl font-black mb-6 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 mb-0 opacity-0 h-0" : "opacity-100"}`}>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
@@ -222,7 +222,7 @@ const Hero = () => {
           relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
           flex flex-col items-center justify-center border
           ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
-          ${analysisResult ? "max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-2 md:p-6 overflow-hidden rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-4xl min-h-[500px] p-8 md:p-14 rounded-[3rem]"}
+          ${analysisResult ? "max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-2 md:p-6 overflow-hidden rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[400px] p-8 md:p-14 rounded-[3rem]"}
         `}>
           
           {/* Subtle Inner Glow */}
@@ -284,7 +284,7 @@ const Hero = () => {
           )}
 
           {analysisResult && (
-            <div className="w-full h-full p-2 md:p-4 overflow-y-auto animate-fadeIn custom-scrollbar">
+            <div className="w-full p-2 md:p-4 animate-fadeIn">
               <Result
                 result={analysisResult}
                 onBack={reset}
