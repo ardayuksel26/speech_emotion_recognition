@@ -1,16 +1,28 @@
-# React + Vite
+# Mastermind SER - Frontend Interface (2026)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu klasör, çoklu-model Sesten Duygu Tanıma (SER) projesinin kullanıcı arayüzünü barındırır. Modern, cam efektli (glassmorphic) 2026 akademik estetiğine sadık kalınarak React 18, Vite ve TailwindCSS kullanılarak inşa edilmiştir.
 
-Currently, two official plugins are available:
+## 🌟 Ana Özellikler
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1.  **Mastermind (Kokpit) Arayüzü (`Hero.tsx` & `Result.tsx`):**
+    *   Yüklenen veya kaydedilen sese VOSK + CatBoost/XGBoost üzerinden üretim kalitesinde "Üst Akıl" tahmini uygular.
+    *   Timeline bazlı *Kelime Kelime Analiz* ekranı bulunur.
+    *   Yanlış okumaları engelleyen tam donanımlı *RF_Robust Veto* entegrasyonu vardır.
+    *   Hızlı, duyarlı ve devasa animasyonlarla kaplı Dashboard sunar.
 
-## React Compiler
+2.  **Deneysel Laboratuvar (`ExperimentalHero.tsx`):**
+    *   Mühendislik için tasarlandı. Ses dosyalarını WhisperX, VAD veya VOSK ile parçalayıp, sisteme kayıtlı 10 farklı otonom öğrenme algoritmasıyla ayrı ayrı sınamanızı sağlar.
+    *   Stüdyo ve Gürültülü simülasyon ortamları içerir.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+3.  **Akademik Raporlama Yüzü (`TechnicalInfoPage.tsx`):**
+    *   Tam sayfa scroll bazlı akademik araştırma özetidir. Recharts kütüphanesi kullanarak *Test* klasöründen okunan t-SNE, Mastermind Accuracy, Recall ve Precision skorlarını çizer. (Makine öğrenim modelinin başarı endeksi buradadır).
 
-## Expanding the ESLint configuration
+## 🛠 Kullanılan Teknolojiler
+*   **React + TypeScript (Vite):** Yüksek süratli component hiyerarşisi.
+*   **TailwindCSS + Framer Motion:** Karmaşık CSS animasyonlarının akıcı sekilde çalıştırılması (Scroll bar detayı ve Dashboard).
+*   **Recharts:** Eğitim eğrisi ve Test Sonucu grafiklerinin dinamik oluşturulması.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Başlatma
+1. Tüm Node gereksinimlerini kurun: `npm install`
+2. Geliştirme sunucusunu çalıştırın: `npm run dev`
+    *(Not: Backend API olan `app.py` sunucusunun da arkada 5000 portundan çalışıyor olması zorunludur).*

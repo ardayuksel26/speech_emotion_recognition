@@ -30,6 +30,10 @@ export interface AnalysisResult {
         confidence: number;
         scores: { [key: string]: number };
     }>;
+    veto_info?: {
+        applied: boolean;
+        rf_score: number;
+    };
 }
 
 export interface ProcessingStatus {

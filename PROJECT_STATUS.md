@@ -1,78 +1,47 @@
-# 🎵 Speech Emotion Recognition - Project Status
+# SER Project - Speech Emotion Recognition
+**Yapay Zeka Destekli Çoklu-Model Sesten Duygu Tanıma (SER) Sistemi 2026**
 
-## ✅ Successfully Running!
+## 📌 Proje Özeti
+Bu proje, sadece tekil sesten değil, cümle ve kelime düzeyindeki aralıklardan duygu geçişlerini yüksek isabetle tanıyan gelişmiş bir ensemble (harmanlanmış) derin öğrenme projesidir. Sistem, **Mastermind (Üst Akıl)** adını verdiğimiz özel bir yönetim mekanizmasına ve "Experimental (Deneysel)" adını taşıyan bir laboratuvar arayüzüne sahiptir.
 
-### Backend Server (FastAPI)
-- **Status**: ✅ Running
-- **URL**: http://localhost:8000
-- **Port**: 8000
-- **Model**: Trained with 1,735 audio files
-- **Emotions**: Angry, Calm, Happy, Sad
-- **API Endpoint**: POST /predict (upload audio file)
+Proje 4 ana sınıf üzerinde (**Angry, Calm, Happy, Sad**) odaklanmıştır ve yüksek kaliteli (1584 boyutlu vektör) özellik çıkarım yöntemleriyle (Librosa, VAD, MFCC) eğitilmiştir.
 
-### Frontend Server (React + Vite)
-- **Status**: ✅ Running  
-- **URL**: http://localhost:5173
-- **Port**: 5173
-- **Framework**: React 19 + Vite 7
-- **Features**: i18n support, Theme context, Audio upload
+---
 
-## 🚀 How to Use
+## 🚀 Proje Mimarisi (2026 Vizyonu)
 
-1. **Open Frontend**: Navigate to http://localhost:5173 in your browser
-2. **Upload Audio**: Use the interface to upload a .wav audio file
-3. **Get Results**: The system will analyze the emotion and show predictions
+### 1- Mastermind (Üst Akıl) Yapısı
+Ana sayfa (Hero.tsx), üretim ortamını (Production) temsil eder. Kullanıcıdan alınan mikrofon sesi veya wav dosyası arka planda şu işlemlerden geçer:
+1. **Silero VAD & VOSK Segmentasyonu:** Ses kelime parçalarına bölünür ve gürültüden arındırılır.
+2. **Feature Extraction:** MFCC, Chroma, Spectral Contrast analizleri çıkartılır.
+3. **CatBoost & XGBoost Tahmini:** Ağırlıklı modeller kelimenin duygu ihtimallerini hesaplar.
+4. **RF_Robust Detektörü (VETO Sistemi):** "Sad" (Üzgün) olarak işaretlenen segmentler yapay veya gürültülü sessizlikler olabileceğinden, Random Forest Robust modeli tarafından denetlenip gerekirse veto edilip "Calm" veya "Happy" sınıflarına dönüştürülür.
+5. **Arayüz (React):** Sonuçlar, "Timeline (Zaman Çizelgesi)" üzerinden kelime kelime gösterilir.
 
-## 📊 Project Structure
+### 2- Experimental (Deneysel) Laboratuvar
+Testleri şeffaflaştırmak amacıyla projenin içine bir laboratuvar arayüzü kurulmuştur:
+- **10 Farklı Model:** XGBoost, CatBoost, RF_Robust, CNN1D, SVM, KNN gibi modellerden herhangi biri manuel seçilerek test edilebilir.
+- **Segmentasyon Aracı Seçimi:** VOSK, WhisperX veya basit Silero VAD arasında geçiş yapılarak modellerin tepkisi ölçülebilir.
+- **Stüdyo vs Gürültü Modu:** Ses girişlerine gerçek zamanlı gürültü enjekte edilerek dayanıklılık (robustness) simülasyonları yapılır.
 
-```
-SER_Project/
-├── Backend/
-│   ├── main.py (FastAPI server)
-│   ├── Sound_Source/ (1,735 training audio files)
-│   └── Extracted_CSV/ (Feature data)
-├── Frontend/
-│   ├── src/ (React application)
-│   ├── package.json
-│   └── vite.config.js
-└── Demo/
-    └── (Streamlit demo apps)
-```
+---
 
-## 🛠️ Tech Stack
+## 📁 Dizin Yapısı (Project Structure)
 
-### Backend
-- FastAPI
-- Librosa (audio processing)
-- Scikit-learn (Random Forest model)
-- NumPy, Pandas
+- **/Frontend:** Projenin son kullanıcı ile etkileşime girdiği yerdir. React (Vite, TypeScript), Tailwind CSS ve Framer Motion ile tasarlanan yüksek görselliğe (Glassmorphic) sahip modern 2026 estetiğine ve animasyonlarına sahiptir.
+- **/Backend:** FastAPI ile yazılmış Python sunucusu (`app.py`). `BackgroundTasks` kullanarak ağır ses işlemlerini asenkron çözer.
+- **/Test:** Projenin doğruluğunu kanıtlayan, Confusion Matrix, Recall, F1 skorlarını çıkaran script dizini. Frontend için `realWorldResults.ts` buradan beslenir.
+- **/Models:** Eğitilmiş algoritmaların pkl veya keras sürümleri bulunur.
+- **/Data:** RAVDESS tabanlı data augmentation uygulanmış ses ve özellik (feature.npy) setleri bulunur.
 
-### Frontend
-- React 19
-- Vite 7
-- Axios (API calls)
-- i18next (internationalization)
-- Tailwind CSS
+---
 
-## 📝 Next Steps for Development
+## 📈 Güncel Performans (Mastermind Production)
+Sentetik Cümle Benchmark sonuçlarına göre sistem:
+- **Genel Doğruluk (Accuracy):** ~0.6456 (Zorlu Şartlarda)
+- **Güçlü Halka:** "Angry" ve "Calm" sınıflarında oldukça kararlı ve %80 üzeri Recall üretmektedir. "Sad" için özel Veto uygulamaktadır.
 
-1. Test the emotion prediction with sample audio files
-2. Improve UI/UX design
-3. Add real-time audio recording
-4. Implement model performance metrics display
-5. Add more languages to i18n
-6. Optimize model accuracy
-7. Add audio visualization features
-
-## 🔧 Stopping the Servers
-
-To stop the servers, you can:
-- Use Kiro's process management
-- Or press CTRL+C in each terminal
-
-## 📌 Important Notes
-
-- Backend trains the model on startup (takes ~60 seconds)
-- Model uses Random Forest with 100 estimators
-- Audio files should be in .wav format
-- CORS is enabled for all origins (development mode)
+## 🔮 Gelecek Geliştirmeler (TODO)
+- Deneysel alanda, eksik olan modeller için kelime sonuçlarının kaydedilmesi (benchmark testlerinin yenilenmesi).
+- Timeline üzerindeki beyaz alanların, karanlık model (dark mode) sistemine tam entegre çalıştırılarak responsive tasarımların mobil için bitirilmesi.
+- Yeni Türkçe Veri Seti (TurEV-DB vb.) dahil edilerek kelime öbeklerinin Türkçe spesifik vurgu analizine geçirilmesi.

@@ -163,8 +163,8 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
     }, [isRecording, recordingStream, isDark]);
 
     return (
-        <div className="w-full h-32 rounded-xl overflow-hidden bg-slate-50 dark:bg-white/5 backdrop-blur-sm relative">
-            <canvas ref={canvasRef} className="w-full h-full" />
+        <div className="w-full h-32 rounded-2xl overflow-hidden bg-white/20 dark:bg-slate-800/40 border border-white/40 dark:border-white/10 backdrop-blur-xl shadow-inner relative">
+            <canvas ref={canvasRef} className="w-full h-full drop-shadow-md" />
         </div>
     );
 };

@@ -6,8 +6,8 @@ import AudioPlayer from "./AudioPlayer";
 import Result from "./Result";
 import axios from "axios";
 import { convertFileToWav } from "../utils/audioUtils";
-
 import { AnalysisResult } from "../types";
+import InteractiveBackground from "./InteractiveBackground";
 
 // Helper to generate levels for visualization from a file
 const generateWaveLevels = async (file: File, bars: number): Promise<number[]> => {
@@ -354,24 +354,31 @@ const Hero = () => {
   };
 
   return (
-    <div className={`relative w-full flex-grow flex flex-col items-center justify-center overflow-hidden font-sans transition-colors duration-300 ${isDark ? "bg-slate-900" : "bg-gray-100"}`}>
-      <div className="relative z-10 w-full max-w-5xl px-6 flex flex-col items-center py-20">
+    <div className={`relative w-full flex-grow flex flex-col items-center justify-center overflow-hidden font-sans transition-colors duration-500 ${isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900"}`}>
+      
+      <InteractiveBackground />
 
+      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-20 mb-10">
 
-
-        <h1 className={`text-4xl md:text-6xl font-extrabold mb-10 py-2 leading-relaxed text-center transition-all duration-500 ${isDark ? "text-white" : "text-gray-800"} ${analysisResult ? "scale-75 mb-4" : "mb-10"}`}>
-          {t('discover_your_voice')}
+        <h1 className={`font-outfit text-5xl md:text-7xl font-black mb-10 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 opacity-0 h-0" : "opacity-100"}`}>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
+            {t('discover_your_voice')}
+          </span>
         </h1>
 
         <div className={`
-          relative w-full backdrop-blur-xl rounded-2xl shadow-2xl transition-all duration-500 ease-in-out
-          flex flex-col items-center justify-center
-          ${isDark ? "bg-slate-800/40 border border-white/10" : "bg-white/80 border border-gray-200"}
-          ${analysisResult ? "max-w-[95vw] lg:max-w-[1400px] min-h-[85vh] p-0 overflow-hidden" : "max-w-5xl min-h-[400px]"}
+          relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
+          flex flex-col items-center justify-center border
+          ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
+          ${analysisResult ? "max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-2 md:p-6 overflow-hidden rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[400px] p-8 md:p-14 rounded-[3rem]"}
         `}
-          style={!analysisResult ? { padding: '16px 40px 40px 40px' } : undefined}
+          style={!analysisResult ? { padding: '32px 40px 48px 40px' } : undefined}
         >
 
+          {/* Subtle Inner Glow */}
+          {!analysisResult && (
+             <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
+          )}
           {/* Mode Switcher */}
           {!analysisResult && (
             <div className="flex relative z-20" style={{ gap: '20px', marginBottom: '20px' }}>
@@ -407,11 +414,10 @@ const Hero = () => {
 
               {/* Model Selection UI - Matrix Format */}
               {(mode === 'word' || showModelSelection) && (
-                <div className="w-full mb-8 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg animate-fadeIn overflow-hidden"
-                  style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.95) 100%)' }}
-                >
-                  {/* Dark mode override */}
-                  <div className="hidden dark:block absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.95) 100%)' }} />
+                <div className="w-full mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
+
+                  {/* Glassmorphic overlay instead of solid gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent dark:from-slate-700/20 pointer-events-none" />
 
                   {/* Quality Section */}
                   <div className="relative p-5 pb-4">
@@ -655,15 +661,23 @@ const Hero = () => {
           )}
 
           {isAnalyzing && (
-            <div className="flex flex-col items-center animate-pulse py-20">
-              <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-xl font-medium text-indigo-500">{t('analyzing')}</p>
-              <p className="text-sm text-slate-400 mt-2">{t('engine_used')}: {activeModelName}</p>
+            <div className="flex flex-col items-center justify-center w-full h-full animate-fadeIn py-20 z-10">
+              <div className="relative w-24 h-24 mb-6">
+                 <div className="absolute inset-0 border-4 border-indigo-200/20 dark:border-indigo-500/20 rounded-full" />
+                 <div className="absolute inset-0 border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-[spin_1s_linear_infinite]" />
+                 <div className="absolute inset-2 border-4 border-purple-600 dark:border-purple-400 border-b-transparent rounded-full animate-[spin_1.5s_linear_infinite_reverse]" />
+              </div>
+              <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse">
+                {t('analyzing')}
+              </p>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
+                {t('engine_used')}: {activeModelName}
+              </p>
             </div>
           )}
 
           {analysisResult && (
-            <div className="w-full h-full p-6 md:p-8 overflow-y-auto">
+            <div className="w-full h-full p-2 md:p-4 overflow-y-auto custom-scrollbar">
               <Result
                 result={analysisResult}
                 onBack={reset}

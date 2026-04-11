@@ -14,7 +14,17 @@ html, body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
 }
+
+h1, h2, h3, h4, h5, h6, .font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+.blur-4xl {
+  filter: blur(64px);
+}
+
 
 #root {
   width: 100%;

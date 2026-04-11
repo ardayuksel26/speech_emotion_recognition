@@ -59,12 +59,12 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
             onDrop={handleDrop}
             className={twMerge(
                 clsx(
-                    'relative overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer group',
+                    'relative overflow-hidden rounded-[2.5rem] border-2 border-dashed transition-all duration-500 cursor-pointer group',
                     'flex flex-col items-center justify-center p-10 min-h-[300px]',
                     isDark
-                        ? 'bg-slate-800/40 border-slate-600 hover:border-indigo-400'
-                        : 'bg-slate-50 border-slate-300 hover:border-indigo-500',
-                    isDragging && (isDark ? 'bg-indigo-500/10 border-indigo-400' : 'bg-indigo-50 border-indigo-500'),
+                        ? 'bg-slate-800/40 border-slate-600/50 hover:border-indigo-400 backdrop-blur-xl shadow-lg'
+                        : 'bg-white/40 border-indigo-200 hover:border-indigo-500 backdrop-blur-xl shadow-lg',
+                    isDragging && (isDark ? 'bg-indigo-500/20 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.2)]' : 'bg-indigo-50/80 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.15)]'),
                     disabled && 'opacity-50 cursor-not-allowed grayscale'
                 ),
                 className

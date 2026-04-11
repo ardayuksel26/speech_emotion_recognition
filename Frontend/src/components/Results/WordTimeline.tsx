@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { AnalysisResult } from '../../types';
 import { EMOTION_COLORS } from '../../constants/design';
 import clsx from 'clsx';
+import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface WordTimelineProps {
     wordTimestamps: NonNullable<AnalysisResult['word_timestamps']>;
@@ -10,14 +12,13 @@ interface WordTimelineProps {
     audioDuration: number;
 }
 
-import { useTranslation } from 'react-i18next';
-
 export const WordTimeline: React.FC<WordTimelineProps> = ({
     wordTimestamps,
     onWordClick,
     audioDuration
 }) => {
     const { t } = useTranslation();
+    const { isDark } = useTheme();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     if (!wordTimestamps || wordTimestamps.length === 0) return null;
@@ -29,10 +30,10 @@ export const WordTimeline: React.FC<WordTimelineProps> = ({
     return (
         <div className="w-full space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                <h3 className={clsx("text-lg font-semibold", isDark ? "text-white" : "text-gray-800")}>
                     {t('word_by_word_analysis')}
                 </h3>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className={clsx("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
                     {t('click_segment_details')}
                 </span>
             </div>
@@ -43,11 +44,17 @@ export const WordTimeline: React.FC<WordTimelineProps> = ({
             >
                 {/* Timeline Container */}
                 <div
-                    className="relative h-24 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50 min-w-[600px]"
+                    className={clsx(
+                        "relative h-24 rounded-xl border min-w-[600px]",
+                        isDark ? "bg-slate-800/80 border-slate-700/50 shadow-inner" : "bg-gray-50 border-gray-100"
+                    )}
                     style={{ width: '100%' }}
                 >
                     {/* Time Markers */}
-                    <div className="absolute bottom-0 left-0 w-full h-6 border-t border-gray-200 dark:border-gray-700 flex justify-between px-2 text-[10px] text-gray-400 font-mono">
+                    <div className={clsx(
+                        "absolute bottom-0 left-0 w-full h-6 border-t flex justify-between px-2 text-[10px] font-mono",
+                        isDark ? "border-slate-700 text-slate-400" : "border-gray-200 text-gray-400"
+                    )}>
                         <span>0.0s</span>
                         <span>{(totalDuration / 2).toFixed(1)}s</span>
                         <span>{totalDuration.toFixed(1)}s</span>

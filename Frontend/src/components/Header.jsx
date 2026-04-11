@@ -33,8 +33,8 @@ const Header = () => {
 
   return (
     <header className={clsx(
-      "relative w-full shadow-xl sticky top-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between",
-      isDark ? "bg-slate-900 text-white border-b border-slate-700" : "bg-gradient-to-r from-indigo-100 to-purple-100 text-gray-800 border-b border-indigo-200"
+      "relative w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] sticky top-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between backdrop-blur-md",
+      isDark ? "bg-slate-900/80 text-white border-b border-slate-700/50" : "bg-white/80 text-gray-800 border-b border-indigo-200"
     )}>
 
       {/* LEFT: Logo / Title */}

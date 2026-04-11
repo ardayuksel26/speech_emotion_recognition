@@ -403,6 +403,7 @@ def _predict_emotions_for_segments(audio_path, segments, start_key='start', end_
                 
                 if feats is None:
                     seg['emotion'] = 'neutral'
+                    seg['confidence'] = 0.5
                 else:
                     feats = feats.reshape(1, -1)
                     feats_scaled = scaler.transform(feats)
@@ -410,14 +411,17 @@ def _predict_emotions_for_segments(audio_path, segments, start_key='start', end_
                     if hasattr(model, 'predict_proba'):
                         probs = model.predict_proba(feats_scaled)[0]
                         pred_idx = np.argmax(probs)
+                        seg['confidence'] = float(np.max(probs))
                     else:
                         pred = model.predict(feats_scaled)[0]
                         pred_idx = int(pred.item()) if isinstance(pred, np.ndarray) else int(pred)
+                        seg['confidence'] = 1.0
                         
                     label = encoder.inverse_transform([pred_idx])[0].lower()
                     seg['emotion'] = label
             except Exception as e:
                 seg['emotion'] = 'error'
+                seg['confidence'] = 0.0
             finally:
                 if os.path.exists(tmp_path):
                     os.remove(tmp_path)
@@ -964,13 +968,26 @@ def predict_mastermind():
         final_conf = primary_conf
         is_vetoed = False
         
-        # Eğer RF_Robust modeli incelenen seste "Sad" oranını kritik eşik (>=%30.0) üzerinde görürse,
-        # CatBoost ve XGBoost'un bütün Angry/Calm yanılgılarını eziyoruz. 
-        if primary_emotion != 'sad' and sad_val_from_rf >= 30.0:
+        # KURAL 1: EĞER ANA MODELLER "SAD" DİYORSA, AMA RF ONAYLAMIYORSA (<30), BUNU REDDET!
+        # Çünkü ana modeller (CatBoost/XGB) Calm veya nefes sesinde yanılıp Sad diyebiliyor. 
+        # Sad kelimesi RF_Robust'un tekelindedir. RF onaylamıyorsa, ana modelin ikinci duygusuna geçilir.
+        if primary_emotion == 'sad' and sad_val_from_rf < 30.0:
+            scores_without_sad = {k: v for k, v in main_scores.items() if k != 'sad'}
+            second_emotion = max(scores_without_sad.items(), key=lambda x: x[1])[0]
+            final_emotion = second_emotion
+            final_conf = scores_without_sad[second_emotion]
+            # is_vetoed = False kalır, burası Veto değil, de-hallucination işlemidir.
+            
+        # KURAL 2: MASTERMIND VETO (RF_Robust "Sad" barajını aştıysa, ana model ne derse desin ezer)
+        elif primary_emotion != 'sad' and sad_val_from_rf >= 30.0:
             final_emotion = 'sad'
             final_conf = sad_val_from_rf
             is_vetoed = True
             
+        # HIZLI SEGMENT (KELİME) DUYGU İNCELEMESİ
+        # Mastermind'ın timeline (zaman çizelgesi) için kelimelerin duyguları gerekiyor.
+        word_timestamps = _predict_emotions_for_segments(temp_path, segments_info, start_key='start', end_key='end', model_key='catboost')
+
         # Frontend için görsel sonuç formatı
         return jsonify({
              'final_emotion': final_emotion,
@@ -978,7 +995,8 @@ def predict_mastermind():
              'veto_applied': is_vetoed,
              'rf_sad_score': f"%{sad_val_from_rf:.2f}",
              'main_scores': main_scores,
-             'segments_analyzed': len(feats_list)
+             'segments_analyzed': len(feats_list),
+             'word_timestamps': word_timestamps
         })
         
     except Exception as e:
