@@ -16,7 +16,7 @@ export default function App() {
       <Router>
         <div className="flex flex-col min-h-screen">
           <Header />
-          <main className="flex-grow flex flex-col">
+          <main className="flex-grow flex flex-col pt-16">
             <Routes>
               <Route path="/" element={<MainPage />} />
               <Route path="/experimental" element={<ExperimentalPage />} />

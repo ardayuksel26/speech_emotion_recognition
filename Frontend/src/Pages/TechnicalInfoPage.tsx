@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie,
     Area, AreaChart
 } from 'recharts';
-import { FaGraduationCap, FaNetworkWired, FaServer, FaMicrophoneAlt, FaBrain, FaDatabase, FaCode, FaFlask, FaChevronDown, FaFolderOpen } from 'react-icons/fa';
+import { FaGraduationCap, FaNetworkWired, FaServer, FaMicrophoneAlt, FaBrain, FaDatabase, FaCode, FaFlask } from 'react-icons/fa';
 
 // Import our auto-generated real-world test results
 import { MastermindMetrics } from '../data/realWorldResults';
 import { combinedWordBenchmarks } from '../data/wordBenchmarks';
 import { sentenceVoskSynthetic15, sentenceVoskHq } from '../data/sentenceBenchmarkCharts';
 import { segmentationCatBoostOnly, segmentationQuadMean, vadEnergyIllustration } from '../data/segmentationBenchmark';
+import { emotionPerformanceMetrics, confusionMatrix, validationRobustMetrics } from '../data/performanceMetrics';
 
 const turEvData = [
     { name: "Angry", value: 487, color: "#ef4444" },
@@ -21,11 +22,6 @@ const turEvData = [
     { name: "Happy", value: 357, color: "#f59e0b" }
 ];
 
-type TestArtifact = { file: string; summary: string; relatesTo: string };
-
-const scrollToTechnicalId = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
 
 const TechnicalInfoPage = () => {
     const { t } = useTranslation();
@@ -52,62 +48,6 @@ const TechnicalInfoPage = () => {
 
     // Text color utility specifically for strong/bold tags in dark vs light mode
     const strongClass = isDark ? "text-white font-bold" : "text-slate-900 font-bold";
-
-    const [testHubTab, setTestHubTab] = useState<'ozet' | 'kelime' | 'cumle' | 'segment' | 'artifacts'>('ozet');
-    const [sentenceSuite, setSentenceSuite] = useState<'synth' | 'hq'>('synth');
-    const [openArtifactIndex, setOpenArtifactIndex] = useState<number | null>(null);
-    const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
-
-    const avgSynthSentenceAcc = useMemo(
-        () => sentenceVoskSynthetic15.reduce((a, b) => a + b.accStd, 0) / sentenceVoskSynthetic15.length,
-        []
-    );
-    const avgHqSentenceAcc = useMemo(
-        () => sentenceVoskHq.reduce((a, b) => a + b.accStd, 0) / sentenceVoskHq.length,
-        []
-    );
-    const wordAvgStandardAcc = useMemo(
-        () => combinedWordBenchmarks.reduce((a, b) => a + b.Standard_Accuracy, 0) / combinedWordBenchmarks.length,
-        []
-    );
-    const mastermindMacroF1Mean = useMemo(
-        () => MastermindMetrics.metrics.reduce((a, b) => a + b.f1, 0) / MastermindMetrics.metrics.length,
-        []
-    );
-
-    const testArtifacts: TestArtifact[] = useMemo(() => [
-        { file: 'benchmark_result.txt', summary: t('tech_art_0_summary'), relatesTo: t('tech_art_0_ref') },
-        { file: 'benchmark_robust_results.txt', summary: t('tech_art_1_summary'), relatesTo: t('tech_art_1_ref') },
-        { file: 'word_methods_benchmark_results.txt', summary: t('tech_art_2_summary'), relatesTo: t('tech_art_2_ref') },
-        { file: 'sentence_methods_benchmark_results.txt', summary: t('tech_art_3_summary'), relatesTo: t('tech_art_3_ref') },
-        { file: 'sentence_hq_methods_benchmark_results.txt', summary: t('tech_art_4_summary'), relatesTo: t('tech_art_4_ref') },
-        { file: 'mastermind_benchmark_results.txt', summary: t('tech_art_5_summary'), relatesTo: t('tech_art_5_ref') },
-        { file: 'mastermind_confusion_matrix_result.txt', summary: t('tech_art_6_summary'), relatesTo: t('tech_art_6_ref') },
-        { file: 'validation_robust_metrics.txt', summary: t('tech_art_7_summary'), relatesTo: t('tech_art_7_ref') },
-        { file: 'emotion_performance_metrics.txt', summary: t('tech_art_8_summary'), relatesTo: t('tech_art_8_ref') },
-        { file: 'benchmark_robust_results.png, benchmark_results.png, …', summary: t('tech_art_9_summary'), relatesTo: t('tech_art_9_ref') },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [t]);
-
-    const testHubTabs: { id: typeof testHubTab; label: string }[] = [
-        { id: 'ozet', label: t('tech_tab_summary') },
-        { id: 'kelime', label: t('tech_tab_word') },
-        { id: 'cumle', label: t('tech_tab_sentence') },
-        { id: 'segment', label: t('tech_tab_segment') },
-        { id: 'artifacts', label: t('tech_tab_artifacts') },
-    ];
-
-    type CumleBarRow = { name: string; accStd: number; accRob: number; f1Std: number; f1Rob: number };
-    const cumleChartData: CumleBarRow[] = useMemo(() => {
-        const src = sentenceSuite === 'synth' ? sentenceVoskSynthetic15 : sentenceVoskHq;
-        return src.map((r) => ({
-            name: r.name,
-            accStd: r.accStd,
-            accRob: r.accRob,
-            f1Std: r.f1Std,
-            f1Rob: r.f1Rob,
-        }));
-    }, [sentenceSuite]);
 
     return (
         <div className={`min-h-[100vh] pb-32 font-sans transition-colors duration-700 w-full overflow-x-hidden ${isDark ? 'bg-[#0a0f1d] text-[#cbd5e1]' : 'bg-[#fafafa] text-[#334155]'}`}>
@@ -224,7 +164,14 @@ const TechnicalInfoPage = () => {
                             {t('tech_s2_2_p1')}
                         </p>
                         <p className="mb-6 pl-4 border-l-4 border-fuchsia-500/50">
-                            <Trans i18nKey="tech_s2_2_p2"><span className="font-bold underline text-[1.1rem]">79 Pürüzsüz Cümle</span><span className="text-red-500 font-bold">20 Angry</span><span className="text-teal-500 font-bold">20 Calm</span><span className="text-amber-500 font-bold">20 Happy</span><span className="text-indigo-500 font-bold">19 Sad</span></Trans>
+                            {t('tech_s2_2_p2_prefix')}{' '}
+                            <span className="font-bold underline text-[1.1rem]">{t('tech_s2_2_p2_count')}</span>{' '}
+                            {t('tech_s2_2_p2_mid')}{' '}
+                            <span className="text-red-500 font-bold">20 Angry</span>,{' '}
+                            <span className="text-teal-500 font-bold">20 Calm</span>,{' '}
+                            <span className="text-amber-500 font-bold">20 Happy</span>,{' '}
+                            {t('tech_s2_2_p2_and')}{' '}
+                            <span className="text-indigo-500 font-bold">19 Sad</span>.
                         </p>
                     </motion.section>
 
@@ -673,259 +620,144 @@ const TechnicalInfoPage = () => {
                         </div>
                     </motion.section>
 
-                    {/* 7. GÜNCEL TEST SONUÇLARI — ETKİLEŞİMLİ ÖZET */}
+                    {/* 7. DOĞRULAMA SONUÇLARI VE PERFORMANS ANALİZİ */}
                     <motion.section id="technical-section-7" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, margin: "-100px" }}>
                         <h2 className={`text-3xl font-black mb-8 flex items-center gap-4 border-b-2 pb-4 ${isDark ? 'text-white border-slate-700' : 'text-slate-900 border-slate-200'}`}>
                             <FaMicrophoneAlt className="text-emerald-500 flex-shrink-0" />
                             {t('tech_s7_title')}
                         </h2>
-                        <p className="mb-6">
+                        <p className="mb-10">
                             {t('tech_s7_intro')}
                         </p>
 
-                        <div className={`rounded-[2rem] border-2 p-4 md:p-6 mb-8 ${isDark ? 'border-emerald-500/30 bg-slate-900/50 shadow-[0_0_40px_-12px_rgba(16,185,129,0.35)]' : 'border-emerald-200 bg-white shadow-lg shadow-emerald-100/80'}`}>
-                            <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                                {t('tech_interactive_console')}
-                            </p>
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                {testHubTabs.map((t) => (
-                                    <button
-                                        key={t.id}
-                                        type="button"
-                                        onClick={() => setTestHubTab(t.id)}
-                                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${isDark ? 'ring-offset-slate-900' : 'ring-offset-white'} ${testHubTab === t.id
-                                                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md scale-[1.02]'
-                                                : isDark
-                                                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                            }`}
-                                    >
-                                        {t.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={testHubTab}
-                                    initial={{ opacity: 0, y: 8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -6 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    {testHubTab === 'ozet' && (
-                                        <div>
-                                            <p className="mb-4 text-base opacity-90">
-                                                {t('tech_card_click_hint')}
-                                            </p>
-                                            <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                                                {[
-                                                    {
-                                                        key: 'mm_acc',
-                                                        title: t('tech_card_mm_acc_title'),
-                                                        value: `${(MastermindMetrics.accuracy * 100).toFixed(1)}%`,
-                                                        hint: t('tech_card_mm_acc_hint'),
-                                                        detail: t('tech_card_mm_acc_detail'),
-                                                    },
-                                                    {
-                                                        key: 'mm_f1',
-                                                        title: t('tech_card_mm_f1_title'),
-                                                        value: `${(mastermindMacroF1Mean * 100).toFixed(1)}%`,
-                                                        hint: t('tech_card_mm_f1_hint'),
-                                                        detail: t('tech_card_mm_f1_detail'),
-                                                    },
-                                                    {
-                                                        key: 'word_cv',
-                                                        title: t('tech_card_word_cv_title'),
-                                                        value: `${wordAvgStandardAcc.toFixed(1)}%`,
-                                                        hint: t('tech_card_word_cv_hint'),
-                                                        detail: t('tech_card_word_cv_detail'),
-                                                    },
-                                                    {
-                                                        key: 'sent_avg',
-                                                        title: t('tech_card_sent_title'),
-                                                        value: `${avgSynthSentenceAcc.toFixed(1)}% / ${avgHqSentenceAcc.toFixed(1)}%`,
-                                                        hint: t('tech_card_sent_hint'),
-                                                        detail: t('tech_card_sent_detail'),
-                                                    },
-                                                ].map((card) => {
-                                                    const isOpen = expandedMetric === card.key;
-                                                    return (
-                                                        <button
-                                                            key={card.key}
-                                                            type="button"
-                                                            onClick={() => setExpandedMetric(isOpen ? null : card.key)}
-                                                            className={`text-left rounded-2xl p-5 border transition-all hover:scale-[1.01] active:scale-[0.99] ${isDark ? 'border-emerald-500/25 bg-slate-950/60 hover:border-emerald-400/40' : 'border-emerald-200 bg-emerald-50/40 hover:border-emerald-400'} ${isOpen ? 'ring-2 ring-emerald-500/50' : ''}`}
-                                                        >
-                                                            <p className={`text-xs font-bold uppercase tracking-wide mb-1 ${isDark ? 'text-emerald-400' : 'text-emerald-800'}`}>{card.title}</p>
-                                                            <p className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{card.value}</p>
-                                                            <p className="text-sm opacity-80 leading-relaxed">{card.hint}</p>
-                                                            {isOpen && <p className="mt-3 pt-3 border-t text-sm opacity-90 leading-relaxed border-emerald-500/20">{card.detail}</p>}
-                                                            <p className={`mt-2 text-xs font-bold ${isDark ? 'text-emerald-500/80' : 'text-emerald-700'}`}>{isOpen ? t('tech_close') : t('tech_method_note')}</p>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                            <p className="text-sm font-bold mb-2 opacity-80">{t('tech_quick_nav')}</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {[
-                                                    { id: 'technical-section-3', label: t('tech_goto_s3') },
-                                                    { id: 'technical-section-4', label: t('tech_goto_s4') },
-                                                    { id: 'technical-section-5', label: t('tech_goto_s5') },
-                                                    { id: 'technical-section-6', label: t('tech_goto_s6') },
-                                                ].map((l) => (
-                                                    <button
-                                                        key={l.id}
-                                                        type="button"
-                                                        onClick={() => scrollToTechnicalId(l.id)}
-                                                        className={`text-xs md:text-sm font-bold px-3 py-2 rounded-lg border ${isDark ? 'border-slate-600 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-50'}`}
-                                                    >
-                                                        {l.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {testHubTab === 'kelime' && (
-                                        <div>
-                                            <p className="mb-4 text-sm opacity-90">
-                                                {t('tech_word_tab_desc')}
-                                            </p>
-                                            <div className="h-[380px] w-full">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={combinedWordBenchmarks} margin={{ top: 12, right: 16, left: 10, bottom: 8 }} barCategoryGap="14%">
-                                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
-                                                        <XAxis dataKey="name" stroke={isDark ? '#94a3b8' : '#64748b'} tick={{ fontSize: 11, fontWeight: 700 }} interval={0} angle={-24} textAnchor="end" height={64} />
-                                                        <YAxis width={52} stroke={isDark ? '#94a3b8' : '#64748b'} domain={[60, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11 }} />
-                                                        <RechartsTooltip contentStyle={{ borderRadius: '12px', backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : '#fff' }} />
-                                                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                                                        <Bar dataKey="Standard_Accuracy" name="Standart (%)" fill={isDark ? '#34d399' : '#059669'} radius={[5, 5, 0, 0]} />
-                                                        <Bar dataKey="Robust_Accuracy" name="Robust (%)" fill={isDark ? '#6366f1' : '#4f46e5'} radius={[5, 5, 0, 0]} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {testHubTab === 'cumle' && (
-                                        <div>
-                                            <div className="flex flex-wrap gap-2 mb-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSentenceSuite('synth')}
-                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${sentenceSuite === 'synth' ? 'bg-teal-600 text-white shadow' : isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}
-                                                >
-                                                    {t('tech_synth_btn')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSentenceSuite('hq')}
-                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${sentenceSuite === 'hq' ? 'bg-teal-600 text-white shadow' : isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}
-                                                >
-                                                    {t('tech_hq_btn')}
-                                                </button>
-                                            </div>
-                                            <p className="mb-3 text-sm opacity-85">
-                                                {t('tech_sent_tab_desc')}
-                                            </p>
-                                            <div className="h-[400px] w-full">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart
-                                                        data={cumleChartData}
-                                                        margin={{ top: 8, right: 12, left: 8, bottom: 4 }}
-                                                        barCategoryGap="12%"
-                                                    >
-                                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
-                                                        <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 700 }} stroke={isDark ? '#94a3b8' : '#64748b'} interval={0} angle={-22} textAnchor="end" height={58} />
-                                                        <YAxis width={48} domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke={isDark ? '#94a3b8' : '#64748b'} tick={{ fontSize: 10 }} />
-                                                        <RechartsTooltip contentStyle={{ borderRadius: '12px', backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : '#fff' }} />
-                                                        <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                                        <Bar dataKey="accStd" name="Accuracy standart" fill={isDark ? '#2dd4bf' : '#0d9488'} radius={[4, 4, 0, 0]} />
-                                                        <Bar dataKey="accRob" name="Accuracy robust" fill={isDark ? '#a78bfa' : '#7c3aed'} radius={[4, 4, 0, 0]} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {testHubTab === 'segment' && (
-                                        <div>
-                                            <p className="mb-3 text-sm opacity-90">
-                                                {t('tech_seg_tab_desc')}
-                                            </p>
-                                            <div className="h-[320px] w-full">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={[...segmentationQuadMean]} margin={{ top: 8, right: 12, left: 8, bottom: 4 }} barCategoryGap="20%">
-                                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
-                                                        <XAxis dataKey="name" tick={{ fontSize: 12, fontWeight: 700 }} stroke={isDark ? '#94a3b8' : '#64748b'} />
-                                                        <YAxis width={44} domain={[0, 40]} tickFormatter={(v) => `${v}%`} stroke={isDark ? '#94a3b8' : '#64748b'} />
-                                                        <RechartsTooltip contentStyle={{ borderRadius: '12px', backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : '#fff' }} />
-                                                        <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                                        <Bar dataKey="acc" name="Accuracy" fill={isDark ? '#14b8a6' : '#0d9488'} radius={[5, 5, 0, 0]} />
-                                                        <Bar dataKey="macroF1" name="Macro-F1" fill={isDark ? '#818cf8' : '#4f46e5'} radius={[5, 5, 0, 0]} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => scrollToTechnicalId('technical-section-5')}
-                                                className="mt-4 text-sm font-bold text-emerald-600 dark:text-emerald-400 underline-offset-2 hover:underline"
-                                            >
-                                                {t('tech_goto_seg')}
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {testHubTab === 'artifacts' && (
-                                        <div>
-                                            <p className="mb-4 flex items-center gap-2 text-sm opacity-90">
-                                                <FaFolderOpen className="text-emerald-500 flex-shrink-0" />
-                                                <span>{t('tech_artifacts_hint')}</span>
-                                            </p>
-                                            <ul className="space-y-2">
-                                                {testArtifacts.map((art, idx) => {
-                                                    const open = openArtifactIndex === idx;
-                                                    return (
-                                                        <li key={`${idx}-${art.file}`}>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setOpenArtifactIndex(open ? null : idx)}
-                                                                className={`w-full text-left rounded-xl border px-4 py-3 flex items-start justify-between gap-3 transition-colors ${isDark ? 'border-slate-700 bg-slate-950/50 hover:bg-slate-900' : 'border-slate-200 bg-slate-50 hover:bg-white'}`}
-                                                            >
-                                                                <span className="min-w-0">
-                                                                    <span className={`font-mono text-sm font-bold break-all ${isDark ? 'text-emerald-300' : 'text-emerald-800'}`}>{art.file}</span>
-                                                                    {open && <p className="mt-2 text-sm opacity-90 leading-relaxed">{art.summary}</p>}
-                                                                    {open && (
-                                                                        <p className="mt-1 text-xs opacity-70">
-                                                                            {t('tech_related_section')} <span className="font-bold">{art.relatesTo}</span>
-                                                                        </p>
-                                                                    )}
-                                                                </span>
-                                                                <FaChevronDown className={`flex-shrink-0 mt-1 transition-transform duration-200 ${open ? 'rotate-180' : ''} ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-                                                            </button>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            </AnimatePresence>
+                        {/* 7.1 Per-Class Performance */}
+                        <h3 className={`text-2xl font-bold mt-10 mb-4 ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                            {t('tech_s7_emotion_f1_title')}
+                        </h3>
+                        <p className="mb-6 pl-4 border-l-4 border-emerald-500/50">
+                            {t('tech_s7_emotion_f1_desc')}
+                        </p>
+                        <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-[2rem]">
+                            <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-75 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                emotion_performance_metrics.txt — Precision / Recall / F1-Score (%)
+                            </h4>
+                            <ResponsiveContainer width="100%" height="88%">
+                                <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
+                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
+                                    <XAxis dataKey="emotion" stroke={isDark ? '#94a3b8' : '#64748b'} tick={{ fontSize: 13, fontWeight: 700 }} />
+                                    <YAxis width={54} stroke={isDark ? '#94a3b8' : '#64748b'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
+                                    <RechartsTooltip
+                                        cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+                                        contentStyle={{ backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : 'white', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '14px' }}
+                                        itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
+                                        formatter={(v: unknown) => `${(v as number).toFixed(1)}%`}
+                                    />
+                                    <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
+                                    <Bar dataKey="precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[5, 5, 0, 0]} />
+                                    <Bar dataKey="recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[5, 5, 0, 0]} />
+                                    <Bar dataKey="f1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[5, 5, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
 
-                        <details className={`rounded-2xl border p-5 mb-6 ${isDark ? 'border-slate-700 bg-slate-900/30' : 'border-slate-200 bg-slate-50'}`}>
-                            <summary className="cursor-pointer font-bold text-lg list-none flex items-center justify-between gap-2">
-                                <span>{t('tech_reproducibility_title')}</span>
-                                <span className="text-xs font-mono opacity-70">{t('tech_reproducibility_expand')}</span>
-                            </summary>
-                            <p className="mt-4 text-base opacity-90 leading-relaxed">
-                                {t('tech_reproducibility_text')}
-                            </p>
-                        </details>
+                        {/* 7.2 Confusion Matrix */}
+                        <h3 className={`text-2xl font-bold mt-14 mb-4 ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                            {t('tech_s7_confusion_title')}
+                        </h3>
+                        <p className="mb-6 pl-4 border-l-4 border-emerald-500/50">
+                            {t('tech_s7_confusion_desc')}
+                        </p>
+                        <div className="flex justify-center mb-4">
+                            <div className="overflow-x-auto">
+                                <table className="border-collapse text-sm md:text-base">
+                                    <thead>
+                                        <tr>
+                                            <th className={`p-4 text-xs font-bold opacity-60 text-right align-bottom ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                {t('tech_s7_actual')} ↓
+                                            </th>
+                                            <th
+                                                colSpan={confusionMatrix.labels.length}
+                                                className={`p-3 text-center text-xs font-bold uppercase tracking-widest opacity-75 border-b ${isDark ? 'text-slate-300 border-slate-600' : 'text-slate-600 border-slate-300'}`}
+                                            >
+                                                {t('tech_s7_predicted')} →
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th className="p-4" />
+                                            {confusionMatrix.labels.map((label) => (
+                                                <th key={label} className={`p-4 font-black text-center min-w-[90px] ${
+                                                    label === 'Angry' ? 'text-red-500' :
+                                                    label === 'Calm' ? 'text-teal-500' :
+                                                    label === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
+                                                }`}>{label}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {confusionMatrix.matrix.map((row, ri) => {
+                                            const rowSum = row.reduce((a, b) => a + b, 0);
+                                            return (
+                                                <tr key={ri}>
+                                                    <td className={`p-4 font-black text-right ${
+                                                        confusionMatrix.labels[ri] === 'Angry' ? 'text-red-500' :
+                                                        confusionMatrix.labels[ri] === 'Calm' ? 'text-teal-500' :
+                                                        confusionMatrix.labels[ri] === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
+                                                    }`}>{confusionMatrix.labels[ri]}</td>
+                                                    {row.map((val, ci) => {
+                                                        const isCorrect = ri === ci;
+                                                        const intensity = Math.round((val / rowSum) * 100);
+                                                        return (
+                                                            <td key={ci} className={`p-4 text-center font-bold rounded-lg border ${
+                                                                isCorrect
+                                                                    ? isDark ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                                                                    : val > 0
+                                                                        ? isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
+                                                                        : isDark ? 'border-slate-700/50 text-slate-500' : 'border-slate-200 text-slate-400'
+                                                            }`}>
+                                                                <span className="text-base">{val}</span>
+                                                                <span className="block text-xs opacity-60">{intensity}%</span>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                        <p className={`text-center text-sm italic opacity-75 ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
-                            {t('tech_disclaimer')}
+                        {/* 7.3 Robust Validation */}
+                        <h3 className={`text-2xl font-bold mt-14 mb-4 ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                            {t('tech_s7_robust_title')}
+                        </h3>
+                        <p className="mb-6 pl-4 border-l-4 border-emerald-500/50">
+                            {t('tech_s7_robust_desc')}
+                        </p>
+                        <div className="w-full min-h-[380px] h-[420px] py-4 px-1 sm:px-4 rounded-[2rem]">
+                            <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-75 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                validation_robust_metrics.txt — F1-Score: Standard vs. Robust (%)
+                            </h4>
+                            <ResponsiveContainer width="100%" height="88%">
+                                <BarChart data={validationRobustMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="22%">
+                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
+                                    <XAxis dataKey="emotion" stroke={isDark ? '#94a3b8' : '#64748b'} tick={{ fontSize: 13, fontWeight: 700 }} />
+                                    <YAxis width={54} stroke={isDark ? '#94a3b8' : '#64748b'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
+                                    <RechartsTooltip
+                                        cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+                                        contentStyle={{ backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : 'white', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '14px' }}
+                                        itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
+                                        formatter={(v: unknown) => `${(v as number).toFixed(1)}%`}
+                                    />
+                                    <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
+                                    <Bar dataKey="f1_standard" name="F1 Standard (%)" fill={isDark ? '#34d399' : '#059669'} radius={[5, 5, 0, 0]} />
+                                    <Bar dataKey="f1_robust" name="F1 Robust (%)" fill={isDark ? '#f97316' : '#ea580c'} radius={[5, 5, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <p className={`text-sm text-center max-w-3xl mx-auto mt-6 mb-2 opacity-75 italic ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                            {t('tech_s7_note')}
                         </p>
                     </motion.section>
 

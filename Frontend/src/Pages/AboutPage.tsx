@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiAward, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import InteractiveBackground from '../components/InteractiveBackground';
 
 /* ---------- types ---------- */
@@ -13,6 +14,10 @@ interface TeamMember {
     photo: string;
     accent: string;
     accentText: string;
+    github: string;
+    linkedin: string;
+    photoPosition?: string;
+    photoSize?: string;
 }
 
 /* ---------- data ---------- */
@@ -24,6 +29,8 @@ const TEAM: TeamMember[] = [
         photo: '/team1.png',
         accent: 'from-violet-600 to-purple-500',
         accentText: 'text-violet-400',
+        github: 'https://github.com/ardayuksel',
+        linkedin: 'https://linkedin.com/in/ardayuksel',
     },
     {
         name: 'İlhan Uzunoğlu',
@@ -32,6 +39,10 @@ const TEAM: TeamMember[] = [
         photo: '/team2.png',
         accent: 'from-sky-500 to-cyan-400',
         accentText: 'text-sky-400',
+        github: 'https://github.com/ilhanuzunoglu',
+        linkedin: 'https://linkedin.com/in/ilhanuzunoglu',
+        photoPosition: 'center top',
+        photoSize: 'contain',
     },
     {
         name: 'Yağız Karhan Kökgül',
@@ -40,6 +51,8 @@ const TEAM: TeamMember[] = [
         photo: '/team3.png',
         accent: 'from-fuchsia-500 to-pink-400',
         accentText: 'text-fuchsia-400',
+        github: 'https://github.com/yagizkarhan',
+        linkedin: 'https://linkedin.com/in/yagizkarhan',
     },
 ];
 
@@ -48,14 +61,29 @@ const AboutPage = () => {
     const { t } = useTranslation();
     const { isDark } = useTheme();
     const [currentIndex, setCurrentIndex] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const startInterval = () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % TEAM.length);
+        }, 5000);
+    };
 
     const handleNext = () => {
         setCurrentIndex((prev) => (prev + 1) % TEAM.length);
+        startInterval();
     };
 
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev - 1 + TEAM.length) % TEAM.length);
+        startInterval();
     };
+
+    useEffect(() => {
+        startInterval();
+        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    }, []);
 
     const fadeUp = {
         initial: { opacity: 0, y: 24 },
@@ -150,46 +178,71 @@ const AboutPage = () => {
                         </button>
 
                         <div className="w-full max-w-sm relative overflow-hidden">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentIndex}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.3 }}
-                                    className={`group relative flex flex-col rounded-xl overflow-hidden transition-all duration-300 border ${
-                                        isDark
-                                            ? 'bg-[#091328] border-white/5 shadow-2xl shadow-violet-500/10'
-                                            : 'bg-white border-slate-200/60 shadow-xl shadow-violet-500/10'
-                                    }`}
-                                >
-                                    {/* Top glow bar */}
-                                    <div className="absolute top-0 left-0 right-0 h-px opacity-20"
-                                        style={{ background: 'linear-gradient(90deg, transparent, #bd9dff, transparent)' }} />
-                                    
-                                    {/* Photo */}
-                                    <div className="relative overflow-hidden aspect-square">
-                                        <div
-                                            className="w-full h-full bg-center bg-cover bg-no-repeat transition-all duration-500 grayscale-0"
-                                            style={{ backgroundImage: `url('${TEAM[currentIndex].photo}')` }}
-                                        />
-                                        <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#091328] via-transparent' : 'from-white/20 via-transparent'} to-transparent`} />
-                                    </div>
+                            <div className={`group relative flex flex-col rounded-xl overflow-hidden border ${
+                                isDark
+                                    ? 'bg-[#091328] border-white/5 shadow-2xl shadow-violet-500/10'
+                                    : 'bg-white border-slate-200/60 shadow-xl shadow-violet-500/10'
+                            }`} style={{ minHeight: '520px' }}>
+                                {/* Top glow bar */}
+                                <div className="absolute top-0 left-0 right-0 h-px opacity-20 z-10"
+                                    style={{ background: 'linear-gradient(90deg, transparent, #bd9dff, transparent)' }} />
 
-                                    {/* Info */}
-                                    <div className="p-6 flex flex-col justify-center items-center flex-1 text-center">
-                                        <h3 className={`text-2xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                                            {TEAM[currentIndex].name}
-                                        </h3>
-                                        <p className={`text-sm font-bold mb-3 ${TEAM[currentIndex].accentText}`}>
-                                            {t(TEAM[currentIndex].roleKey)}
-                                        </p>
-                                        <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                            {t(TEAM[currentIndex].descKey)}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            </AnimatePresence>
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentIndex}
+                                        initial={{ opacity: 0, x: 40 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -40 }}
+                                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                                        className="absolute inset-0 flex flex-col"
+                                    >
+                                        {/* Photo */}
+                                        <div className="relative overflow-hidden" style={{ height: '300px' }}>
+                                            <div
+                                                className="w-full h-full bg-no-repeat"
+                                                style={{ 
+                                                    backgroundImage: `url('${TEAM[currentIndex].photo}')`,
+                                                    backgroundPosition: TEAM[currentIndex].photoPosition ?? 'center',
+                                                    backgroundSize: TEAM[currentIndex].photoSize ?? 'cover',
+                                                }}
+                                            />
+                                            <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#091328] via-transparent' : 'from-white/20 via-transparent'} to-transparent`} />
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="p-6 flex flex-col justify-center items-center text-center">
+                                            <h3 className={`text-2xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                                {TEAM[currentIndex].name}
+                                            </h3>
+                                            <p className={`text-sm font-bold mb-3 ${TEAM[currentIndex].accentText}`}>
+                                                {t(TEAM[currentIndex].roleKey)}
+                                            </p>
+                                            <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                                                {t(TEAM[currentIndex].descKey)}
+                                            </p>
+                                            {/* Social Links */}
+                                            <div className="flex items-center gap-4 mt-5">
+                                                <a
+                                                    href={TEAM[currentIndex].github}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200'}`}
+                                                >
+                                                    <FaGithub size={20} />
+                                                </a>
+                                                <a
+                                                    href={TEAM[currentIndex].linkedin}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200'}`}
+                                                >
+                                                    <FaLinkedin size={20} />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+                            </div>
                         </div>
 
                         <button 

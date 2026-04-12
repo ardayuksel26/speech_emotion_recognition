@@ -34,16 +34,16 @@ const Header = () => {
 
   return (
     <header className={clsx(
-      "relative w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] sticky top-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between backdrop-blur-md",
+      "w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] fixed top-0 left-0 right-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between backdrop-blur-md",
       isDark ? "bg-slate-900/80 text-white border-b border-slate-700/50" : "bg-white/80 text-gray-800 border-b border-indigo-200"
     )}>
       {/* Mobile Spacer to ensure justify-between pushes controls to the right */}
       <div className="w-8 h-8 lg:hidden"></div>
 
       {/* LEFT: Logo / Title */}
-      <Link to="/" className="z-20 flex items-center gap-2 group no-underline absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none lg:ml-4">
+      <Link to="/" className="logo-desktop-offset z-20 flex items-center gap-2 group no-underline absolute left-1/2 -translate-x-1/2 lg:relative lg:left-0 lg:translate-x-0">
         <h1 className={clsx(
-          "text-lg md:text-xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-sm transition-transform",
+          "text-lg md:text-xl lg:text-2xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-sm transition-transform",
           isDark ? "text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200" : "text-gray-800"
         )}>
           {t('title')}
