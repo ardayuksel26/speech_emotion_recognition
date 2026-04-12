@@ -91,18 +91,13 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
             </h3>
 
             <p className={clsx(
-                "text-sm text-center max-w-xs leading-relaxed",
+                "text-sm text-center whitespace-nowrap",
                 isDark ? "text-slate-400" : "text-slate-500"
             )}>
                 {t('supported_formats_desc') || 'WAV, MP3, OGG up to 10MB'}
             </p>
 
-            <button className={clsx(
-                "mt-8 px-6 py-2.5 rounded-xl font-medium text-sm transition-all shadow-lg hover:shadow-indigo-500/25",
-                "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95"
-            )}>
-                {t('browse_files')}
-            </button>
+
 
             <input
                 ref={fileInputRef}

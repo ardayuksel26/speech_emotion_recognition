@@ -105,7 +105,7 @@ const Result: React.FC<ResultProps> = ({
                 {/* LEFT: DOMINANT EMOTION DISPLAY (COL-SPAN-5) */}
                 <MotionWrapper delay={0.1} className="lg:col-span-5 flex flex-col h-full">
                     <div className={clsx(
-                        "relative flex-grow flex flex-col items-center justify-center p-10 rounded-[2.5rem] border shadow-2xl backdrop-blur-2xl overflow-hidden",
+                        "relative flex-grow flex flex-col items-center justify-center p-10 border shadow-2xl backdrop-blur-2xl overflow-hidden",
                         isDark ? "bg-slate-900/50 border-white/10" : "bg-white/40 border-white/80"
                     )}>
                         
@@ -157,7 +157,7 @@ const Result: React.FC<ResultProps> = ({
 
                         {/* Audio Player Integrated to Left Card */}
                         {audioUrl && (
-                            <div className="relative z-20 w-full mt-12 bg-white/20 dark:bg-black/20 rounded-3xl p-4 border border-white/20 dark:border-white/5 shadow-inner flex items-center gap-4">
+                            <div className="relative z-20 w-full mt-12 bg-white/20 dark:bg-black/20 p-4 border border-white/20 dark:border-white/5 shadow-inner flex items-center gap-4">
                                 <button
                                     onClick={togglePlay}
                                     className={clsx(
@@ -198,11 +198,8 @@ const Result: React.FC<ResultProps> = ({
                     {/* Veto Information Box (If Applied) */}
                     {result.veto_info?.applied && (
                         <MotionWrapper delay={0.2}>
-                            <div className="w-full p-5 rounded-3xl border border-indigo-400/50 shadow-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/10 backdrop-blur-xl flex items-center gap-5">
-                                <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-indigo-500 items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.5)] shrink-0">
-                                    <FaRobot className="text-white text-2xl" />
-                                </div>
-                                <div>
+                            <div className="w-full p-5 border border-indigo-400/50 shadow-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/10 backdrop-blur-xl flex items-center gap-5">
+                                    <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
                                         <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Üst Akıl Veto Müdahalesi</h3>
@@ -218,7 +215,7 @@ const Result: React.FC<ResultProps> = ({
                     {/* Chart & Distribution Analysis */}
                     <MotionWrapper delay={0.3} className="flex-1 min-h-[300px]">
                         <div className={clsx(
-                            "w-full h-full p-8 rounded-[2.5rem] border shadow-xl backdrop-blur-xl flex flex-col",
+                            "w-full h-full p-8 border shadow-xl backdrop-blur-xl flex flex-col",
                             isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
                         )}>
                             <div className="flex justify-between items-center mb-8">
@@ -238,7 +235,7 @@ const Result: React.FC<ResultProps> = ({
                     {((result.word_timestamps && result.word_timestamps.length > 0) || (result.model_details && result.model_details.length > 0)) && (
                          <MotionWrapper delay={0.4}>
                             <div className={clsx(
-                                "w-full p-8 rounded-[2.5rem] border shadow-xl backdrop-blur-xl",
+                                "w-full p-8 border shadow-xl backdrop-blur-xl",
                                 isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
                             )}>
                                 

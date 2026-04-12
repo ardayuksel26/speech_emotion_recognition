@@ -66,6 +66,7 @@
   "usecase_how_it_works": "Nasıl Çalışır?",
   "usecase_value_proposal": "Değer Önerisi",
   "usecase_core_scenarios": "Temel Senaryolar",
+  "usecase_core_scenarios_note": "Modelimiz daha fazla sesle ve daha farklı duygularla eğitilirse, aşağıdaki senaryolarda çok daha etkili biçimde kullanılabilir.",
   "usecase_1_title": "Müşteri Desteği",
   "usecase_1_subtitle": "Müşteri hizmetleri & kalite kontrol",
   "usecase_1_desc": "Çağrı merkezi kayıtlarını analiz ederek müşteri duyarlılığını tespit edin ve hizmet kalitesini artırın. Hayal kırıklığını erkenden fark ederek kritik talepleri otomatik yönlendirin.",
@@ -179,8 +180,8 @@
   "stt_whisperx": "WhisperX (Hassas)",
   "transcribing": "Kelimeler ayrıştırılıyor...",
   "tech_page_subtitle": "Derin Öğrenme, Ensemble Teknikleri, Ses Frekans Analizi ve Otonom Test Laboratuvarının arkasındaki akademik altyapı ve mimari detaylar. Sesten duygu tanımanın (SER) perde arkasına kapsamlı bir bakış.",
-  "tech_hero_title_1": "The Science Behind",
-  "tech_hero_title_2": "Mastermind Architecture",
+  "tech_hero_title_1": "Arkasındaki Bilim",
+  "tech_hero_title_2": "Mastermind Mimarisi",
   "tech_s1_title": "1. Projenin Amacı ve Yaklaşımı",
   "tech_s1_thesis_label": "Akademik Tez Başlığı: EMOTION RECOGNITION FROM TURKISH AUDIO IN WORD AND SENTENCE LEVELS",
   "tech_s1_p1": "Bu projenin temel tezi, Türkçe dilindeki sesli ifadelerin duygu durumlarını sadece genel ses akışı üzerinden değil, <1>kelime (word) ve cümle (sentence)</1> bazında ayrıştırarak analiz etmektir. Konuşma Duygu Tanıma (SER - Speech Emotion Recognition) alanındaki mevcut küresel literatür genellikle tek boyutlu (sadece İngilizce tabanlı) modeller kullanır. Bizim yaklaşımımız ise, ses sinyalini en ufak anlamlı birimlerine (kelimelere) kadar parçalamak ve yerel (Türkçe) veri setleri kullanılarak eğitilmiş otonom ağlarla ince taneli (fine-grained) tahminler yapmaktır.",
@@ -357,5 +358,9 @@
   "tech_art_8_ref": "Bölüm 3–4",
   "tech_art_9_summary": "Matplotlib ile üretilen şekiller; makale ve sunum için statik görseller (TestsResults/).",
   "tech_art_9_ref": "Arşiv / tekrarlanabilirlik",
-  "analysis_failed": "Analiz başarısız oldu."
+  "analysis_failed": "Analiz başarısız oldu.",
+  "tech_stat_accuracy": "Mastermind Doğruluğu",
+  "tech_stat_emotions": "Duygu Sınıfı",
+  "tech_stat_models": "Model Sayısı",
+  "tech_stat_dataset": "Veri Seti"
 }

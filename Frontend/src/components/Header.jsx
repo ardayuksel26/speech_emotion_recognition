@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FaMoon, FaSun, FaChevronDown, FaBars, FaTimes, FaInfoCircle, FaBullseye, FaFlask, FaCogs } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
@@ -12,6 +12,15 @@ const Header = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [isMenuOpen]);
 
   const languages = {
     en: { label: "English", flagUrl: "https://flagcdn.com/gb.svg" },
@@ -203,99 +212,80 @@ const Header = () => {
             "absolute right-0 h-full w-full shadow-2xl flex flex-col p-6 md:p-8 transition-colors duration-300 overflow-y-auto",
             isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"
           )}>
-            <div className="flex justify-between items-start mb-12 shrink-0 gap-6">
-              <h2 className="text-xl font-bold leading-snug">{t('title')}</h2>
-              <button 
-                onClick={() => setIsMenuOpen(false)} 
-                className={clsx(
-                  "p-3 rounded-full transition-colors flex items-center justify-center",
-                  isDark ? "bg-slate-800/50 hover:bg-slate-700 text-white" : "bg-slate-100/50 hover:bg-slate-200 text-slate-900"
-                )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem', marginTop: '1.75rem', paddingRight: '1.75rem', flexShrink: 0 }}>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 transition-colors bg-transparent border-none outline-none"
               >
-                <FaTimes size={20} />
+                <FaTimes size={24} className={isDark ? "text-white" : "text-slate-800"} />
               </button>
             </div>
 
-            <nav className="flex flex-col gap-4">
+            <nav className="flex flex-col gap-8 mb-12">
               {navLinks.map((link) => (
                 <Link
                   key={link.key}
                   to={link.path}
                   onClick={() => setIsMenuOpen(false)}
                   className={clsx(
-                    "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-semibold no-underline hover:no-underline",
+                    "flex justify-between items-center text-xl tracking-wide font-medium no-underline transition-colors",
                     location.pathname === link.path
-                      ? (isDark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-50 text-indigo-600")
-                      : (isDark ? "text-slate-300 hover:bg-white/5" : "text-gray-600 hover:bg-gray-50")
+                      ? (isDark ? "text-white" : "text-black")
+                      : (isDark ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-black")
                   )}
+                  style={{ paddingLeft: '3.5rem', paddingRight: '2.5rem' }}
                 >
-                  <span className="text-xl opacity-80">{link.icon}</span>
-                  <span className="text-lg">{t(link.key)}</span>
+                  <span>{t(link.key)}</span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.4 }}>❯</span>
                 </Link>
               ))}
             </nav>
 
-            <div className="mt-auto pt-8 flex flex-col gap-10 shrink-0">
-              <div className="flex flex-col items-center gap-4">
-                <span className="font-bold text-lg text-slate-700 dark:text-slate-300">{t('theme')}</span>
-                <button
-                  onClick={toggleTheme}
-                  className="focus:outline-none"
-                  style={{
-                    position: 'relative',
-                    width: '76px',
-                    height: '40px',
-                    borderRadius: '9999px',
-                    backgroundColor: isDark ? '#1e293b' : '#e0e7ff',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
-                    transition: 'background-color 0.3s',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '4px',
-                      left: '4px',
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '9999px',
-                      backgroundColor: isDark ? '#334155' : '#ffffff',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      transform: isDark ? 'translateX(36px)' : 'translateX(0)',
-                      transition: 'transform 0.3s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '15px',
-                      color: isDark ? '#818cf8' : '#f59e0b',
-                    }}
-                  >
-                    {isDark ? <FaMoon /> : <FaSun />}
-                  </div>
-                </button>
-              </div>
-
-              <div className="flex flex-col items-center gap-4">
-                <span className="font-bold text-lg text-slate-700 dark:text-slate-300">{t('language')}</span>
-                <div className="flex gap-3 w-full">
+            <div className="mt-auto flex flex-col gap-10 pb-10 shrink-0" style={{ paddingTop: '3.5rem', paddingLeft: '3.5rem', paddingRight: '2.5rem' }}>
+              {/* Language Switch */}
+              <div className="flex flex-col gap-5">
+                <span className={clsx("font-bold text-lg", isDark ? "text-slate-300" : "text-slate-700")}>{t('language')}</span>
+                <div className="flex gap-4 w-full">
                   {Object.keys(languages).map(code => (
                     <button
                       key={code}
                       onClick={() => { i18n.changeLanguage(code); }}
                       className={clsx(
-                        "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all text-base",
-                        currentLanguage === code 
-                          ? (isDark ? "bg-indigo-500/20 border-indigo-500/50 text-white" : "bg-indigo-50 border-indigo-200 text-indigo-700")
-                          : (isDark ? "bg-transparent border-slate-700 text-slate-400 hover:bg-slate-800" : "bg-transparent border-slate-200 text-slate-500 hover:bg-slate-50")
+                        "flex-1 flex items-center justify-center gap-2.5 rounded-[14px] min-h-[44px] shadow-sm transition-all duration-200 border outline-none",
+                        currentLanguage === code
+                          ? (isDark ? "bg-slate-800 text-white border-slate-700" : "bg-white text-indigo-700 border-indigo-100")
+                          : (isDark ? "bg-transparent text-slate-400 border-slate-700 hover:bg-slate-800" : "bg-transparent text-gray-500 border-gray-200 hover:bg-gray-50")
                       )}
                     >
-                      <img src={languages[code].flagUrl} alt="" className="w-5 h-3.5 rounded-sm object-cover" />
-                      <span className="font-bold uppercase">{code}</span>
+                      <img src={languages[code].flagUrl} alt="" className="w-5 h-3.5 rounded-[2px] object-cover shadow-sm bg-slate-200" />
+                      <span className="font-bold uppercase text-sm tracking-wide">{code}</span>
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Theme Switch */}
+              <div className="flex justify-between items-center w-full">
+                <span className={clsx("font-bold text-lg", isDark ? "text-slate-300" : "text-slate-700")}>{t('theme')}</span>
+                <button
+                  onClick={toggleTheme}
+                  className="focus:outline-none"
+                  style={{
+                    position: 'relative', width: '68px', height: '36px', borderRadius: '9999px',
+                    backgroundColor: isDark ? '#1e293b' : '#e0e7ff',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute', top: '3px', left: '3px', width: '28px', height: '28px', borderRadius: '9999px',
+                    backgroundColor: isDark ? '#334155' : '#ffffff',
+                    transform: isDark ? 'translateX(32px)' : 'translateX(0)', transition: 'transform 0.3s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', color: isDark ? '#818cf8' : '#f59e0b'
+                  }}>
+                    {isDark ? <FaMoon /> : <FaSun />}
+                  </div>
+                </button>
               </div>
             </div>
           </div>

@@ -80,35 +80,35 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
 
             {/* Initial Selection Mode */}
             {mode === 'initial' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full animate-fadeIn">
                     <button
                         onClick={() => setMode('upload')}
-                        className="group relative flex flex-col items-center justify-center p-7 h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+                        className="group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 h-40 sm:h-52 md:h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-colors duration-500 pointer-events-none" />
-                        <div className="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500 shadow-sm" style={{ width: '80px', height: '80px' }}>
-                            <FaFileAudio className="text-4xl text-indigo-500 dark:text-indigo-400 drop-shadow-md" />
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500 shadow-sm">
+                            <FaFileAudio className="text-2xl sm:text-3xl md:text-4xl text-indigo-500 dark:text-indigo-400 drop-shadow-md" />
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-1 sm:mb-2 md:mb-3 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {t('upload_file')}
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-400 text-center text-sm px-4 leading-relaxed font-medium">
+                        <p className="text-slate-700 dark:text-slate-400 text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block">
                             {t('upload_desc')}
                         </p>
                     </button>
 
                     <button
                         onClick={() => setMode('record')}
-                        className="group relative flex flex-col items-center justify-center p-7 h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-rose-400 dark:hover:border-rose-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+                        className="group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 h-40 sm:h-52 md:h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-rose-400 dark:hover:border-rose-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-orange-500/0 group-hover:from-rose-500/5 group-hover:to-orange-500/5 transition-colors duration-500 pointer-events-none" />
-                        <div className="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 shadow-sm" style={{ width: '80px', height: '80px' }}>
-                            <FaMicrophone className="text-4xl text-rose-500 dark:text-rose-400 drop-shadow-md" />
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 shadow-sm">
+                            <FaMicrophone className="text-2xl sm:text-3xl md:text-4xl text-rose-500 dark:text-rose-400 drop-shadow-md" />
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3 tracking-tight group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-1 sm:mb-2 md:mb-3 tracking-tight group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                             {t('record_voice')}
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-400 text-center text-sm px-4 leading-relaxed font-medium">
+                        <p className="text-slate-700 dark:text-slate-400 text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block">
                             {t('record_desc')}
                         </p>
                     </button>

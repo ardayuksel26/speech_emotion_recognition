@@ -9,6 +9,7 @@ import AboutPage from './Pages/AboutPage';
 import UseCasesPage from './Pages/UseCasesPage';
 import TechnicalInfoPage from './Pages/TechnicalInfoPage';
 import ExperimentalPage from './Pages/ExperimentalPage';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <div className="flex flex-col min-h-screen">
           <Header />
           <main className="flex-grow flex flex-col pt-16">
+            <ScrollToTop />
             <Routes>
               <Route path="/" element={<MainPage />} />
               <Route path="/experimental" element={<ExperimentalPage />} />

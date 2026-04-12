@@ -49,13 +49,13 @@ const UseCasesPage = () => {
 
     return (
         <div
-            className="w-full flex-grow flex flex-col items-center overflow-x-hidden relative"
+            className="w-full flex-grow flex flex-col items-center relative"
             style={{ background: bg }}
         >
             {/* animated bubbles */}
             <InteractiveBackground />
 
-            <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-24 pt-28">
+            <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-24" style={{ paddingTop: '7rem' }}>
 
                 {/* ══════════ HERO ══════════ */}
                 <motion.div {...fadeUp} className="mb-16">
@@ -87,20 +87,6 @@ const UseCasesPage = () => {
                         <div className="absolute inset-0 pointer-events-none"
                             style={{ boxShadow: 'inset 0 1px 0 rgba(64,72,93,0.15)' }} />
 
-                        {/* pulse badge */}
-                        <div className="flex items-center justify-center gap-2 mb-4 z-10 relative">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                                    style={{ background: '#ec63ff' }} />
-                                <span className="relative inline-flex rounded-full h-2 w-2"
-                                    style={{ background: '#ec63ff' }} />
-                            </span>
-                            <span className="text-xs font-semibold tracking-widest uppercase"
-                                style={{ color: '#bd9dff' }}>
-                                {t('usecase_intelligence_active')}
-                            </span>
-                        </div>
-
                         <div className="max-w-3xl flex flex-col gap-4 items-center z-10 relative">
                             <h1
                                 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight"
@@ -121,11 +107,19 @@ const UseCasesPage = () => {
                 {/* ══════════ CORE SCENARIOS ══════════ */}
                 <motion.div {...fadeUp}>
                     {/* section header */}
-                    <div className="flex items-center gap-4 mb-8 px-1">
+                    <div className="flex flex-col gap-3 mb-8 px-1">
                         <h2 className="text-3xl font-bold tracking-tight whitespace-nowrap"
                             style={{ color: onSurface }}>
                             {t('usecase_core_scenarios')}
                         </h2>
+                        <p className="text-sm md:text-base leading-relaxed max-w-3xl"
+                            style={{
+                                color: onSurfaceVariant,
+                                borderLeft: `3px solid rgba(189,157,255,0.5)`,
+                                paddingLeft: '0.85rem',
+                            }}>
+                            {t('usecase_core_scenarios_note')}
+                        </p>
                     </div>
 
                     {/* cards grid */}

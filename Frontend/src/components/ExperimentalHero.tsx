@@ -360,11 +360,17 @@ const Hero = () => {
 
       <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-20 mb-10">
 
-        <h1 className={`font-outfit text-5xl md:text-7xl font-black mb-10 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 opacity-0 h-0" : "opacity-100"}`}>
+        <h1 className={`font-outfit text-5xl md:text-7xl font-black mb-4 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 opacity-0 h-0" : "opacity-100"}`}>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
             {t('discover_your_voice')}
           </span>
         </h1>
+
+        {!analysisResult && (
+          <p className={`text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
+            Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
+          </p>
+        )}
 
         <div className={`
           relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]

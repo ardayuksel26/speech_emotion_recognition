@@ -88,30 +88,43 @@ const AudioPlayer = ({
           <div className="flex items-center justify-center gap-1 w-full h-full">
             {levels.map((level, index) => {
               const totalBars = levels.length;
-              const playIndex = Math.floor(playProgress * (totalBars - 1));
-              const isCurrent = index === playIndex && isPlaying;
-              const isPassed = index < playIndex;
+              // Use continuous float index for smooth progress
+              const floatIndex = playProgress * (totalBars - 1);
+              const isPassed = index < floatIndex - 0.5;
+              const isCurrent = !isPassed && index < floatIndex + 0.5;
+
+              // Smooth glow intensity for the current bar (0→1→0 as it passes)
+              const distFromHead = Math.abs(index - floatIndex);
+              const glowStrength = Math.max(0, 1 - distFromHead);
+
+              let background;
+              if (isDark) {
+                background = isPassed
+                  ? 'rgba(99,102,241,0.35)'
+                  : `linear-gradient(to top, #4f46e5, #8b5cf6)`;
+              } else {
+                background = isPassed
+                  ? '#c4b5fd'
+                  : `linear-gradient(to top, #7c3aed, #6366f1)`;
+              }
+
+              const boxShadow = glowStrength > 0.1
+                ? isDark
+                  ? `0 0 ${12 * glowStrength}px rgba(255,255,255,${0.7 * glowStrength})`
+                  : `0 0 ${12 * glowStrength}px rgba(139,92,246,${0.8 * glowStrength})`
+                : 'none';
 
               return (
                 <div
                   key={index}
-                  className={`flex-1 rounded-full transition-all duration-75 ease-out
-                  ${isCurrent
-                      ? isDark
-                        ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-110'
-                        : 'bg-purple-700 shadow-[0_0_15px_rgba(147,51,234,0.8)] scale-110'
-                      : isPassed
-                        ? isDark
-                          ? 'bg-indigo-500/40'
-                          : 'bg-purple-400'
-                        : isDark
-                          ? 'bg-gradient-to-t from-indigo-600 to-purple-500'
-                          : 'bg-gradient-to-t from-purple-500 to-indigo-500'
-                    }`}
+                  className="flex-1 rounded-full"
                   style={{
                     height: `${Math.max(4, level * 100)}px`,
-                    opacity: isCurrent ? 1 : isPassed ? 0.6 : 0.4 + level * 0.6,
-                    transform: isCurrent ? 'scaleY(1.1)' : 'scaleY(1)',
+                    background,
+                    boxShadow,
+                    opacity: isPassed ? 0.55 : 0.4 + level * 0.6,
+                    transform: glowStrength > 0.4 ? `scaleY(${1 + 0.1 * glowStrength})` : 'scaleY(1)',
+                    transition: 'opacity 0.05s linear, box-shadow 0.05s linear, transform 0.05s linear',
                   }}
                 />
               );
@@ -165,19 +178,28 @@ const AudioPlayer = ({
               </button>
 
               {isSpeedMenuOpen && (
-                <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-xl shadow-2xl overflow-hidden py-1 z-[100] ${isDark ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
-                  }`}>
+                <div
+                  className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]"
+                  style={{
+                    background: isDark ? '#1e293b' : '#ffffff',
+                    border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                  }}
+                >
                   {speedOptions.map((rate) => (
                     <button
                       key={rate}
                       onClick={() => { onSpeedChange(rate); setIsSpeedMenuOpen(false); }}
-                      className={`block w-full text-center px-4 py-2.5 text-sm font-medium transition-colors duration-150
-                        ${rate === playbackRate
-                          ? 'bg-indigo-600 text-white'
-                          : isDark
-                            ? 'text-white hover:bg-slate-700'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
+                      className="block w-full text-center px-4 py-2.5 text-sm font-medium transition-colors duration-150"
+                      style={{
+                        background: rate === playbackRate ? '#4f46e5' : 'transparent',
+                        color: rate === playbackRate ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b'),
+                      }}
+                      onMouseEnter={e => {
+                        if (rate !== playbackRate) e.currentTarget.style.background = isDark ? '#334155' : '#f1f5f9';
+                      }}
+                      onMouseLeave={e => {
+                        if (rate !== playbackRate) e.currentTarget.style.background = 'transparent';
+                      }}
                     >
                       {rate}x {t('speed') || 'Hız'}
                     </button>

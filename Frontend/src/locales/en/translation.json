@@ -70,6 +70,7 @@
   "usecase_how_it_works": "How It Works",
   "usecase_value_proposal": "Value Proposition",
   "usecase_core_scenarios": "Core Scenarios",
+  "usecase_core_scenarios_note": "If our model is trained with more voice data and a wider range of emotions, it can be used much more effectively in the scenarios below.",
   "usecase_1_title": "Customer Support",
   "usecase_1_subtitle": "Customer services & quality control",
   "usecase_1_desc": "Analyze call center recordings to identify customer sentiment and improve service quality. Detect frustration early to escalate critical tickets automatically.",
@@ -359,5 +360,9 @@
   "tech_art_8_ref": "Section 3–4",
   "tech_art_9_summary": "Figures generated with Matplotlib; static visuals for paper and presentation (TestsResults/).",
   "tech_art_9_ref": "Archive / reproducibility",
-  "analysis_failed": "Analysis failed."
+  "analysis_failed": "Analysis failed.",
+  "tech_stat_accuracy": "Mastermind Accuracy",
+  "tech_stat_emotions": "Emotion Classes",
+  "tech_stat_models": "ML Models",
+  "tech_stat_dataset": "Dataset Size"
 }

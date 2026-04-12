@@ -203,16 +203,16 @@ const Hero = () => {
       {/* Interactive Background Canvas */}
       <InteractiveBackground />
 
-      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-20 mb-10">
+      <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center py-10 sm:py-16 md:py-20 mb-4 sm:mb-8 md:mb-10">
 
-        <h1 className={`font-outfit text-6xl md:text-8xl font-black mb-6 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 mb-0 opacity-0 h-0" : "opacity-100"}`}>
+        <h1 className={`font-outfit text-3xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 py-1 sm:py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 mb-0 opacity-0 h-0" : "opacity-100"}`}>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
             {t('discover_your_voice')}
           </span>
         </h1>
         
         {!analysisResult && (
-           <p className={`text-xl md:text-2xl font-light mb-16 text-center max-w-3xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/70" : "text-slate-600/90"} animate-slideUpFade`} style={{ animationDelay: '0.1s' }}>
+           <p className={`text-base sm:text-xl md:text-2xl font-light mb-8 sm:mb-12 md:mb-16 text-center max-w-3xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/70" : "text-slate-600/90"} animate-slideUpFade`} style={{ animationDelay: '0.1s' }}>
               Gelişmiş <strong className="font-semibold text-indigo-400 dark:text-indigo-300">Üst Akıl</strong> algoritması ile sesinizdeki 4 temel duyguyu anında ve kusursuzca analiz edin. Sadece konuşun, gerisini biz halledelim.
            </p>
         )}
@@ -276,9 +276,6 @@ const Hero = () => {
               </div>
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse">
                 Üst Akıl Analiz Ediyor...
-              </p>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
-                VOSK 🚀 MULTI-MODEL SYNTHESIS
               </p>
             </div>
           )}

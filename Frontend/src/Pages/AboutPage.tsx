@@ -29,8 +29,8 @@ const TEAM: TeamMember[] = [
         photo: '/team1.png',
         accent: 'from-violet-600 to-purple-500',
         accentText: 'text-violet-400',
-        github: 'https://github.com/ardayuksel',
-        linkedin: 'https://linkedin.com/in/ardayuksel',
+        github: 'https://github.com/ardayuksel26',
+        linkedin: 'https://www.linkedin.com/in/arda-yk26/',
     },
     {
         name: 'İlhan Uzunoğlu',
@@ -51,8 +51,8 @@ const TEAM: TeamMember[] = [
         photo: '/team3.png',
         accent: 'from-fuchsia-500 to-pink-400',
         accentText: 'text-fuchsia-400',
-        github: 'https://github.com/yagizkarhan',
-        linkedin: 'https://linkedin.com/in/yagizkarhan',
+        github: 'https://github.com/karhankkgl',
+        linkedin: 'https://www.linkedin.com/in/yagizkarhankokgul/',
     },
 ];
 
@@ -107,14 +107,18 @@ const AboutPage = () => {
                     style={{ background: 'rgba(52,181,250,0.07)' }} />
             </div>
 
-            <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-32 pt-28">
+            <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-32" style={{ paddingTop: '7rem' }}>
 
                 {/* ════════════════════ HERO ════════════════════ */}
                 <motion.div {...fadeUp} className="mb-24">
                     <div
-                        className="relative rounded-2xl overflow-hidden p-10 md:p-20 flex flex-col items-center text-center"
+                        className="relative rounded-2xl overflow-hidden flex flex-col items-center text-center"
                         style={{
                             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                            paddingTop: '5rem',
+                            paddingBottom: '5rem',
+                            paddingLeft: '2.5rem',
+                            paddingRight: '2.5rem',
                         }}
                     >
                         {/* Video Background */}
@@ -134,7 +138,7 @@ const AboutPage = () => {
                             style={{ boxShadow: 'inset 0 1px 0 0 rgba(189,157,255,0.15)' }} />
 
                         {/* Hero content */}
-                        <div className="max-w-3xl flex flex-col gap-6 items-center z-10 relative mt-8">
+                        <div className="max-w-3xl flex flex-col gap-6 items-center z-10 relative">
                             <h1
                                 className="text-4xl md:text-6xl font-black leading-tight tracking-tight"
                                 style={{
@@ -163,26 +167,35 @@ const AboutPage = () => {
                 </motion.div>
 
                 {/* ════════════════════ TEAM ════════════════════ */}
-                <div className="w-full h-16 md:h-24"></div>
-                <motion.div {...fadeUp} className="mb-24 w-full flex flex-col items-center justify-center">
-                    <h2 className={`text-3xl font-black text-center mb-12 tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} w-full`}>
+                <div className="w-full h-8 md:h-12"></div>
+                <motion.div {...fadeUp} className="mb-10 w-full flex flex-col items-center justify-center">
+                    <h2 className={`text-3xl font-black text-center mb-10 tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} w-full`}>
                         {t('about_meet_team')}
                     </h2>
 
                     <div className="flex items-center justify-center w-full gap-4 md:gap-8 max-w-3xl mx-auto">
                         <button 
                             onClick={handlePrev} 
-                            className={`p-3 md:p-4 rounded-full transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
+                            className={`w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
                         >
-                            <FiChevronLeft size={28} />
+                            <FiChevronLeft size={22} />
                         </button>
 
                         <div className="w-full max-w-sm relative overflow-hidden">
-                            <div className={`group relative flex flex-col rounded-xl overflow-hidden border ${
+                            <div
+                            className={`group relative flex flex-col rounded-xl overflow-hidden border ${
                                 isDark
-                                    ? 'bg-[#091328] border-white/5 shadow-2xl shadow-violet-500/10'
-                                    : 'bg-white border-slate-200/60 shadow-xl shadow-violet-500/10'
-                            }`} style={{ minHeight: '520px' }}>
+                                    ? 'border-white/10 shadow-2xl shadow-violet-500/10'
+                                    : 'border-slate-200/40 shadow-xl shadow-violet-500/10'
+                            }`}
+                            style={{
+                                minHeight: '460px',
+                                background: isDark
+                                    ? 'rgba(9, 19, 40, 0.55)'
+                                    : 'rgba(255, 255, 255, 0.45)',
+                                backdropFilter: 'blur(16px) saturate(180%)',
+                                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                            }}>
                                 {/* Top glow bar */}
                                 <div className="absolute top-0 left-0 right-0 h-px opacity-20 z-10"
                                     style={{ background: 'linear-gradient(90deg, transparent, #bd9dff, transparent)' }} />
@@ -247,9 +260,9 @@ const AboutPage = () => {
 
                         <button 
                             onClick={handleNext} 
-                            className={`p-3 md:p-4 rounded-full transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
+                            className={`w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
                         >
-                            <FiChevronRight size={28} />
+                            <FiChevronRight size={22} />
                         </button>
                     </div>
                 </motion.div>
@@ -273,15 +286,7 @@ const AboutPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-14">
                             {/* Mission */}
                             <div className="flex flex-col gap-5">
-                                <div
-                                    className={`w-14 h-14 rounded-full flex items-center justify-center border ${isDark ? 'border-white/10 bg-slate-800/60' : 'border-violet-200 bg-violet-50'}`}
-                                    style={{ color: '#bd9dff' }}
-                                >
-                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.96-2.04 2.5 2.5 0 0 1-1.32-4.24 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.18-2.44"/>
-                                        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.96-2.04 2.5 2.5 0 0 0 1.32-4.24 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.18-2.44"/>
-                                    </svg>
-                                </div>
+
                                 <div>
                                     <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                                         {t('about_mission_title')}
@@ -294,15 +299,7 @@ const AboutPage = () => {
 
                             {/* Vision */}
                             <div className="flex flex-col gap-5">
-                                <div
-                                    className={`w-14 h-14 rounded-full flex items-center justify-center border ${isDark ? 'border-white/10 bg-slate-800/60' : 'border-sky-200 bg-sky-50'}`}
-                                    style={{ color: '#34b5fa' }}
-                                >
-                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
-                                </div>
+
                                 <div>
                                     <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                                         {t('about_vision_title')}
