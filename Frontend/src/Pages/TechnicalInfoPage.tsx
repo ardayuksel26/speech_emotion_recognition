@@ -26,8 +26,10 @@ const turEvData = [
 
 const SectionCard = ({ children, isDark, accent }: { children: React.ReactNode; isDark: boolean; accent?: string }) => (
     <div
-        className="border backdrop-blur-xl p-8 md:p-12 transition-all duration-300"
+        className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words"
         style={{
+            padding: 'clamp(32px, 5vw, 64px)',   /* Zorunlu CSS padding (iç boşluk) */
+            borderRadius: '40px',                /* Zorunlu CSS yuvarlatma */
             background: isDark ? 'rgba(13,21,41,0.65)' : 'rgba(255,255,255,0.72)',
             border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(203,213,225,0.6)',
             boxShadow: isDark
@@ -65,18 +67,11 @@ const Blockquote = ({ children, isDark }: { children: React.ReactNode; color?: s
 );
 
 const TerminalBlock = ({ children, isDark, accentColor }: { children: React.ReactNode; isDark: boolean; accentColor?: string }) => (
-    <div className="mb-6 overflow-hidden shadow-lg">
+    <div className="mb-6 overflow-hidden shadow-lg" style={{ borderRadius: '24px' }}>
         <div
-            className="flex items-center gap-1.5 px-4 py-2.5"
-            style={{ background: isDark ? '#0f172a' : '#1e293b' }}
-        >
-            <span className="w-3 h-3 rounded-full bg-red-500 opacity-90" />
-            <span className="w-3 h-3 rounded-full bg-amber-400 opacity-90" />
-            <span className="w-3 h-3 rounded-full bg-emerald-500 opacity-90" />
-        </div>
-        <div
-            className="p-5 font-mono text-sm md:text-base leading-relaxed overflow-x-auto custom-scrollbar"
+            className="font-mono text-sm md:text-base leading-relaxed overflow-x-auto custom-scrollbar"
             style={{
+                padding: '32px', /* Zorunlu Terminal içi boşluk */
                 background: isDark ? '#0d1525' : '#1a2540',
                 color: accentColor ? `${accentColor}ee` : (isDark ? '#c4d0f0' : '#c4d0f0'),
             }}
@@ -615,9 +610,8 @@ const TechnicalInfoPage = () => {
                                         <tr>
                                             <th className="p-4" />
                                             {confusionMatrix.labels.map((label) => (
-                                                <th key={label} className={`p-4 font-black text-center min-w-[90px] ${
-                                                    label === 'Angry' ? 'text-red-500' : label === 'Calm' ? 'text-teal-500' : label === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
-                                                }`}>{label}</th>
+                                                <th key={label} className={`p-4 font-black text-center min-w-[90px] ${label === 'Angry' ? 'text-red-500' : label === 'Calm' ? 'text-teal-500' : label === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
+                                                    }`}>{label}</th>
                                             ))}
                                         </tr>
                                     </thead>
@@ -626,20 +620,18 @@ const TechnicalInfoPage = () => {
                                             const rowSum = row.reduce((a, b) => a + b, 0);
                                             return (
                                                 <tr key={ri}>
-                                                    <td className={`p-4 font-black text-right ${
-                                                        confusionMatrix.labels[ri] === 'Angry' ? 'text-red-500' : confusionMatrix.labels[ri] === 'Calm' ? 'text-teal-500' : confusionMatrix.labels[ri] === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
-                                                    }`}>{confusionMatrix.labels[ri]}</td>
+                                                    <td className={`p-4 font-black text-right ${confusionMatrix.labels[ri] === 'Angry' ? 'text-red-500' : confusionMatrix.labels[ri] === 'Calm' ? 'text-teal-500' : confusionMatrix.labels[ri] === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
+                                                        }`}>{confusionMatrix.labels[ri]}</td>
                                                     {row.map((val, ci) => {
                                                         const isCorrect = ri === ci;
                                                         const intensity = Math.round((val / rowSum) * 100);
                                                         return (
-                                                            <td key={ci} className={`p-4 text-center font-bold rounded-lg border ${
-                                                                isCorrect
+                                                            <td key={ci} className={`p-4 text-center font-bold rounded-lg border ${isCorrect
                                                                     ? isDark ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
                                                                     : val > 0
                                                                         ? isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
                                                                         : isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
-                                                            }`}>
+                                                                }`}>
                                                                 <span className="text-base">{val}</span>
                                                                 <span className="block text-xs opacity-50">{intensity}%</span>
                                                             </td>

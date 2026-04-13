@@ -72,27 +72,31 @@ const Result: React.FC<ResultProps> = ({
     const glowClass = emotionColorClass.replace('300', '500').replace('400', '600');
 
     return (
-        <div className={clsx(
-            "w-full min-h-[85vh] flex flex-col font-sans",
-            isDark ? "text-white" : "text-slate-900"
-        )}>
+        <div 
+            className={clsx(
+                "w-full min-h-[85vh] flex flex-col font-sans px-4 sm:px-8 md:px-12 lg:px-20 pt-8 lg:pt-12 pb-10",
+                isDark ? "text-white" : "text-slate-900"
+            )}
+            style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '20px' }}
+        >
 
             {/* TOP NAVIGATION HUD */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-6 mb-8 lg:mb-12 w-full max-w-7xl mx-auto" style={{ padding: '8px' }}>
                 <button
                     onClick={onBack}
                     className={clsx(
-                        "flex items-center gap-3 px-5 py-2.5 rounded-2xl backdrop-blur-md border shadow-sm transition-all duration-300 hover:scale-105 group",
-                        isDark ? "bg-slate-800/50 border-white/10 hover:bg-slate-700/60" : "bg-white/60 border-slate-200/60 hover:bg-white"
+                        "w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 !bg-transparent group",
+                        "hover:scale-110",
+                        isDark ? "text-slate-400 hover:text-indigo-400" : "text-slate-500 hover:text-indigo-600"
                     )}
+                    title={t('back') || "Back"}
                 >
-                    <FaArrowLeft className="text-sm opacity-70 group-hover:-translate-x-1 transition-transform" />
-                    <span className="font-bold text-sm tracking-wide">{t('back')}</span>
+                    <FaArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
                 </button>
 
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase">
-                        <FaBrain className="animate-pulse" />
+                    <div className="hidden md:flex items-center gap-3 px-8 py-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase shadow-sm">
+                        <FaBrain className="animate-pulse text-sm" />
                         Üst Akıl Analiz Raporu
                     </div>
                     <ExportButton result={result} />
@@ -100,15 +104,18 @@ const Result: React.FC<ResultProps> = ({
             </div>
 
             {/* DASHBOARD GRID */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-7xl mx-auto flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 w-full max-w-7xl mx-auto flex-1 lg:px-8" style={{ gap: '24px', padding: '16px' }}>
 
                 {/* LEFT: DOMINANT EMOTION DISPLAY (COL-SPAN-5) */}
                 <MotionWrapper delay={0.1} className="lg:col-span-5 flex flex-col h-full">
-                    <div className={clsx(
-                        "relative flex-grow flex flex-col items-center justify-center p-10 border shadow-2xl backdrop-blur-2xl overflow-hidden",
-                        isDark ? "bg-slate-900/50 border-white/10" : "bg-white/40 border-white/80"
-                    )}>
-                        
+                    <div 
+                        className={clsx(
+                            "relative flex-grow flex flex-col items-center justify-center p-12 lg:p-16 border shadow-2xl backdrop-blur-2xl overflow-hidden rounded-[2rem]",
+                            isDark ? "bg-slate-900/50 border-white/10" : "bg-white/40 border-white/80"
+                        )}
+                        style={{ padding: '24px', borderRadius: '32px' }}
+                    >
+
                         {/* Interactive Aura */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className={clsx(
@@ -139,7 +146,7 @@ const Result: React.FC<ResultProps> = ({
                         </div>
 
                         {/* Title & Confidence */}
-                        <div className="relative z-10 text-center space-y-4 w-full">
+                        <div className="relative z-10 text-center space-y-4 w-full px-6 md:px-12">
                             <h1 className={clsx(
                                 "text-6xl font-black tracking-tighter capitalize drop-shadow-md",
                                 `text-transparent bg-clip-text bg-gradient-to-r ${glowClass}`
@@ -157,7 +164,7 @@ const Result: React.FC<ResultProps> = ({
 
                         {/* Audio Player Integrated to Left Card */}
                         {audioUrl && (
-                            <div className="relative z-20 w-full mt-12 bg-white/20 dark:bg-black/20 p-4 border border-white/20 dark:border-white/5 shadow-inner flex items-center gap-4">
+                            <div className="relative z-20 w-full mt-16 bg-white/20 dark:bg-black/30 px-12 py-8 border border-white/20 dark:border-white/10 shadow-inner flex items-center gap-6 rounded-[2.5rem]">
                                 <button
                                     onClick={togglePlay}
                                     className={clsx(
@@ -167,7 +174,7 @@ const Result: React.FC<ResultProps> = ({
                                 >
                                     {isPlaying ? <FaPause /> : <FaPlay className="ml-1" />}
                                 </button>
-                                
+
                                 <div className="flex-1 space-y-2 relative">
                                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest opacity-60 px-1">
                                         <span>Recording.wav</span>
@@ -185,7 +192,7 @@ const Result: React.FC<ResultProps> = ({
                                 </div>
                             </div>
                         )}
-                        
+
                         {audioUrl && (
                             <audio ref={audioRef} src={audioUrl} onTimeUpdate={handleTimeUpdate} onEnded={handleEnded} className="hidden" />
                         )}
@@ -194,12 +201,12 @@ const Result: React.FC<ResultProps> = ({
 
                 {/* RIGHT: ANALYTICS DASHBOARD (COL-SPAN-7) */}
                 <div className="lg:col-span-7 flex flex-col gap-6 h-full">
-                    
+
                     {/* Veto Information Box (If Applied) */}
                     {result.veto_info?.applied && (
                         <MotionWrapper delay={0.2}>
-                            <div className="w-full p-5 border border-indigo-400/50 shadow-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/10 backdrop-blur-xl flex items-center gap-5">
-                                    <div>
+                            <div className="w-full border border-indigo-400/50 shadow-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/10 backdrop-blur-xl flex items-center gap-6" style={{ padding: '32px', borderRadius: '24px' }}>
+                                <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
                                         <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Üst Akıl Veto Müdahalesi</h3>
@@ -214,17 +221,20 @@ const Result: React.FC<ResultProps> = ({
 
                     {/* Chart & Distribution Analysis */}
                     <MotionWrapper delay={0.3} className="flex-1 min-h-[300px]">
-                        <div className={clsx(
-                            "w-full h-full p-8 border shadow-xl backdrop-blur-xl flex flex-col",
-                            isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
-                        )}>
-                            <div className="flex justify-between items-center mb-8">
+                        <div 
+                            className={clsx(
+                                "w-full h-full p-10 lg:p-14 border shadow-xl backdrop-blur-xl flex flex-col rounded-[2rem]",
+                                isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
+                            )}
+                            style={{ padding: '24px', borderRadius: '32px' }}
+                        >
+                            <div className="flex justify-between items-center mb-8 px-4 md:px-6">
                                 <h3 className="text-sm font-black uppercase tracking-widest opacity-60 flex items-center gap-3">
                                     <FaChartBar className="text-lg opacity-80" />
                                     {t('emotion_distribution')}
                                 </h3>
                             </div>
-                            
+
                             <div className="flex-1">
                                 <ProbabilityChart probabilities={result.emotions} />
                             </div>
@@ -233,41 +243,50 @@ const Result: React.FC<ResultProps> = ({
 
                     {/* Word Timeline OR Voting Details */}
                     {((result.word_timestamps && result.word_timestamps.length > 0) || (result.model_details && result.model_details.length > 0)) && (
-                         <MotionWrapper delay={0.4}>
-                            <div className={clsx(
-                                "w-full p-8 border shadow-xl backdrop-blur-xl",
-                                isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
-                            )}>
-                                
+                        <MotionWrapper delay={0.4}>
+                            <div 
+                                className={clsx(
+                                    "w-full h-full p-10 lg:p-14 border shadow-xl backdrop-blur-xl flex flex-col rounded-[2rem] overflow-hidden",
+                                    isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
+                                )}
+                                style={{ padding: '24px', borderRadius: '32px' }}
+                            >
+
                                 {result.word_timestamps && result.word_timestamps.length > 0 && (
                                     <>
-                                        <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
-                                            <span className="w-2 h-2 rounded-full bg-purple-500" />
-                                            {t('timeline_analysis')}
-                                        </h3>
-                                        <WordTimeline
-                                            wordTimestamps={result.word_timestamps}
-                                            audioDuration={Math.max(...result.word_timestamps.map(w => w.end)) || 10}
-                                        />
+                                        <div className="px-4 md:px-6 mb-4">
+                                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
+                                                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                                                {t('timeline_analysis')}
+                                            </h3>
+                                        </div>
+                                        <div className="px-2 md:px-6">
+                                            <WordTimeline
+                                                wordTimestamps={result.word_timestamps}
+                                                audioDuration={Math.max(...result.word_timestamps.map(w => w.end)) || 10}
+                                            />
+                                        </div>
                                     </>
                                 )}
 
                                 {result.model_details && result.model_details.length > 0 && (
                                     <>
-                                        <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
-                                            <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                            {t('voting_details')}
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div className="px-4 md:px-6 mb-4">
+                                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
+                                                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                                {t('voting_details')}
+                                            </h3>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-2 md:px-6">
                                             {result.model_details.map((detail, idx) => {
                                                 const emotionColors: Record<string, string> = { angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981' };
                                                 const dotColor = emotionColors[detail.prediction] || '#8b5cf6';
-                                                
+
                                                 return (
                                                     <div key={idx} className={clsx(
-                                                        "flex items-center p-4 rounded-2xl border shadow-sm",
+                                                        "flex items-center rounded-2xl border shadow-sm",
                                                         isDark ? "bg-slate-800/50 border-slate-700/50" : "bg-white/60 border-slate-200/50"
-                                                    )}>
+                                                    )} style={{ padding: '10px', borderRadius: '16px' }}>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-xs font-black uppercase tracking-wider truncate mb-1.5 opacity-70">{detail.model}</p>
                                                             <div className="flex items-center gap-2">
@@ -296,7 +315,7 @@ const MotionWrapper: React.FC<{ children: React.ReactNode; delay?: number; class
     <motion.div
         initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
         animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-        transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }} 
+        transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
         className={className}
     >
         {children}

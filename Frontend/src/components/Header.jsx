@@ -82,13 +82,14 @@ const Header = () => {
 
         {/* Language Switcher (Desktop Only) */}
         <div className="relative hidden lg:block">
-          <button
-            onClick={() => setIsLangOpen(!isLangOpen)}
-            className={clsx(
-              "flex items-center justify-center gap-2.5 rounded-[14px] min-h-[40px] px-4 md:px-5 shadow-sm hover:shadow-md transition-all duration-200 border",
-              isDark ? "bg-slate-800 text-white hover:bg-slate-700 border-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50 border-indigo-100"
-            )}
-          >
+            <button
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className={clsx(
+                    "flex items-center justify-center gap-2.5 rounded-full min-h-[40px] px-6 shadow-sm hover:shadow-md transition-all duration-200 border overflow-hidden",
+                    isDark ? "bg-slate-800 text-white hover:bg-slate-700 border-slate-700" : "bg-white text-indigo-700 hover:bg-indigo-50 border-indigo-100"
+                )}
+                style={{ paddingLeft: '20px', paddingRight: '20px' }}
+            >
             <img
               src={languages[currentLanguage]?.flagUrl}
               alt={languages[currentLanguage]?.label}
@@ -251,7 +252,7 @@ const Header = () => {
                       key={code}
                       onClick={() => { i18n.changeLanguage(code); }}
                       className={clsx(
-                        "flex-1 flex items-center justify-center gap-2.5 rounded-[14px] min-h-[44px] shadow-sm transition-all duration-200 border outline-none",
+                        "flex-1 flex items-center justify-center gap-2.5 rounded-full min-h-[44px] shadow-sm transition-all duration-200 border outline-none",
                         currentLanguage === code
                           ? (isDark ? "bg-slate-800 text-white border-slate-700" : "bg-white text-indigo-700 border-indigo-100")
                           : (isDark ? "bg-transparent text-slate-400 border-slate-700 hover:bg-slate-800" : "bg-transparent text-gray-500 border-gray-200 hover:bg-gray-50")

@@ -45,7 +45,7 @@ export const WordTimeline: React.FC<WordTimelineProps> = ({
                 {/* Timeline Container */}
                 <div
                     className={clsx(
-                        "relative h-24 rounded-xl border min-w-[600px]",
+                        "relative h-24 rounded-xl border w-full",
                         isDark ? "bg-slate-800/80 border-slate-700/50 shadow-inner" : "bg-gray-50 border-gray-100"
                     )}
                     style={{ width: '100%' }}
