@@ -11,7 +11,7 @@ export const EMOTION_EMOJIS: Record<string, string> = {
     happy: '😊',
     sad: '😢',
     neutral: '😐',
-    fear: 'a😨',
+    fear: '😨',
     disgust: '🤢',
     surprise: '😲'
 };
@@ -50,9 +50,9 @@ const EmotionBadge: React.FC<EmotionBadgeProps> = ({
     };
 
     const sizeClasses = {
-        sm: "px-2 py-0.5 text-xs",
-        md: "px-4 py-1.5 text-sm",
-        lg: "px-6 py-2 text-lg font-bold",
+        sm: "px-2 py-0.5 text-xs shadow-sm",
+        md: "px-4 py-1.5 text-sm shadow-sm",
+        lg: "px-6 py-2 text-lg font-bold shadow-sm",
         xl: "px-0 py-0 text-5xl font-black bg-transparent border-0 shadow-none" // Special clean style for XL icon-only usage
     };
 
@@ -61,7 +61,7 @@ const EmotionBadge: React.FC<EmotionBadgeProps> = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className={clsx(
-                "rounded-full flex items-center gap-2 justify-center shadow-sm uppercase tracking-wider transition-all",
+                "rounded-full flex items-center gap-2 justify-center uppercase tracking-wider transition-all",
                 size !== 'xl' && "border", // Only add border for standard badges
                 sizeClasses[size],
                 className
@@ -69,7 +69,8 @@ const EmotionBadge: React.FC<EmotionBadgeProps> = ({
             style={{
                 backgroundColor: size === 'xl' ? 'transparent' : currentStyle.bg,
                 color: currentStyle.text,
-                borderColor: size === 'xl' ? 'transparent' : currentStyle.border
+                borderColor: size === 'xl' ? 'transparent' : currentStyle.border,
+                boxShadow: size === 'xl' ? 'none' : undefined
             }}
         >
             {shouldShowIcon && (

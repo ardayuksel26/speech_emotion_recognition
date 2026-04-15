@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { useTheme } from "../context/ThemeContext";
 import { clsx } from "clsx";
 import AudioInput from "./AudioInput/AudioInput"; // Using the new component
@@ -66,7 +66,7 @@ const Hero = () => {
     : (qualityMode === 'robust' ? `${selectedModel}_robust` : selectedModel);
   const activeModelName = selectedModel === 'majority_voting'
     ? t('majority_voting')
-    : `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? 'Dış Ses/Gürültülü' : 'Stüdyo'})`;
+    : `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? t('noisy') : t('studio')})`;
 
   // Segmentation and Next flow - stores results for ALL engines
   type SegmentItem = { start: number, end: number, word?: string, emotion?: string };
@@ -293,7 +293,8 @@ const Hero = () => {
         });
       } else {
         // Fallback for older backend response
-        emotionsMap[emotion.toLowerCase()] = normalizedConfidence;
+        const fallbackEmotion = (emotion || 'neutral').toLowerCase();
+        emotionsMap[fallbackEmotion] = normalizedConfidence;
       }
 
       // Normalize total so bars aren't broken if sum exceeds 100% due to weights
@@ -375,7 +376,9 @@ const Hero = () => {
 
         {!analysisResult && (
           <p className={`text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
-            Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
+            <Trans i18nKey="experimental_subtitle">
+              Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
+            </Trans>
           </p>
         )}
 

@@ -127,6 +127,8 @@
   "emotion_distribution": "Emotion Distribution",
   "word_analysis_coming_soon": "Word-level analysis will appear here",
   "export_results": "Export Results",
+  "export_full_data": "Full analysis data",
+  "export_word_data": "Word-level spreadsheet",
   "time": "Time",
   "conf": "Conf",
   "technical_info": "Technical Information",
@@ -364,5 +366,11 @@
   "tech_stat_accuracy": "Mastermind Accuracy",
   "tech_stat_emotions": "Emotion Classes",
   "tech_stat_models": "ML Models",
-  "tech_stat_dataset": "Dataset Size"
+  "tech_stat_dataset": "Dataset Size",
+  "hero_subtitle": "Instantly and flawlessly analyze the 4 core emotions in your voice with our advanced <1>Mastermind</1> algorithm. Just speak — we'll handle the rest.",
+  "analyzing": "Mastermind Analyzing...",
+  "mastermind_report": "Mastermind Analysis Report",
+  "veto_title": "Mastermind Veto Intervention",
+  "veto_desc": "Core algorithms overridden due to noise detection. Model marked decision as {{emotion}}. (RF Score: %{{score}})",
+  "experimental_subtitle": "<1>Experimental models</1> are available here — you can test different AI engines and compare results."
 }

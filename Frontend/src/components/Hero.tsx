@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { useTheme } from "../context/ThemeContext";
 import { clsx } from "clsx";
 import AudioInput from "./AudioInput/AudioInput";
@@ -220,7 +220,9 @@ const Hero = () => {
         
         {!analysisResult && (
            <p className={`text-base sm:text-xl md:text-2xl font-light mb-8 sm:mb-12 md:mb-16 text-center max-w-3xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/70" : "text-slate-600/90"} animate-slideUpFade`} style={{ animationDelay: '0.1s' }}>
-              Gelişmiş <strong className="font-semibold text-indigo-400 dark:text-indigo-300">Üst Akıl</strong> algoritması ile sesinizdeki 4 temel duyguyu anında ve kusursuzca analiz edin. Sadece konuşun, gerisini biz halledelim.
+              <Trans i18nKey="hero_subtitle">
+                Gelişmiş <strong className="font-semibold text-indigo-400 dark:text-indigo-300">Üst Akıl</strong> algoritması ile sesinizdeki 4 temel duyguyu anında ve kusursuzca analiz edin.
+              </Trans>
            </p>
         )}
 
@@ -284,7 +286,7 @@ const Hero = () => {
                  <div className="absolute inset-2 border-4 border-purple-600 dark:border-purple-400 border-b-transparent rounded-full animate-[spin_1.5s_linear_infinite_reverse]" />
               </div>
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse">
-                Üst Akıl Analiz Ediyor...
+                {t('analyzing')}
               </p>
             </div>
           )}

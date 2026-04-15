@@ -27,6 +27,7 @@ const Result: React.FC<ResultProps> = ({
     const audioRef = useRef<HTMLAudioElement>(null);
     const [progress, setProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState("0:00");
+    const [duration, setDuration] = useState("0:00");
 
     const togglePlay = () => {
         if (audioRef.current) {
@@ -54,6 +55,15 @@ const Result: React.FC<ResultProps> = ({
         setCurrentTime("0:00");
     };
 
+    const handleLoadedMetadata = () => {
+        if (audioRef.current) {
+            const d = audioRef.current.duration;
+            const mins = Math.floor(d / 60);
+            const secs = Math.floor(d % 60);
+            setDuration(`${mins}:${secs.toString().padStart(2, '0')}`);
+        }
+    };
+
     const getEmotionColor = (emotion: string) => {
         const colors: Record<string, string> = {
             angry: 'from-rose-500 via-red-500 to-red-600',
@@ -72,7 +82,7 @@ const Result: React.FC<ResultProps> = ({
     const glowClass = emotionColorClass.replace('300', '500').replace('400', '600');
 
     return (
-        <div 
+        <div
             className={clsx(
                 "w-full min-h-[85vh] flex flex-col font-sans px-4 sm:px-8 md:px-12 lg:px-20 pt-8 lg:pt-12 pb-10",
                 isDark ? "text-white" : "text-slate-900"
@@ -95,9 +105,9 @@ const Result: React.FC<ResultProps> = ({
                 </button>
 
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-3 px-8 py-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase shadow-sm">
+                    <div className="hidden md:flex items-center gap-3 px-8 py-3 rounded-sm bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase shadow-sm">
                         <FaBrain className="animate-pulse text-sm" />
-                        Üst Akıl Analiz Raporu
+                        {t('mastermind_report')}
                     </div>
                     <ExportButton result={result} />
                 </div>
@@ -108,7 +118,7 @@ const Result: React.FC<ResultProps> = ({
 
                 {/* LEFT: DOMINANT EMOTION DISPLAY (COL-SPAN-5) */}
                 <MotionWrapper delay={0.1} className="lg:col-span-5 flex flex-col h-full">
-                    <div 
+                    <div
                         className={clsx(
                             "relative flex-grow flex flex-col items-center justify-center p-12 lg:p-16 border shadow-2xl backdrop-blur-2xl overflow-hidden rounded-[2rem]",
                             isDark ? "bg-slate-900/50 border-white/10" : "bg-white/40 border-white/80"
@@ -127,21 +137,15 @@ const Result: React.FC<ResultProps> = ({
                         {/* Huge Emoji Badge */}
                         <div className="relative z-10 mb-8">
                             <div className={clsx(
-                                "w-48 h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center shadow-2xl relative",
-                                "bg-gradient-to-br backdrop-blur-3xl ring-4 ring-white/20 dark:ring-white/5",
-                                emotionColorClass
+                                "w-48 h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center relative",
+                                `bg-gradient-to-br ${emotionColorClass}`
                             )}>
-                                <div className={clsx(
-                                    "w-[95%] h-[95%] rounded-full flex items-center justify-center shadow-inner",
-                                    isDark ? "bg-slate-900/40" : "bg-white/40"
-                                )}>
-                                    <EmotionBadge
-                                        emotion={result.dominant_emotion}
-                                        size="xl"
-                                        showLabel={false}
-                                        className="!scale-[2.0]"
-                                    />
-                                </div>
+                                <EmotionBadge
+                                    emotion={result.dominant_emotion}
+                                    size="xl"
+                                    showLabel={false}
+                                    className="!scale-[2.0]"
+                                />
                             </div>
                         </div>
 
@@ -154,8 +158,7 @@ const Result: React.FC<ResultProps> = ({
                                 {t(result.dominant_emotion.toLowerCase())}
                             </h1>
 
-                            <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/20 dark:bg-black/30 backdrop-blur-md border border-white/20 shadow-inner">
-                                <span className={clsx("w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] animate-pulse", `bg-${glowClass.split(' ')[0].replace('from-', '')}`)} />
+                            <div className="inline-flex items-center px-6 py-3 rounded-lg bg-white/20 backdrop-blur-md border border-white/20 shadow-inner">
                                 <span className="text-sm font-black tracking-widest uppercase opacity-90">
                                     {t('confidence')}: {(result.confidence * 100).toFixed(1)}%
                                 </span>
@@ -178,7 +181,7 @@ const Result: React.FC<ResultProps> = ({
                                 <div className="flex-1 space-y-2 relative">
                                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest opacity-60 px-1">
                                         <span>Recording.wav</span>
-                                        <span>{currentTime}</span>
+                                        <span>{currentTime} / {duration}</span>
                                     </div>
                                     <div className="h-2 w-full bg-slate-300/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
                                         <div
@@ -194,7 +197,7 @@ const Result: React.FC<ResultProps> = ({
                         )}
 
                         {audioUrl && (
-                            <audio ref={audioRef} src={audioUrl} onTimeUpdate={handleTimeUpdate} onEnded={handleEnded} className="hidden" />
+                            <audio ref={audioRef} src={audioUrl} onTimeUpdate={handleTimeUpdate} onEnded={handleEnded} onLoadedMetadata={handleLoadedMetadata} className="hidden" />
                         )}
                     </div>
                 </MotionWrapper>
@@ -209,10 +212,10 @@ const Result: React.FC<ResultProps> = ({
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Üst Akıl Veto Müdahalesi</h3>
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{t('veto_title')}</h3>
                                     </div>
                                     <p className="text-sm font-medium opacity-80 leading-relaxed">
-                                        Gürültü tespiti sebebiyle ana algoritmalar ezildi. Model kararını <strong className="text-indigo-600 dark:text-indigo-300 font-black">Üzgün</strong> olarak işaretledi. (RF Skoru: <span className="font-mono">%{(result.veto_info.rf_score).toFixed(1)}</span>)
+                                        {t('veto_desc', { emotion: t('sad'), score: result.veto_info.rf_score.toFixed(1) })}
                                     </p>
                                 </div>
                             </div>
@@ -221,7 +224,7 @@ const Result: React.FC<ResultProps> = ({
 
                     {/* Chart & Distribution Analysis */}
                     <MotionWrapper delay={0.3} className="flex-1 min-h-[300px]">
-                        <div 
+                        <div
                             className={clsx(
                                 "w-full h-full p-10 lg:p-14 border shadow-xl backdrop-blur-xl flex flex-col rounded-[2rem]",
                                 isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
@@ -244,7 +247,7 @@ const Result: React.FC<ResultProps> = ({
                     {/* Word Timeline OR Voting Details */}
                     {((result.word_timestamps && result.word_timestamps.length > 0) || (result.model_details && result.model_details.length > 0)) && (
                         <MotionWrapper delay={0.4}>
-                            <div 
+                            <div
                                 className={clsx(
                                     "w-full h-full p-10 lg:p-14 border shadow-xl backdrop-blur-xl flex flex-col rounded-[2rem] overflow-hidden",
                                     isDark ? "bg-slate-900/50 border-white/10" : "bg-white/50 border-white/80"
@@ -264,6 +267,7 @@ const Result: React.FC<ResultProps> = ({
                                             <WordTimeline
                                                 wordTimestamps={result.word_timestamps}
                                                 audioDuration={Math.max(...result.word_timestamps.map(w => w.end)) || 10}
+                                                dominantEmotion={result.dominant_emotion}
                                             />
                                         </div>
                                     </>

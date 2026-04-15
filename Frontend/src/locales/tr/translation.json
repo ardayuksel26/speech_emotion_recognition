@@ -125,6 +125,8 @@
   "emotion_distribution": "Duygu Dağılımı",
   "word_analysis_coming_soon": "Kelime bazlı analiz burada görünecek",
   "export_results": "Sonuçları Dışa Aktar",
+  "export_full_data": "Tüm analiz verisi",
+  "export_word_data": "Kelime bazlı tablo",
   "time": "Zaman",
   "conf": "Güven",
   "technical_info": "Teknik Bilgiler",
@@ -362,5 +364,11 @@
   "tech_stat_accuracy": "Mastermind Doğruluğu",
   "tech_stat_emotions": "Duygu Sınıfı",
   "tech_stat_models": "Model Sayısı",
-  "tech_stat_dataset": "Veri Seti"
+  "tech_stat_dataset": "Veri Seti",
+  "hero_subtitle": "Gelişmiş <1>Üst Akıl</1> algoritması ile sesinizdeki 4 temel duyguyu anında ve kusursuzca analiz edin. Sadece konuşun, gerisini biz halledelim.",
+  "analyzing": "Üst Akıl Analiz Ediyor...",
+  "mastermind_report": "Üst Akıl Analiz Raporu",
+  "veto_title": "Üst Akıl Veto Müdahalesi",
+  "veto_desc": "Gürültü tespiti sebebiyle ana algoritmalar ezildi. Model kararını {{emotion}} olarak işaretledi. (RF Skoru: %{{score}})",
+  "experimental_subtitle": "Burada <1>deneysel modeller</1> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz."
 }

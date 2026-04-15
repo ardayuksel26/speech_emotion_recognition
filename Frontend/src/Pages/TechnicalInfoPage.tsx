@@ -24,7 +24,7 @@ const turEvData = [
 
 /* ─── Sub-components ─── */
 
-const SectionCard = ({ children, isDark, accent }: { children: React.ReactNode; isDark: boolean; accent?: string }) => (
+const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: boolean; accent?: string }) => (
     <div
         className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words"
         style={{
@@ -42,8 +42,8 @@ const SectionCard = ({ children, isDark, accent }: { children: React.ReactNode; 
 );
 
 const SectionTitle = ({
-    num, icon, title, iconColor, isDark
-}: { num: string; icon: React.ReactNode; title: string; iconColor: string; isDark: boolean }) => (
+    title, iconColor, isDark
+}: { num?: string; icon?: React.ReactNode; title: string; iconColor: string; isDark: boolean }) => (
     <div className="flex items-center gap-3 mb-8">
         <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ background: iconColor }} />
         <h2 className={`text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -52,7 +52,7 @@ const SectionTitle = ({
     </div>
 );
 
-const SubTitle = ({ children, color, isDark }: { children: React.ReactNode; color: string; isDark: boolean }) => (
+const SubTitle = ({ children, color }: { children: React.ReactNode; color: string; isDark?: boolean }) => (
     <h3
         className="text-xl font-bold mb-4 flex items-center gap-2.5"
         style={{ color, marginTop: '3.5rem' }}
@@ -627,10 +627,10 @@ const TechnicalInfoPage = () => {
                                                         const intensity = Math.round((val / rowSum) * 100);
                                                         return (
                                                             <td key={ci} className={`p-4 text-center font-bold rounded-lg border ${isCorrect
-                                                                    ? isDark ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
-                                                                    : val > 0
-                                                                        ? isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
-                                                                        : isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
+                                                                ? isDark ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                                                                : val > 0
+                                                                    ? isDark ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
+                                                                    : isDark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
                                                                 }`}>
                                                                 <span className="text-base">{val}</span>
                                                                 <span className="block text-xs opacity-50">{intensity}%</span>

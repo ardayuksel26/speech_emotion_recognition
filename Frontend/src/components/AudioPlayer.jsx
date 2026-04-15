@@ -179,10 +179,10 @@ const AudioPlayer = ({
 
               {isSpeedMenuOpen && (
                 <div
-                  className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]"
+                  className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-32 rounded-sm shadow-2xl overflow-hidden py-1 z-[100]"
                   style={{
-                    background: isDark ? '#1e293b' : '#ffffff',
-                    border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                    background: isDark ? 'rgba(5, 5, 5, 0.98)' : '#ffffff',
+                    border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
                   }}
                 >
                   {speedOptions.map((rate) => (

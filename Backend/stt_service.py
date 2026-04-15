@@ -152,29 +152,53 @@ def transcribe_with_whisperx(audio_path: str, device: str = "cpu") -> list:
     # 2. Deşifre et
     result = _whisperx_model.transcribe(audio, language="tr")
 
-    # 3. Hizalama (Alignment) modelini yükle ve kelime sürelerini bul
-    model_a, metadata = whisperx.load_align_model(language_code="tr", device=device)
-    result = whisperx.align(
-        result["segments"], model_a, metadata, audio, device,
-        return_char_alignments=False
-    )
+    # 3. Hizalama (Alignment) — julius veya başka bağımlılık yoksa segment-level fallback
+    try:
+        model_a, metadata = whisperx.load_align_model(language_code="tr", device=device)
+        result = whisperx.align(
+            result["segments"], model_a, metadata, audio, device,
+            return_char_alignments=False
+        )
 
-    # 4. Kelime bazlı sonuçları çıkar
-    words = []
-    for segment in result.get("segments", []):
-        for word_info in segment.get("words", []):
-            start = word_info.get('start')
-            end = word_info.get('end')
-            text = word_info.get('word', '')
+        # 4a. Kelime bazlı sonuçları çıkar (alignment başarılı)
+        words = []
+        for segment in result.get("segments", []):
+            for word_info in segment.get("words", []):
+                start = word_info.get('start')
+                end = word_info.get('end')
+                text = word_info.get('word', '')
+                if start is not None and end is not None and text:
+                    words.append({
+                        'word': text.strip(),
+                        'start': round(float(start), 3),
+                        'end': round(float(end), 3)
+                    })
+        return words
 
-            if start is not None and end is not None and text:
+    except Exception as align_err:
+        logger.warning(f"WhisperX alignment başarısız ({align_err}). Segment-level timestamps kullanılacak.")
+
+        # 4b. Fallback: segment bazlı timestamp'lar (alignment olmadan)
+        words = []
+        raw_segments = result.get("segments", [])
+        for segment in raw_segments:
+            text = segment.get("text", "").strip()
+            seg_start = segment.get("start", 0)
+            seg_end = segment.get("end", 0)
+            if not text:
+                continue
+            # Segment içindeki kelimeleri zamana eşit böl
+            tokens = text.split()
+            if not tokens:
+                continue
+            step = (seg_end - seg_start) / len(tokens)
+            for i, token in enumerate(tokens):
                 words.append({
-                    'word': text.strip(),
-                    'start': round(float(start), 3),
-                    'end': round(float(end), 3)
+                    'word': token,
+                    'start': round(seg_start + i * step, 3),
+                    'end': round(seg_start + (i + 1) * step, 3)
                 })
-
-    return words
+        return words
 
 
 def transcribe(audio_path: str, engine: str = "vosk") -> list:
