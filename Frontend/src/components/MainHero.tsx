@@ -126,12 +126,14 @@ const MainHero = () => {
       "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
       isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
       analysisResult
-        ? "justify-start pt-24 pb-12 overflow-x-hidden min-h-screen"
-        : "justify-center overflow-hidden min-h-screen"
+        ? "justify-start pt-24 pb-12 overflow-x-hidden"
+        : "justify-center"
     )}>
-      <InteractiveBackground />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <InteractiveBackground />
+      </div>
 
-      <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center py-10 sm:py-16 md:py-20 mb-4 sm:mb-8 md:mb-10">
+      <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center py-8 sm:py-12 md:py-16 mb-4 sm:mb-6 md:mb-8">
 
         {/* Başlık */}
         <h1 className={`font-outfit text-3xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 py-1 sm:py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 mb-0 opacity-0 h-0" : "opacity-100"}`}>
@@ -155,7 +157,7 @@ const MainHero = () => {
           isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]",
           analysisResult
             ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20"
-            : "max-w-5xl min-h-[400px] p-8 md:p-14 rounded-[3rem]"
+            : "max-w-5xl min-h-[320px] p-6 md:p-10 rounded-[3rem]"
         )}
           style={{ marginTop: analysisResult ? "80px" : "0px" }}
         >

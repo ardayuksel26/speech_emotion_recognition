@@ -359,9 +359,9 @@ const Hero = () => {
     <div className={clsx(
         "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
         isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
-        analysisResult 
-            ? "justify-start pt-24 pb-12 overflow-x-hidden min-h-screen" 
-            : "justify-center overflow-hidden min-h-screen"
+        analysisResult
+            ? "justify-start pt-24 pb-12 overflow-x-hidden"
+            : "justify-center overflow-hidden"
     )}>
       
       <InteractiveBackground />
@@ -386,7 +386,7 @@ const Hero = () => {
           relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
           flex flex-col items-center justify-center border
           ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
-          ${analysisResult ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[400px] p-8 md:p-14 rounded-[3rem]"}
+          ${analysisResult ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] p-6 md:p-10 rounded-[3rem]"}
         `}
           style={!analysisResult ? { padding: '32px 40px 48px 40px' } : { marginTop: '80px' }}
         >
