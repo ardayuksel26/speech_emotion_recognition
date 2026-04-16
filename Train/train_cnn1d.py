@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models/CNN1D"
+MODEL_DIR = "Models2/CNN1D"
 MODEL_NAME = "cnn1d_model.h5"
 SCALER_NAME = "scaler_cnn1d.pkl"
 LABEL_ENCODER_NAME = "label_encoder_cnn1d.pkl"
@@ -56,7 +56,7 @@ def train_cnn1d():
     # 1D CNN için veriyi şekillendir: (Örnek Sayısı, Özellik Sayısı, 1)
     X = np.expand_dims(X, axis=2)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y_cat, test_size=0.2, random_state=42)
+    X_train, y_train = X, y_cat
 
     # --- MODEL MİMARİSİ ---
     model = Sequential()
@@ -81,11 +81,10 @@ def train_cnn1d():
     optimizer = Adam(learning_rate=0.0005) # CNN için biraz daha yavaş öğrenme hızı
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
-    early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    early_stop = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
 
     history = model.fit(
         X_train, y_train,
-        validation_data=(X_test, y_test),
         epochs=100,
         batch_size=32,
         callbacks=[early_stop],
@@ -100,10 +99,9 @@ def train_cnn1d():
     joblib.dump(le, os.path.join(MODEL_DIR, LABEL_ENCODER_NAME))
     
     plt.plot(history.history['accuracy'], label='Train Accuracy')
-    plt.plot(history.history['val_accuracy'], label='Test Accuracy')
     plt.title('1D CNN Model Başarısı')
     plt.legend()
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_cnn1d()

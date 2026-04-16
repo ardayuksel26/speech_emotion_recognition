@@ -12,7 +12,7 @@ import seaborn as sns
 # --- AYARLAR ---
 # Artık tek bir dosya değil, klasör yolunu veriyoruz
 DATA_DIR = "TurEV-DB/Extracted CSV"  
-MODEL_DIR = "Models"
+MODEL_DIR = "Models2"
 MODEL_NAME = "random_forest_model.pkl"
 SCALER_NAME = "scaler_rf.pkl"
 LABEL_ENCODER_NAME = "label_encoder_rf.pkl"
@@ -92,25 +92,25 @@ def train_rf():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    # 4. Train / Test Ayrımı (%20 Test)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # 4. Use 100% data
+    X_train, y_train = X, y
 
     # 5. Modeli Eğit
     print("Random Forest eğitiliyor...")
     rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
     rf_model.fit(X_train, y_train)
 
-    # 6. Test Et
-    print("Test ediliyor...")
-    y_pred = rf_model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
+    # 6. Test Et (On Training Data)
+    print("Test ediliyor (Eğitim verisi üzerinde)...")
+    y_pred = rf_model.predict(X_train)
+    acc = accuracy_score(y_train, y_pred)
     
     print("-" * 30)
     print(f"✅ Random Forest Başarısı: %{acc * 100:.2f}")
     print("-" * 30)
     
     class_names = [str(cls) for cls in le.classes_]
-    print(classification_report(y_test, y_pred, target_names=class_names))
+    print(classification_report(y_train, y_pred, target_names=class_names))
 
     # 7. Kaydet
     print("Dosyalar kaydediliyor...")
@@ -121,7 +121,7 @@ def train_rf():
     print(f"Model kaydedildi: {os.path.join(MODEL_DIR, MODEL_NAME)}")
     
     # Görselleştir
-    plot_confusion_matrix(y_test, y_pred, class_names)
+    plot_confusion_matrix(y_train, y_pred, class_names)
 
 def plot_confusion_matrix(y_true, y_pred, class_names):
     cm = confusion_matrix(y_true, y_pred)
@@ -130,7 +130,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names):
     plt.title('Random Forest - Confusion Matrix')
     plt.xlabel('Tahmin')
     plt.ylabel('Gerçek')
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_rf()

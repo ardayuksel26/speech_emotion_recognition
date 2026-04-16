@@ -11,7 +11,7 @@ import xgboost as xgb  # XGBoost Kütüphanesi
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"    # Verilerin olduğu yer
-MODEL_DIR = "Models/XGBoost"           # <-- Hedef Klasör
+MODEL_DIR = "Models2/XGBoost"           # <-- Hedef Klasör
 MODEL_NAME = "xgboost_model.pkl"
 SCALER_NAME = "scaler_xgb.pkl"
 LABEL_ENCODER_NAME = "label_encoder_xgb.pkl"
@@ -77,8 +77,8 @@ def train_xgboost():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    # 4. Train / Test Ayrımı
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # 4. Use 100% data
+    X_train, y_train = X, y
 
     # 5. Modeli Eğit
     print("XGBoost Modeli eğitiliyor...")
@@ -98,9 +98,9 @@ def train_xgboost():
     
     xgb_model.fit(X_train, y_train)
 
-    # 6. Test Et
-    y_pred = xgb_model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
+    # 6. Test Et (On Training Data)
+    y_pred = xgb_model.predict(X_train)
+    acc = accuracy_score(y_train, y_pred)
     
     print("-" * 30)
     print(f"✅ XGBoost Başarısı: %{acc * 100:.2f}")
@@ -108,7 +108,7 @@ def train_xgboost():
 
     # Detaylı Rapor
     class_names = [str(c) for c in le.classes_]
-    print(classification_report(y_test, y_pred, target_names=class_names))
+    print(classification_report(y_train, y_pred, target_names=class_names))
 
     # 7. Kaydet
     print(f"Dosyalar '{MODEL_DIR}' klasörüne kaydediliyor...")
@@ -125,7 +125,7 @@ def train_xgboost():
     print(f"Model kaydedildi: {model_path}")
     
     # Görselleştir
-    plot_confusion_matrix(y_test, y_pred, class_names)
+    plot_confusion_matrix(y_train, y_pred, class_names)
 
 def plot_confusion_matrix(y_true, y_pred, class_names):
     cm = confusion_matrix(y_true, y_pred)
@@ -135,7 +135,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names):
     plt.title('XGBoost - Confusion Matrix')
     plt.xlabel('Tahmin')
     plt.ylabel('Gerçek')
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_xgboost()

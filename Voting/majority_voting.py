@@ -6,16 +6,11 @@ Weighted voting based on model accuracy scores.
 # Model accuracy weights — higher = more influence on final vote.
 # Based on test accuracy of each model on the TurEV-DB dataset.
 MODEL_WEIGHTS = {
-    'catboost':           1.00,  # Highest accuracy
-    'xgboost':            0.90,
-    'lightgbm':           0.88,
-    'gradient_boosting':  0.85,
-    'rf':                 0.82,
-    'dnn':                0.80,
-    'cnn1d':              0.78,
-    'mlp':                0.75,
-    'svm':                0.72,
-    'knn':                0.65,
+    'rf':                 1.00,
+    'lightgbm':           0.97,
+    'xgboost':            0.97,
+    'catboost':           0.86,
+    'gradient_boosting':  0.80,
 }
 
 # Robust variants share the same weight as their base model

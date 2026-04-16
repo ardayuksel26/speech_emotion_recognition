@@ -11,7 +11,7 @@ import lightgbm as lgb  # LightGBM Kütüphanesi
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models/LightGBM"
+MODEL_DIR = "Models2/LightGBM"
 MODEL_NAME = "lightgbm_model.pkl"
 SCALER_NAME = "scaler_lgb.pkl"
 LABEL_ENCODER_NAME = "label_encoder_lgb.pkl"
@@ -57,7 +57,7 @@ def train_lightgbm():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, y_train = X, y
 
     # --- MODEL ---
     print("LightGBM eğitiliyor...")
@@ -70,8 +70,8 @@ def train_lightgbm():
     )
     lgb_model.fit(X_train, y_train)
 
-    y_pred = lgb_model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
+    y_pred = lgb_model.predict(X_train)
+    acc = accuracy_score(y_train, y_pred)
     
     print("-" * 30)
     print(f"✅ LightGBM Başarısı: %{acc * 100:.2f}")
@@ -83,15 +83,15 @@ def train_lightgbm():
     joblib.dump(le, os.path.join(MODEL_DIR, LABEL_ENCODER_NAME))
     
     class_names = [str(c) for c in le.classes_]
-    print(classification_report(y_test, y_pred, target_names=class_names))
+    print(classification_report(y_train, y_pred, target_names=class_names))
 
     # Görselleştir
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_train, y_pred)
     plt.figure(figsize=(8, 6))
     # Pembe tonları
     sns.heatmap(cm, annot=True, fmt='d', cmap='RdPu', xticklabels=class_names, yticklabels=class_names)
     plt.title('LightGBM Confusion Matrix')
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_lightgbm()

@@ -6,7 +6,7 @@ import { WordTimeline } from './Results/WordTimeline';
 import { ExportButton } from './Results/ExportButton';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaPlay, FaPause, FaRobot, FaBrain, FaChartBar } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaPause, FaBrain, FaChartBar } from 'react-icons/fa';
 import { clsx } from 'clsx';
 import EmotionBadge from './Results/EmotionBadge';
 

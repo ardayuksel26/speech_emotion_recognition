@@ -43,10 +43,10 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Turkish "Happy" (Mutlu) expressions acoustically misclassify as "Sad" (Üzgün).
 # Tweak these global multipliers if the models are continuously biasing toward one.
 VOCAL_CALIBRATION = {
-    'happy': 1.30,  # +30% Boost: En zor tespit edilen duygu, mikrofon bass'ı yutuyor.
-    'sad': 0.80,    # -20% Penalty: Boğuk mikrofon sesi genelde "üzgün" sanılır, bunu bastırıyoruz.
-    'angry': 1.10,  # +10% Boost: Yüksek enerji gerektiren kelimeleri daha net yakalasın.
-    'calm': 0.90    # -10% Penalty: Düz/cansız seslerin hemen 'sakin' sanılmasını önler.
+    'happy': 1.00,
+    'sad': 1.00,
+    'angry': 1.00,
+    'calm': 1.00
 }
 
 # --- AYARLAR / DIRECTORIES ---
@@ -506,8 +506,7 @@ def analyze_voting():
         features = features.reshape(1, -1)
 
         # 2. Determine which model keys to use based on quality
-        base_keys = ['catboost', 'xgboost', 'lightgbm', 'rf', 'knn', 'svm',
-                      'mlp', 'gradient_boosting', 'dnn', 'cnn1d']
+        base_keys = ['rf', 'lightgbm', 'xgboost', 'catboost', 'gradient_boosting']
         if quality == 'robust':
             target_keys = [f"{k}_robust" for k in base_keys]
         else:

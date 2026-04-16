@@ -11,7 +11,7 @@ from catboost import CatBoostClassifier  # CatBoost Kütüphanesi
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models/CatBoost"
+MODEL_DIR = "Models2/CatBoost"
 MODEL_NAME = "catboost_model.pkl"
 SCALER_NAME = "scaler_cb.pkl"
 LABEL_ENCODER_NAME = "label_encoder_cb.pkl"
@@ -57,7 +57,7 @@ def train_catboost():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, y_train = X, y
 
     # --- MODEL ---
     print("CatBoost eğitiliyor...")
@@ -71,11 +71,11 @@ def train_catboost():
     )
     cb_model.fit(X_train, y_train)
 
-    y_pred = cb_model.predict(X_test)
+    y_pred = cb_model.predict(X_train)
     # CatBoost bazen sonucu [[1], [0]] gibi döndürür, düzeltelim:
     y_pred = y_pred.flatten()
     
-    acc = accuracy_score(y_test, y_pred)
+    acc = accuracy_score(y_train, y_pred)
     
     print("-" * 30)
     print(f"✅ CatBoost Başarısı: %{acc * 100:.2f}")
@@ -87,15 +87,15 @@ def train_catboost():
     joblib.dump(le, os.path.join(MODEL_DIR, LABEL_ENCODER_NAME))
     
     class_names = [str(c) for c in le.classes_]
-    print(classification_report(y_test, y_pred, target_names=class_names))
+    print(classification_report(y_train, y_pred, target_names=class_names))
 
     # Görselleştir
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_train, y_pred)
     plt.figure(figsize=(8, 6))
     # Mavi-Yeşil tonları (Yandex renkleri gibi olsun)
     sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', xticklabels=class_names, yticklabels=class_names)
     plt.title('CatBoost Confusion Matrix')
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_catboost()

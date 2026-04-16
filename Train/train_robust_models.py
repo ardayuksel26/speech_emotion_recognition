@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("Robust_Trainer")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../TurEV-DB/Extracted CSV")
-BASE_MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../Models")
+BASE_MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../Models2")
 
 EMOTION_FILES = {
     "angry.csv": "angry",
@@ -104,10 +104,7 @@ def train_robust_models():
     # --- 1. DATA AUGMENTATION (ÖZNİTELİK SEVİYESİNDE GÜRÜLTÜ) ---
     logger.info("Orijinal veriye Gaussian Noise (Dış ortam/Mikrofon simülasyonu) ekleniyor...")
     
-    # We will duplicate the dataset 2 times with different levels of noise
-    # Standard deviation of 0.05 simulates mild compression/hiss
     X_noisy_light = X_original + np.random.normal(0, 0.03, X_original.shape)
-    # Standard deviation of 0.1 simulates heavier background noise
     X_noisy_heavy = X_original + np.random.normal(0, 0.08, X_original.shape)
     
     X = np.vstack((X_original, X_noisy_light, X_noisy_heavy))
@@ -121,7 +118,7 @@ def train_robust_models():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True)
+    X_train, y_train = X, y
 
     # --- 2. CLASSIC ML MODEL EĞİTİMLERİ ---
     models_to_train = [
@@ -180,12 +177,12 @@ def train_robust_models():
         clf = config['model']
         clf.fit(X_train, y_train)
         
-        y_pred = clf.predict(X_test)
+        y_pred = clf.predict(X_train)
         if hasattr(y_pred, 'flatten'):
              y_pred = y_pred.flatten()
              
-        acc = accuracy_score(y_test, y_pred)
-        logger.info(f"✅ {config['id']} Başarısı (Dış Ses / Gürültülü Validasyon): %{acc * 100:.2f}")
+        acc = accuracy_score(y_train, y_pred)
+        logger.info(f"✅ {config['id']} Başarısı (Eğitim Verisi): %{acc * 100:.2f}")
         
         save_dir = os.path.join(BASE_MODELS_DIR, config['dir'])
         os.makedirs(save_dir, exist_ok=True)
@@ -199,7 +196,6 @@ def train_robust_models():
     if TF_AVAILABLE:
         logger.info("Deep Learning (DNN / CNN1D) modelleri gürültülü (Robust) veride eğitiliyor...")
         y_train_cat = to_categorical(y_train)
-        y_test_cat = to_categorical(y_test)
         input_shape = X_train.shape[1]
         num_classes = len(le.classes_)
         
@@ -225,23 +221,20 @@ def train_robust_models():
             model_dl = config['builder']()
             
             X_train_dl = X_train
-            X_test_dl = X_test
             if config['is_cnn']:
                 X_train_dl = np.expand_dims(X_train, axis=2)
-                X_test_dl = np.expand_dims(X_test, axis=2)
                 
-            es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+            es = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
             
             history = model_dl.fit(
                 X_train_dl, y_train_cat, 
-                validation_data=(X_test_dl, y_test_cat), 
                 epochs=50, batch_size=32, 
                 callbacks=[es], verbose=0
             )
 
-            predictions = model_dl.predict(X_test_dl, verbose=0)
+            predictions = model_dl.predict(X_train_dl, verbose=0)
             y_pred_dl = np.argmax(predictions, axis=1)
-            y_true_dl = np.argmax(y_test_cat, axis=1)
+            y_true_dl = np.argmax(y_train_cat, axis=1)
             acc = accuracy_score(y_true_dl, y_pred_dl)
             
             logger.info(f"✅ {config['id']} Başarısı: %{acc * 100:.2f}")

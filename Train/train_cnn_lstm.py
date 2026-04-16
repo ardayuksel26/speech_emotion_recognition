@@ -9,9 +9,9 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 # --- AYARLAR ---
 DATA_ROOT = "Data"
-MODEL_DIR = "Models"
+MODEL_DIR = "Models2"
 MODEL_NAME = "cnn_lstm_model.h5"
-MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME) # Tam yol: Models/cnn_lstm_model.h5
+MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME) # Tam yol: Models2/cnn_lstm_model.h5
 
 # Models klasörü yoksa oluştur (Hata almamak için)
 if not os.path.exists(MODEL_DIR):
@@ -70,11 +70,10 @@ def train():
     # 1. Veriyi Yükle
     X, y = load_data()
     
-    # 2. Train / Test Ayrımı (%20 Test)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # 2. Use 100% data
+    X_train, y_train = X, y
     
     print(f"Eğitim Verisi: {X_train.shape}")
-    print(f"Test Verisi: {X_test.shape}")
     
     # 3. Modeli İnşa Et
     input_shape = (X_train.shape[1], X_train.shape[2], 1)
@@ -84,8 +83,8 @@ def train():
     model.summary() # Model özetini göster
     
     # 4. Callback'ler (Eğitimi İyileştiriciler)
-    lr_reduction = ReduceLROnPlateau(monitor='val_loss', patience=5, verbose=1, factor=0.1, min_lr=0.00001)
-    early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    lr_reduction = ReduceLROnPlateau(monitor='loss', patience=5, verbose=1, factor=0.1, min_lr=0.00001)
+    early_stop = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
     
     # 5. EĞİTİMİ BAŞLAT
     print("Eğitim başlıyor...")
@@ -93,7 +92,6 @@ def train():
         X_train, y_train,
         epochs=50,
         batch_size=32,
-        validation_data=(X_test, y_test),
         callbacks=[lr_reduction, early_stop]
     )
     
@@ -113,7 +111,6 @@ def plot_history(history):
     # Accuracy
     plt.subplot(1, 2, 1)
     plt.plot(history.history['accuracy'], label='Eğitim Başarısı')
-    plt.plot(history.history['val_accuracy'], label='Test Başarısı')
     plt.title('Model Başarısı (Accuracy)')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -122,13 +119,12 @@ def plot_history(history):
     # Loss
     plt.subplot(1, 2, 2)
     plt.plot(history.history['loss'], label='Eğitim Kaybı')
-    plt.plot(history.history['val_loss'], label='Test Kaybı')
     plt.title('Model Kaybı (Loss)')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
     
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train()

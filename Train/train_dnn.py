@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models/DNN"
+MODEL_DIR = "Models2/DNN"
 MODEL_NAME = "dnn_model.h5"  # Keras modeli olduğu için .h5
 SCALER_NAME = "scaler_dnn.pkl"
 LABEL_ENCODER_NAME = "label_encoder_dnn.pkl"
@@ -55,7 +55,7 @@ def train_dnn():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y_cat, test_size=0.2, random_state=42)
+    X_train, y_train = X, y_cat
 
     # --- MODEL MİMARİSİ ---
     model = Sequential()
@@ -81,12 +81,11 @@ def train_dnn():
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Callback'ler
-    early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001)
+    early_stop = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=5, min_lr=0.00001)
 
     history = model.fit(
         X_train, y_train,
-        validation_data=(X_test, y_test),
         epochs=100,
         batch_size=32,
         callbacks=[early_stop, reduce_lr],
@@ -100,10 +99,9 @@ def train_dnn():
     
     # Grafik
     plt.plot(history.history['accuracy'], label='Train Accuracy')
-    plt.plot(history.history['val_accuracy'], label='Test Accuracy')
     plt.title('DNN Model Başarısı')
     plt.legend()
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_dnn()

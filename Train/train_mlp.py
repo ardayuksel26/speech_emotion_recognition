@@ -11,7 +11,7 @@ import seaborn as sns
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models/MLP"
+MODEL_DIR = "Models2/MLP"
 MODEL_NAME = "mlp_model.pkl"
 SCALER_NAME = "scaler_mlp.pkl"
 LABEL_ENCODER_NAME = "label_encoder_mlp.pkl"
@@ -58,13 +58,13 @@ def train_mlp():
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, y_train = X, y
 
     # --- MODEL ---
     print("MLP eğitiliyor (Biraz sürebilir)...")
     # hidden_layer_sizes=(256, 128, 64): 3 katmanlı, gittikçe küçülen yapı
     # max_iter=500: Maksimum döngü sayısı
-    # early_stopping=True: Öğrenme durursa eğitimi kes (Overfitting önler)
+    # early_stopping=False: 100% veri ile eğitim yaparken False olması daha uygundur
     mlp_model = MLPClassifier(
         hidden_layer_sizes=(256, 128, 64), 
         activation='relu', 
@@ -73,13 +73,13 @@ def train_mlp():
         batch_size='auto',
         learning_rate='adaptive',
         max_iter=500,
-        early_stopping=True,
+        early_stopping=False,
         random_state=42
     )
     mlp_model.fit(X_train, y_train)
 
-    y_pred = mlp_model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
+    y_pred = mlp_model.predict(X_train)
+    acc = accuracy_score(y_train, y_pred)
     
     print("-" * 30)
     print(f"✅ MLP Başarısı: %{acc * 100:.2f}")
@@ -91,15 +91,15 @@ def train_mlp():
     joblib.dump(le, os.path.join(MODEL_DIR, LABEL_ENCODER_NAME))
     
     class_names = [str(c) for c in le.classes_]
-    print(classification_report(y_test, y_pred, target_names=class_names))
+    print(classification_report(y_train, y_pred, target_names=class_names))
 
     # Görselleştir
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_train, y_pred)
     plt.figure(figsize=(8, 6))
     # Kırmızı tonları
     sns.heatmap(cm, annot=True, fmt='d', cmap='Reds', xticklabels=class_names, yticklabels=class_names)
     plt.title('MLP Confusion Matrix')
-    plt.show()
+    plt.close() # plt.show()
 
 if __name__ == "__main__":
     train_mlp()
