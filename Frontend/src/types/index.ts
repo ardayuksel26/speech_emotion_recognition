@@ -34,6 +34,10 @@ export interface AnalysisResult {
         applied: boolean;
         rf_score: number;
     };
+    frequency_data?: Array<{
+        time: number;
+        freq: number;
+    }>;
 }
 
 export interface ProcessingStatus {

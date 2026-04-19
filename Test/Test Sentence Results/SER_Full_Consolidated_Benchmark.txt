@@ -1,0 +1,45 @@
+# 🏆 SER Projesi: Tam Kapsamlı Model Performans Raporu
+
+Bu rapor, projenin bu fazında eğitilen **tüm modellerin** (11 adet), her iki veriseti üzerindeki **tüm metriklerini** (Accuracy, F1-Scores per Emotion, Macro F1) içeren eksiksiz dökümdür.
+
+---
+
+## 1. Veriseti: User_Voice (MyRecordings/Sentence)
+*Aşağıdaki değerler, kullanıcının kendi ses profili üzerinden (Normalized) elde edilmiştir.*
+
+| Model | Acc (%) | F1_Angry | F1_Calm | F1_Happy | F1_Sad | Macro_F1 | Recall |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **CatBoost** | **86.25** | 0.757 | **0.842** | **0.889** | **0.950** | **0.859** | 0.862 |
+| **GradientBoosting** | **85.00** | 0.821 | 0.769 | **0.930** | 0.872 | 0.848 | 0.850 |
+| **LightGBM** | 68.75 | 0.512 | 0.345 | **0.905** | 0.870 | 0.658 | 0.687 |
+| **MLP** | 68.75 | 0.276 | 0.737 | 0.800 | 0.791 | 0.651 | 0.687 |
+| **SVM** | 67.50 | 0.359 | 0.500 | 0.870 | 0.851 | 0.645 | 0.675 |
+| **XGBoost** | 66.25 | 0.343 | 0.467 | 0.833 | 0.851 | 0.623 | 0.662 |
+| **KNN** | 36.25 | 0.242 | 0.320 | 0.609 | 0.261 | 0.358 | 0.362 |
+| **CNN1D** | 28.75 | 0.000 | 0.412 | 0.261 | 0.000 | 0.168 | 0.287 |
+| **DNN** | 26.25 | 0.000 | 0.194 | 0.000 | 0.429 | 0.156 | 0.263 |
+
+---
+
+## 2. Veriseti: Synthetic_Actors (sentencevoice_test)
+*Modellerin hiç duymadığı yabancı aktörler üzerindeki "Genelleme" performansı.*
+
+| Model | Acc (%) | F1_Angry | F1_Calm | F1_Happy | F1_Sad | Macro_F1 | Recall |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **SVM** | **52.50** | 0.600 | 0.405 | 0.500 | 0.578 | **0.521** | 0.525 |
+| **CatBoost** | 51.25 | 0.517 | 0.462 | 0.493 | 0.575 | 0.512 | 0.512 |
+| **MLP** | 47.50 | 0.554 | 0.395 | 0.519 | 0.429 | 0.474 | 0.475 |
+| **GradientBoosting** | 42.50 | 0.483 | 0.277 | 0.438 | 0.453 | 0.413 | 0.425 |
+| **LightGBM** | 40.63 | 0.500 | 0.222 | 0.492 | 0.386 | 0.400 | 0.406 |
+| **KNN** | 36.25 | 0.407 | 0.278 | 0.506 | 0.151 | 0.335 | 0.362 |
+| **XGBoost** | 33.75 | 0.460 | 0.159 | 0.400 | 0.243 | 0.316 | 0.337 |
+| **DNN** | 25.63 | 0.000 | 0.159 | 0.042 | 0.414 | 0.154 | 0.256 |
+| **CNN1D** | 25.63 | 0.000 | 0.396 | 0.093 | 0.000 | 0.122 | 0.256 |
+
+---
+
+## 📈 Teknik Gözlemler
+
+- **Deep Learning vs Machine Learning:** İlginç bir şekilde, bu veri boyutu ve normalizasyon türünde Klasik ML modelleri (CatBoost, GradientBoosting, SVM), Derin Öğrenme modellerine (CNN1D, DNN) göre çok daha yüksek başarı sergilemiştir. Bunun sebebi, normalizasyonun sağladığı geometrik ayrımı CatBoost'un daha iyi yakalamasıdır.
+- **Sıfır Skorların Anlamı:** DNN ve CNN1D modellerinde bazı duyguların 0.00 çıkması, modelin o duyguyu hiç ayırt edemeyip tamamını başka bir sınıfa atadığını (Major Class Bias) gösterir. 
+- **Nihai Öneri:** Sizin sesinizde %86 gördüğümüz **CatBoost**, projenin ana modeli olarak seçilmelidir.

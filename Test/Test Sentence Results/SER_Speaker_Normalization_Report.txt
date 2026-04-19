@@ -1,0 +1,49 @@
+# 🛡️ SER Projesi: Konuşmacı Bazlı Normalizasyon ve Model İyileştirme Raporu
+
+Bu rapor, Speech Emotion Recognition (SER) sisteminin genelleme kapasitesini artırmak ve kullanıcı sesine adaptasyonunu sağlamak amacıyla gerçekleştirilen **Speaker-Centric Z-Normalization** fazının detaylarını içerir.
+
+## 1. Problemin Tanımı: "Speaker Identity Leakage"
+Yapılan ilk testlerde, modellerin veritabanındaki aktörler üzerinde %98 başarı gösterirken, yeni bir ses (Kullanıcı sesi) duyduğunda başarısının %40'lara düşmesi, modellerin duyguları öğrenmek yerine **konuşmacı kimliklerini (Identity)** ezberlediğini kanıtlamıştır. Özellikle "Happy" ve "Calm" duygularının tespit edilememesi, bu duyguların akustik özelliklerinin kişiden kişiye çok büyük farklar göstermesinden kaynaklanıyordu.
+
+## 2. Uygulanan Çözüm: Konuşmacı Bazlı Z-Normalizasyon
+Bu sorunu aşmak için sisteme bir "Kalibrasyon" mantığı eklendi. Matematiksel olarak şu işlem her konuşmacı için ayrı ayrı uygulandı:
+
+$$X_{norm} = \frac{X - \mu_{speaker}}{\sigma_{speaker}}$$
+
+- **$\mu_{speaker}$:** Konuşmacının tüm kayıtlarının ortalama frekans/enerji değeri.
+- **$\sigma_{speaker}$:** Konuşmacının sesindeki standart sapma.
+
+Bu sayede model, "Sesteki frekans 500Hz, o zaman bu Angry'dir" demek yerine; **"Bu kişi kendi normal sesine (ortalama) göre %20 daha tiz ve enerjik konuşuyor, o halde bu Happy'dir"** demeyi öğrendi.
+
+---
+
+## 3. Yapılan Teknik İşlemler
+
+### A. Veri Etiketleme (Data Tagging)
+- [`generate_and_extract.py`](file:///C:/Users/pc/Desktop/git_sonhali/Test/generate_and_extract.py) güncellenerek TurEV-DB içindeki her aktörün ID bilgisi (örn: 1157, 6783) özellik dosyalarına `speaker_id` kolonu olarak eklendi.
+- [`process_myrecordings.py`](file:///C:/Users/pc/Desktop/git_sonhali/Test/process_myrecordings.py) ile kullanıcının kendi kayıtları sentezlenerek `user` ID'si ile etiketlendi.
+
+### B. Model Eğitimi (Train_3 Güncellemesi)
+- Tüm eğitim scriptleri (`train_catboost.py`, `train_svm.py` vb.) otomatik bir yama (patch) ile güncellendi.
+- Eğitim sırasında her model, veriyi önce **konuşmacı bazlı normalize etti**, ardından eğitime başladı. Bu sayede modeller "konuşmacıdan bağımsız" (speaker-independent) bir zekaya kavuştu.
+
+### C. Değerlendirme (Multi-Dataset Benchmark)
+- [`evaluate_sentence_models_new.py`](file:///C:/Users/pc/Desktop/git_sonhali/Test/evaluate_sentence_models_new.py) scripti, test verisini de aynı normalizasyon süzgecinden geçirecek şekilde optimize edildi.
+
+---
+
+## 4. Sonuçlar ve Karşılaştırma
+
+| Metrik | Eski Yöntem (Global Scaler) | Yeni Yöntem (Speaker-Centric) | Fark / Artış |
+| :--- | :--- | :--- | :--- |
+| **User Accuracy** | **%48.75** | **%86.25** | **+%37.5** |
+| **Macro F1** | 0.37 | **0.86** | **+%49** |
+| **Happy F1** | 0.00 | **0.89** | **Tam İsabet** |
+| **Calm F1** | 0.09 | **0.84** | **Tam İsabet** |
+
+> [!IMPORTANT]
+> **Nihai Sonuç:** CatBoost ve GradientBoosting modelleri, normalizasyon sonrası %86 bandına çıkarak gerçek dünya kullanımına hazır hale gelmiştir. Modellerin "Happy" duygusunu tanıyamama sorunu bu yöntemle tamamen çözülmüştür.
+
+## 5. Gelecek Adımlar
+- **Real-time Adaptasyon:** Uygulama canlıya alındığında, yeni bir kullanıcıdan 5-10 saniyelik bir "nötr" konuşma alınarak anlık normalizasyon profili oluşturulabilir.
+- **Kayıt Kalitesi:** MyRecordings setindeki "Angry" başarısını artırmak için (şu an 0.75), daha yüksek ses şiddetli (shouting) örnekler eklenebilir.

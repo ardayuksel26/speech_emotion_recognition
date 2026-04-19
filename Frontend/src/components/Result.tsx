@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AnalysisResult } from '../types';
 import ProbabilityChart from './Results/ProbabilityChart';
 import { WordTimeline } from './Results/WordTimeline';
+import { FrequencyChart } from './Results/FrequencyChart';
 import { ExportButton } from './Results/ExportButton';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
@@ -255,7 +256,21 @@ const Result: React.FC<ResultProps> = ({
                                 style={{ padding: '24px', borderRadius: '32px' }}
                             >
 
-                                {result.word_timestamps && result.word_timestamps.length > 0 && (
+                                {result.frequency_data && result.frequency_data.length > 0 ? (
+                                    <div className="mb-14 pb-10 border-b border-white/10">
+                                        <div className="px-4 md:px-6 mb-4">
+                                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
+                                                <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                                                {t('acoustic_report')}
+                                            </h3>
+                                        </div>
+                                        <div className="px-2 md:px-6">
+                                            <FrequencyChart 
+                                                data={result.frequency_data} 
+                                            />
+                                        </div>
+                                    </div>
+                                ) : result.word_timestamps && result.word_timestamps.length > 0 && (
                                     <>
                                         <div className="px-4 md:px-6 mb-4">
                                             <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
@@ -281,21 +296,24 @@ const Result: React.FC<ResultProps> = ({
                                                 {t('voting_details')}
                                             </h3>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-2 md:px-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-2 md:px-6">
                                             {result.model_details.map((detail, idx) => {
                                                 const emotionColors: Record<string, string> = { angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981' };
-                                                const dotColor = emotionColors[detail.prediction] || '#8b5cf6';
+                                                const dotColor = emotionColors[detail.prediction.toLowerCase()] || '#8b5cf6';
 
                                                 return (
                                                     <div key={idx} className={clsx(
-                                                        "flex items-center rounded-2xl border shadow-sm",
+                                                        "flex items-center rounded-2xl border shadow-sm transition-all duration-300",
                                                         isDark ? "bg-slate-800/50 border-slate-700/50" : "bg-white/60 border-slate-200/50"
-                                                    )} style={{ padding: '10px', borderRadius: '16px' }}>
+                                                    )} style={{ padding: '12px', borderRadius: '16px' }}>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-xs font-black uppercase tracking-wider truncate mb-1.5 opacity-70">{detail.model}</p>
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{detail.model}</p>
+                                                                <span className="text-[10px] font-bold opacity-30">wt: {detail.weight}x</span>
+                                                            </div>
                                                             <div className="flex items-center gap-2">
                                                                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
-                                                                <span className="text-sm font-bold capitalize">{t(detail.prediction)}</span>
+                                                                <span className="text-sm font-bold capitalize">{t(detail.prediction.toLowerCase())}</span>
                                                                 <span className="text-xs font-bold opacity-50 ml-auto whitespace-nowrap">{detail.confidence.toFixed(1)}%</span>
                                                             </div>
                                                         </div>

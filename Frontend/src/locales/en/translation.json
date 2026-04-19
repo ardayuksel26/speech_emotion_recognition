@@ -156,8 +156,9 @@
   "confidence": "Confidence",
   "analysis_result": "Analysis Result",
   "timeline_analysis": "Timeline Analysis",
-  "mode_word": "Word",
-  "mode_sentence": "Sentence",
+  "mode_word": "Word Analysis",
+  "mode_sentence_segmented": "Segmented Sentence Analysis",
+  "mode_sentence_whole": "Whole Sentence Analysis",
   "training_quality": "Training Quality",
   "studio": "Studio",
   "noisy": "Noisy",
@@ -372,5 +373,9 @@
   "mastermind_report": "Mastermind Analysis Report",
   "veto_title": "Mastermind Veto Intervention",
   "veto_desc": "Core algorithms overridden due to noise detection. Model marked decision as {{emotion}}. (RF Score: %{{score}})",
-  "experimental_subtitle": "<1>Experimental models</1> are available here — you can test different AI engines and compare results."
+  "experimental_subtitle": "<1>Experimental models</1> are available here — you can test different AI engines and compare results.",
+  "acoustic_report": "Acoustic Frequency Report",
+  "acoustic_pitch_contour": "Acoustic Pitch Contour (Hz)",
+  "start": "Start",
+  "end": "End"
 }

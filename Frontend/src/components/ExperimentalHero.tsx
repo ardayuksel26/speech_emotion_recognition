@@ -57,7 +57,7 @@ const Hero = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
   const [qualityMode, setQualityMode] = useState<'studio' | 'robust'>('robust');
-  const [mode, setMode] = useState<'word' | 'sentence'>('word');
+  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole'>('word');
   const [sttEngine, setSttEngine] = useState<'vad' | 'vosk' | 'whisperx'>('vad');
 
   // Compute actual backend key
@@ -103,7 +103,7 @@ const Hero = () => {
     const levels = await generateWaveLevels(file, 60);
     setSavedLevels(levels);
 
-    if (mode === 'sentence') {
+    if (mode === 'sentence_segmented') {
       // Ayrıştırma için butona basılmasını bekle
       setShowModelSelection(false);
     } else {
@@ -240,8 +240,10 @@ const Hero = () => {
         endpoint = '/analyze_voting';
       } else if (mode === 'word') {
         endpoint = '/predict';
-      } else {
+      } else if (mode === 'sentence_segmented') {
         endpoint = '/predict-sentence';
+      } else {
+        endpoint = '/api/predict_sentence_whole';
       }
       const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -255,13 +257,18 @@ const Hero = () => {
         emotion = response.data.emotion;
         confidence = response.data.confidence;
         all_scores = response.data.all_scores;
-      } else if (mode === 'sentence') {
-        // Sentence endpoint returns different structure
+      } else if (mode === 'sentence_segmented') {
+        // Segmented Sentence endpoint returns final_emotion
         emotion = response.data.final_emotion;
         confidence = response.data.confidence;
         if (response.data.weighted_details) {
           all_scores = response.data.weighted_details;
         }
+      } else if (mode === 'sentence_whole') {
+        // Whole Sentence endpoint returns 'emotion' directly
+        emotion = response.data.emotion;
+        confidence = response.data.confidence;
+        all_scores = response.data.all_scores;
       } else {
         // Standard /predict response
         emotion = response.data.emotion;
@@ -309,7 +316,7 @@ const Hero = () => {
       let finalWordTimestamps = response.data.word_timestamps || [];
 
       // Eğer sentence modundaysak ve halihazırda ayrıştırılmış segmentler (ve duyguları) varsa onları kullan
-      if (mode === 'sentence' && sentenceSegments && sentenceSegments.length > 0) {
+      if ((mode === 'sentence_segmented' || mode === 'sentence_whole') && sentenceSegments && sentenceSegments.length > 0) {
         finalWordTimestamps = sentenceSegments.map((seg, i) => ({
           word: seg.word || `${t('word_label')} ${i + 1}`,
           start: seg.start,
@@ -324,7 +331,8 @@ const Hero = () => {
         emotions: emotionsMap,
         confidence: normalizedConfidence,
         word_timestamps: finalWordTimestamps,
-        model_details: response.data.model_details || undefined
+        model_details: response.data.model_details || undefined,
+        frequency_data: response.data.frequency_data || undefined
       });
 
       setIsAnalyzing(false);
@@ -397,26 +405,36 @@ const Hero = () => {
           )}
           {/* Mode Switcher */}
           {!analysisResult && (
-            <div className="flex relative z-20" style={{ gap: '20px', marginBottom: '20px' }}>
+            <div className="flex flex-wrap justify-center relative z-20" style={{ gap: '12px', marginBottom: '24px' }}>
               <button
                 onClick={() => { setMode('word'); setShowModelSelection(true); }}
-                className={`rounded-xl text-base font-bold transition-all duration-300 border-2 ${mode === 'word'
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'word'
                   ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
                   }`}
-                style={{ padding: '10px 32px' }}
+                style={{ padding: '10px 24px' }}
               >
                 {t('mode_word')}
               </button>
               <button
-                onClick={() => { setMode('sentence'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-base font-bold transition-all duration-300 border-2 ${mode === 'sentence'
+                onClick={() => { setMode('sentence_segmented'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sentence_segmented'
                   ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
                   }`}
-                style={{ padding: '10px 32px' }}
+                style={{ padding: '10px 24px' }}
               >
-                {t('mode_sentence')}
+                {t('mode_sentence_segmented')}
+              </button>
+              <button
+                onClick={() => { setMode('sentence_whole'); setShowModelSelection(true); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sentence_whole'
+                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                {t('mode_sentence_whole')}
               </button>
             </div>
           )}
@@ -427,9 +445,20 @@ const Hero = () => {
 
           {audioFile && recordedUrl && !analysisResult && !isAnalyzing && (
             <div className="w-full max-w-2xl flex flex-col items-center animate-fadeIn">
+              
+              {mode === 'sentence_whole' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                      {t('majority_voting')} (10-Model Optimized Ensemble)
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Model Selection UI - Matrix Format */}
-              {(mode === 'word' || showModelSelection) && (
+              {(mode === 'word' || (showModelSelection && mode !== 'sentence_whole')) && (
                 <div className="w-full mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
 
                   {/* Glassmorphic overlay instead of solid gradient */}
@@ -504,7 +533,7 @@ const Hero = () => {
               )}
 
               {/* Segmentation Preview UI */}
-              {mode === 'sentence' && !showModelSelection && (
+              {mode === 'sentence_segmented' && !showModelSelection && (
                 <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm animate-fadeIn">
                   {isSegmenting ? (
                     <div className="flex flex-col items-center justify-center p-4">
@@ -634,10 +663,10 @@ const Hero = () => {
 
               <AudioPlayer
                 mode="preview"
-                analysisMode={mode}
-                selectedModelName={activeModelName}
+                analysisMode={mode === 'word' ? 'word' : 'sentence'}
+                selectedModelName={mode === 'sentence_whole' ? 'Experimental Ensemble' : activeModelName}
                 recordedUrl={recordedUrl}
-                showAnalyzeButton={mode === 'word' || showModelSelection}
+                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || showModelSelection}
                 levels={savedLevels}
                 isPlaying={isPlaying}
                 playProgress={playProgress}
@@ -658,7 +687,7 @@ const Hero = () => {
               />
 
               {/* İleri button - below AudioPlayer */}
-              {mode === 'sentence' && !showModelSelection && sentenceSegments && (
+              {mode === 'sentence_segmented' && !showModelSelection && sentenceSegments && (
                 <button
                   onClick={() => setShowModelSelection(true)}
                   className="transition-all duration-300 rounded-xl text-base font-bold hover:scale-[1.02]"

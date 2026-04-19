@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Sentence.sentence_processing import SentenceProcessor
 from Voting.majority_voting import calculate_majority_vote, MODEL_WEIGHTS
 from stt_service import transcribe
+import librosa
 
 # TensorFlow imports for DL models
 try:
@@ -159,6 +160,74 @@ MODEL_CONFIG = {
     }
 }
 
+# ==============================================================================
+# EXPERIMENTAL: WHOLE SENTENCE MODELS (High Accuracy Calibration)
+# ==============================================================================
+SENTENCE_MODELS_DIR = os.path.join(BASE_DIR, '../Models/Sentence_Models')
+SENTENCE_MODEL_CONFIG = {
+    'catboost_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'CatBoost/catboost_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'CatBoost/scaler_cb.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'CatBoost/label_encoder_cb.pkl'),
+        'weight': 3.0
+    },
+    'gradboost_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'GradientBoosting/gradboost_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'GradientBoosting/scaler_gb.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'GradientBoosting/label_encoder_gb.pkl'),
+        'weight': 3.0
+    },
+    'xgboost_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'XGBoost/xgboost_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'XGBoost/scaler_xgb.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'XGBoost/label_encoder_xgb.pkl'),
+        'weight': 1.0
+    },
+    'lightgbm_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'LightGBM/lightgbm_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'LightGBM/scaler_lgb.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'LightGBM/label_encoder_lgb.pkl'),
+        'weight': 1.0
+    },
+    'svm_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'SVM/svm_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'SVM/scaler_svm.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'SVM/label_encoder_svm.pkl'),
+        'weight': 1.0
+    },
+    'rf_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'random_forest_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'scaler_rf.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'label_encoder_rf.pkl'),
+        'weight': 1.0
+    },
+    'mlp_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'MLP/mlp_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'MLP/scaler_mlp.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'MLP/label_encoder_mlp.pkl'),
+        'weight': 1.0
+    },
+    'knn_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'KNN/knn_model.pkl'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'KNN/scaler_knn.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'KNN/label_encoder_knn.pkl'),
+        'weight': 0.2
+    },
+    'dnn_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'DNN/dnn_model.h5'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'DNN/scaler_dnn.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'DNN/label_encoder_dnn.pkl'),
+        'weight': 0.1
+    },
+    'cnn1d_sentence': {
+        'model': os.path.join(SENTENCE_MODELS_DIR, 'CNN1D/cnn1d_model.h5'),
+        'scaler': os.path.join(SENTENCE_MODELS_DIR, 'CNN1D/scaler_cnn1d.pkl'),
+        'encoder': os.path.join(SENTENCE_MODELS_DIR, 'CNN1D/label_encoder_cnn1d.pkl'),
+        'weight': 0.1
+    }
+}
+CALIBRATION_FILE = os.path.join(BASE_DIR, 'calibration_user.pkl')
+
 # --- TÜM MODELLERİ YÜKLE (LOADER) ---
 loaded_models = {}
 
@@ -191,6 +260,29 @@ for key, paths in MODEL_CONFIG.items():
         logger.error(f"[{key.upper()}] Yüklenirken kritik hata: {e}")
 
 logger.info(f"Sistem hazır. Toplam {len(loaded_models)} model aktifleştirildi!")
+
+# --- SENTENCE MODELS LOADER ---
+loaded_sentence_models = {}
+for key, paths in SENTENCE_MODEL_CONFIG.items():
+    try:
+        if os.path.exists(paths['model']):
+            if paths['model'].endswith('.h5'):
+                if TF_AVAILABLE:
+                    model_obj = load_model(paths['model'])
+                else:
+                    continue
+            else:
+                model_obj = joblib.load(paths['model'])
+                
+            loaded_sentence_models[key] = {
+                'model': model_obj,
+                'scaler': joblib.load(paths['scaler']),
+                'encoder': joblib.load(paths['encoder']),
+                'weight': paths['weight']
+            }
+            logger.info(f"[EXPERIMENTAL] {key.upper()} yüklendi.")
+    except Exception as e:
+        logger.error(f"[EXPERIMENTAL] {key} yüklenemedi: {e}")
 
 
 @app.route('/', methods=['GET'])
@@ -1007,6 +1099,188 @@ def predict_mastermind():
              os.remove(temp_path)
         for p in segment_paths:
              if os.path.exists(p): os.remove(p)
+
+# ==============================================================================
+# EXPERIMENTAL ENDPOINT: WHOLE SENTENCE ANALYSIS
+# ==============================================================================
+@app.route('/api/predict_sentence_whole', methods=['POST'])
+def predict_sentence_whole():
+    """
+    Experimental endpoint for high-accuracy whole sentence analysis.
+    Applies per-speaker calibration (Z-Normalization) before inference.
+    """
+    temp_path = None
+    try:
+        # 1. Ensemble Initalization
+        if not loaded_sentence_models:
+             return jsonify({'error': 'Cümle modelleri yüklü değil'}), 500
+
+        # 2. File Handling
+        if 'file' not in request.files:
+            return jsonify({'error': 'Ses dosyası yok'}), 400
+        
+        import uuid
+        temp_path = os.path.join(BASE_DIR, f"temp_ensemble_{uuid.uuid4().hex[:8]}.wav")
+        request.files['file'].save(temp_path)
+
+        # 3. Feature Extraction & Denoising
+        import opensmile
+        import noisereduce as nr
+        import soundfile as sf
+        
+        audio_data, rate = sf.read(temp_path)
+        audio_cleaned = nr.reduce_noise(y=audio_data, sr=rate, prop_decrease=0.7)
+        
+        smile_local = opensmile.Smile(
+            feature_set=opensmile.FeatureSet.IS10,
+            feature_level=opensmile.FeatureLevel.Functionals,
+        )
+        df_feats = smile_local.process_signal(audio_cleaned, rate)
+        features_raw = df_feats.to_numpy().flatten() # 1582 features
+
+        # 4. SPEAKER NORMALIZATION (Calibration)
+        features = features_raw.copy()
+        if os.path.exists(CALIBRATION_FILE):
+            profile = joblib.load(CALIBRATION_FILE)
+            mean_vals = profile['mean']
+            std_vals = profile['std']
+            if len(features) == len(mean_vals):
+                features = (features - mean_vals) / (std_vals + 1e-6)
+                logger.info("Experimental Ensemble Normalization applied.")
+
+        # 5. ENSEMBLE PREDICTION (Weighted Logic)
+        weighted_probabilities = np.zeros(4) # angry, calm, happy, sad
+        total_weight = 0
+        model_details = []
+        
+        # Hardcoded classes order for consistency in blending if encoders differ
+        # But we assume all encoders use ['angry', 'calm', 'happy', 'sad'] alphabetical
+        EMOTION_ORDER = ['angry', 'calm', 'happy', 'sad']
+        
+        for m_key, tools in loaded_sentence_models.items():
+            try:
+                m_obj = tools['model']
+                m_scaler = tools['scaler']
+                m_encoder = tools['encoder']
+                m_weight = tools['weight']
+                
+                # Scale & Predict
+                f_scaled = m_scaler.transform(features.reshape(1, -1))
+                p_raw = m_obj.predict_proba(f_scaled)[0]
+                
+                # Map probabilities to standard EMOTION_ORDER
+                p_mapped = np.zeros(4)
+                m_scores = {}
+                for i, cls in enumerate(m_encoder.classes_):
+                    if cls.lower() in EMOTION_ORDER:
+                         idx = EMOTION_ORDER.index(cls.lower())
+                         p_mapped[idx] = p_raw[i]
+
+                # Normalize p_mapped to 1.0 (Ignore 'neutral' or other classes for the ensemble)
+                m_sum = np.sum(p_mapped)
+                if m_sum > 0:
+                    p_mapped = p_mapped / m_sum
+                
+                for i, emo in enumerate(EMOTION_ORDER):
+                    m_scores[emo] = float(p_mapped[i] * 100)
+                
+                # Apply weight
+                weighted_probabilities += (p_mapped * m_weight)
+                total_weight += m_weight
+                
+                # Save for UI
+                p_max_idx = np.argmax(p_mapped)
+                model_details.append({
+                    'model': m_key.replace('_sentence', '').upper(),
+                    'prediction': EMOTION_ORDER[p_max_idx],
+                    'confidence': float(np.max(p_mapped) * 100),
+                    'weight': m_weight,
+                    'scores': m_scores # NEW: Full breakdown
+                })
+            except Exception as me:
+                logger.error(f"Error in model {m_key}: {me}")
+
+        # Final Blending
+        if total_weight > 0:
+            final_probs = weighted_probabilities / np.sum(weighted_probabilities) if np.sum(weighted_probabilities) > 0 else weighted_probabilities / total_weight
+        else:
+            final_probs = weighted_probabilities # Fallback
+
+        # Final Normalization to ensure 100% total
+        f_sum = np.sum(final_probs)
+        if f_sum > 0:
+            final_probs = final_probs / f_sum
+            
+        prediction_index = np.argmax(final_probs)
+        final_emotion = EMOTION_ORDER[prediction_index]
+        final_confidence = np.max(final_probs) * 100
+        
+        all_scores = {}
+        for i, emo in enumerate(EMOTION_ORDER):
+            all_scores[emo] = float(final_probs[i] * 100)
+
+        # 6. Frequency/Pitch Extraction (Visual Feedback)
+        pitch_data = []
+        try:
+            # Extract pitch using librosa
+            # Using piptrack for speed or spectral_centroid for envelope
+            S = np.abs(librosa.stft(audio_cleaned))
+            pitches, magnitudes = librosa.piptrack(S=S, sr=rate)
+            
+            # Select most dominant pitch per frame
+            pitch_vals = []
+            for t in range(pitches.shape[1]):
+                index = magnitudes[:, t].argmax()
+                pitch = pitches[index, t]
+                if pitch > 0:
+                    pitch_vals.append(float(pitch))
+                else:
+                    # Keep zeros as silence or previous value to prevent spikes
+                    pitch_vals.append(0.0)
+            
+            # Resample to 100 points for frontend performance
+            total_points = len(pitch_vals)
+            if total_points > 100:
+                indices = np.linspace(0, total_points - 1, 100).astype(int)
+                pitch_vals = [pitch_vals[i] for i in indices]
+            
+            for i, p in enumerate(pitch_vals):
+                pitch_data.append({"time": i, "freq": p})
+                
+        except Exception as p_err:
+            logger.warning(f"Pitch extraction error: {p_err}")
+
+        # 7. STT Integration
+        stt_engine = request.form.get('stt_engine', 'vosk')
+        word_timestamps = []
+        try:
+            stt_words = transcribe(temp_path, engine=stt_engine)
+            for w in stt_words:
+                word_timestamps.append({
+                    'word': w['word'],
+                    'start': w['start'],
+                    'end': w['end'],
+                    'emotion': final_emotion,
+                    'confidence': float(final_confidence) / 100.0
+                })
+        except: pass
+
+        return jsonify({
+            'emotion': final_emotion,
+            'confidence': f"%{final_confidence:.2f}",
+            'all_scores': all_scores,
+            'model_used': "WHOLE_SENTENCE_ENSEMBLE (10-Models)",
+            'word_timestamps': word_timestamps,
+            'frequency_data': pitch_data, # NEW
+            'model_details': model_details # For VotingDetails component
+        })
+
+    except Exception as e:
+        logger.error(f"Experimental Predict Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
 
 if __name__ == '__main__':
     # use_reloader=False ekleyerek klasördeki dosya değişikliklerinin (veya yeni kütüphane yüklemelerinin)

@@ -154,8 +154,9 @@
   "confidence": "Güven",
   "analysis_result": "Analiz Sonucu",
   "timeline_analysis": "Zaman Çizelgesi Analizi",
-  "mode_word": "Kelime",
-  "mode_sentence": "Cümle",
+  "mode_word": "Kelime Analizi",
+  "mode_sentence_segmented": "Kırpılmış Cümle Analizi",
+  "mode_sentence_whole": "Bütün Cümle Analizi",
   "training_quality": "Eğitim Kalitesi",
   "studio": "Stüdyo",
   "noisy": "Gürültülü",
@@ -370,5 +371,9 @@
   "mastermind_report": "Üst Akıl Analiz Raporu",
   "veto_title": "Üst Akıl Veto Müdahalesi",
   "veto_desc": "Gürültü tespiti sebebiyle ana algoritmalar ezildi. Model kararını {{emotion}} olarak işaretledi. (RF Skoru: %{{score}})",
-  "experimental_subtitle": "Burada <1>deneysel modeller</1> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz."
+  "experimental_subtitle": "Burada <1>deneysel modeller</1> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.",
+  "acoustic_report": "Akustik Frekans Raporu",
+  "acoustic_pitch_contour": "Akustik Perde Konturu (Hz)",
+  "start": "Başlangıç",
+  "end": "Bitiş"
 }
