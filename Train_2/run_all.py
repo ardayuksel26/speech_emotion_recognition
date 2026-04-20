@@ -1,62 +1,45 @@
+"""
+Train_2/run_all.py
+Adımları sırayla çalıştırır:
+  1. Özellik çıkarma (All_Sounds/Train_Sounds → Extracted_CSV)
+  2. Random Forest, LightGBM, XGBoost, CatBoost, Gradient Boosting eğitimi → Models_2
+"""
+
 import subprocess
 import sys
-import time
 import os
+import time
 
-def run_all():
-    # Bu dosyanın bulunduğu dizini tam yol olarak al (Train2 dizini)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Train2 dizinindeki train_ ile başlayan tüm .py dosyalarını tam yollarıyla bul
-    SCRIPTS = [
-        os.path.join(current_dir, f) 
-        for f in os.listdir(current_dir) 
-        if f.startswith("train_") and f.endswith(".py")
-    ]
-    SCRIPTS.sort() # Alfabetik sıra ile çalıştır
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    total = len(SCRIPTS)
-    if total == 0:
-        print("❌ Çalıştırılacak eğitim betiği bulunamadı!")
-        return
+STEPS = [
+    ("Özellik Çıkarma (IS10)",      "extract_features.py"),
+    ("Random Forest",                "train_random_forest.py"),
+    ("LightGBM",                     "train_lightgbm.py"),
+    ("XGBoost",                      "train_xgboost.py"),
+    ("CatBoost",                     "train_catboost.py"),
+    ("Gradient Boosting",            "train_gradient_boosting.py"),
+]
 
-    print("=" * 55)
-    print(f"🚀 Toplam {total} model eğitimi bulundu:")
-    for s in SCRIPTS:
-        print(f"  - {os.path.basename(s)}")
-    print("=" * 55)
-    time.sleep(2) # Listeyi görmen için kısa bir bekleme
+results = []
 
-    for i, script in enumerate(SCRIPTS, 1):
-        script_name = os.path.basename(script)
-        print("\n" + "=" * 55)
-        print(f"  [{i}/{total}] {script_name} ÇALIŞTIRILIYOR...")
-        print("=" * 55)
-        
-        start = time.time()
-        
-        # Scripti proje kök dizininde (root) çalıştır
-        # current_dir Train2 olduğu için, bir üst dizin root'tur.
-        project_root = os.path.dirname(current_dir)
-        result = subprocess.run([sys.executable, script], cwd=project_root)
-        
-        elapsed = time.time() - start
-        mins, secs = divmod(int(elapsed), 60)
-        
-        if result.returncode == 0:
-            print(f"\n✅ {script_name} Tamamlandı ({mins}dk {secs}sn)")
-        else:
-            print(f"\n❌ HATA — {script_name} başarısız oldu (kod: {result.returncode})")
-            print("Devam etmek için Enter'a bas, çıkmak için Ctrl+C...")
-            try:
-                input()
-            except KeyboardInterrupt:
-                print("\nEğitim kullanıcı tarafından durduruldu.")
-                sys.exit(1)
+for label, script in STEPS:
+    script_path = os.path.join(BASE_DIR, script)
+    print(f"\n{'='*60}")
+    print(f"  BAŞLIYOR: {label}")
+    print(f"{'='*60}\n")
 
-    print("\n" + "=" * 55)
-    print("✨ TÜM EĞİTİMLER BAŞARIYLA TAMAMLANDI ✨")
-    print("=" * 55)
+    start = time.time()
+    ret = subprocess.run([sys.executable, script_path])
+    elapsed = time.time() - start
 
-if __name__ == "__main__":
-    run_all()
+    status = "✓ BAŞARILI" if ret.returncode == 0 else "✗ BAŞARISIZ"
+    results.append((label, status, elapsed))
+    print(f"\n  {status} — {elapsed:.1f}s")
+
+print(f"\n{'='*60}")
+print("  ÖZET")
+print(f"{'='*60}")
+for label, status, elapsed in results:
+    print(f"  {status}  {label:<30} {elapsed:>7.1f}s")
+print(f"{'='*60}\n")

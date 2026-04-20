@@ -261,6 +261,49 @@ for key, paths in MODEL_CONFIG.items():
 
 logger.info(f"Sistem hazır. Toplam {len(loaded_models)} model aktifleştirildi!")
 
+# ==============================================================================
+# MODELS_2 — Noise-Augmented Training (plain IS10, 1582 features)
+# ==============================================================================
+MODELS_2_DIR = os.path.join(BASE_DIR, '../Models_2')
+MODELS_2_CONFIG = {
+    'rf_v2':   ('RandomForest/random_forest_model.pkl',          'RandomForest/scaler_rf.pkl',            'RandomForest/label_encoder_rf.pkl'),
+    'lgbm_v2': ('LightGBM/lightgbm_model.pkl',                   'LightGBM/scaler_lgbm.pkl',              'LightGBM/label_encoder_lgbm.pkl'),
+    'xgb_v2':  ('XGBoost/xgboost_model.pkl',                     'XGBoost/scaler_xgb.pkl',                'XGBoost/label_encoder_xgb.pkl'),
+    'cb_v2':   ('CatBoost/catboost_model.pkl',                    'CatBoost/scaler_catboost.pkl',          'CatBoost/label_encoder_catboost.pkl'),
+    'gb_v2':   ('GradientBoosting/gradient_boosting_model.pkl',   'GradientBoosting/scaler_gb.pkl',        'GradientBoosting/label_encoder_gb.pkl'),
+}
+loaded_models_v2 = {}
+for _key, (_mp, _sp, _ep) in MODELS_2_CONFIG.items():
+    try:
+        _m_path = os.path.join(MODELS_2_DIR, _mp)
+        if os.path.exists(_m_path):
+            loaded_models_v2[_key] = {
+                'model':   joblib.load(_m_path),
+                'scaler':  joblib.load(os.path.join(MODELS_2_DIR, _sp)),
+                'encoder': joblib.load(os.path.join(MODELS_2_DIR, _ep)),
+            }
+            logger.info(f"[V2] {_key.upper()} yüklendi.")
+        else:
+            logger.warning(f"[V2] {_key} bulunamadı: {_m_path}")
+    except Exception as _e:
+        logger.error(f"[V2] {_key} yüklenemedi: {_e}")
+logger.info(f"Models_2 hazır. Toplam {len(loaded_models_v2)} model aktifleştirildi.")
+
+def extract_features_plain(file_path):
+    """Plain IS10 extraction without denoising — matches Models_2 training features (1582 dims)."""
+    try:
+        import opensmile as _os2
+        _smile2 = _os2.Smile(
+            feature_set=_os2.FeatureSet.IS10,
+            feature_level=_os2.FeatureLevel.Functionals,
+        )
+        df = _smile2.process_file(file_path)
+        feats = df.to_numpy().flatten().astype(np.float32)
+        return feats if len(feats) == 1582 else None
+    except Exception as _e2:
+        logger.warning(f"extract_features_plain hata: {_e2}")
+        return None
+
 # --- SENTENCE MODELS LOADER ---
 loaded_sentence_models = {}
 for key, paths in SENTENCE_MODEL_CONFIG.items():
@@ -1281,6 +1324,206 @@ def predict_sentence_whole():
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
+
+# ==============================================================================
+# ADVANCED SENTENCE ANALYSIS — Models_2 (noise-augmented, plain IS10)
+# ==============================================================================
+@app.route('/api/predict_advanced_sentence', methods=['POST'])
+def predict_advanced_sentence():
+    """
+    VOSK kelime ayrıştırma + Models_2'nin 5 modeli ile her kelime için duygu tahmini.
+    Global ses (%60) + kelime ortalaması (%40) harmanlaması, tüm 5 modelin eşit oylaması.
+    """
+    if not loaded_models_v2:
+        return jsonify({'error': 'Models_2 modelleri yüklü değil'}), 500
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    import tempfile, soundfile as sf
+    temp_path = ""
+    segment_paths = []
+
+    try:
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.wav')
+        os.close(temp_fd)
+        file.save(temp_path)
+
+        # 1. Global IS10 özellik çıkar (1582 boyut, temiz)
+        global_f = extract_features_plain(temp_path)
+        if global_f is None:
+            return jsonify({'error': 'Global ses vektörü çıkarılamadı'}), 400
+
+        y_global, sr = librosa.load(temp_path, sr=22050)
+
+        # 2. VOSK ile kelimeleri ayıkla
+        segments_info = transcribe(temp_path, engine="vosk")
+        if not segments_info:
+            segments_info = [{'start': 0.0, 'end': len(y_global) / sr}]
+
+        # 3. Her kelime segmenti için IS10 özellik çıkar
+        feats_list = []
+        for i, seg in enumerate(segments_info):
+            start_s = float(seg.get('start', 0.0))
+            end_s = float(seg.get('end', 0.0))
+            start_idx = int(start_s * sr)
+            end_idx = int((end_s + 0.1) * sr)
+            seg_audio = y_global[start_idx:end_idx]
+            if len(seg_audio) > int(0.1 * sr):
+                seg_path = os.path.join(tempfile.gettempdir(), f"adv_seg_{i}_{os.urandom(4).hex()}.wav")
+                sf.write(seg_path, seg_audio, sr)
+                segment_paths.append(seg_path)
+                f = extract_features_plain(seg_path)
+                if f is not None:
+                    feats_list.append(f)
+
+        # 4. Tüm 5 Models_2 modelini eşit oylamayla harmanlayan skorlayıcı
+        EMOTION_ORDER = ['angry', 'calm', 'happy', 'sad']
+
+        MODEL_DISPLAY_NAMES = {
+            'rf_v2':   'Random Forest (V2)',
+            'lgbm_v2': 'LightGBM (V2)',
+            'xgb_v2':  'XGBoost (V2)',
+            'cb_v2':   'CatBoost (V2)',
+            'gb_v2':   'Gradient Boost (V2)',
+        }
+
+        def score_v2_ensemble(global_feat, seg_feats):
+            """
+            Models_2 (5 model) harmanlaması. 
+            Test sonuçlarına göre en iyi blend oranı: LightGBM %35, diğer 4 model %16.25.
+            """
+            ensemble_probs = np.zeros(4)
+            model_count = 0
+            per_model_details = []
+
+            # En iyi test sonuçlarından gelen ağırlıklar (Test3/Results/blend_ratio_results.txt)
+            MODEL_WEIGHTS = {
+                'lgbm_v2': 0.35,
+                'rf_v2':   0.1625,
+                'xgb_v2':  0.1625,
+                'cb_v2':   0.1625,
+                'gb_v2':   0.1625,
+            }
+
+            for m_key, tools in loaded_models_v2.items():
+                m = tools['model']
+                s = tools['scaler']
+                e = tools['encoder']
+                w = MODEL_WEIGHTS.get(m_key, 0.20) # Varsayılan 0.20 (eğer model bulunamazsa)
+
+                # Global tahmin
+                gf_scaled = s.transform(global_feat.reshape(1, -1))
+                g_probs_raw = m.predict_proba(gf_scaled)[0]
+
+                g_mapped = np.zeros(4)
+                for idx, cls in enumerate(e.classes_):
+                    if cls.lower() in EMOTION_ORDER:
+                        g_mapped[EMOTION_ORDER.index(cls.lower())] = g_probs_raw[idx]
+
+                # Segment ortalaması
+                if seg_feats:
+                    seg_sum = np.zeros(4)
+                    for sf_vec in seg_feats:
+                        sf_scaled = s.transform(sf_vec.reshape(1, -1))
+                        p_raw = m.predict_proba(sf_scaled)[0]
+                        p_mapped = np.zeros(4)
+                        for idx, cls in enumerate(e.classes_):
+                            if cls.lower() in EMOTION_ORDER:
+                                p_mapped[EMOTION_ORDER.index(cls.lower())] = p_raw[idx]
+                        seg_sum += p_mapped
+                    seg_avg = seg_sum / len(seg_feats)
+                else:
+                    seg_avg = g_mapped.copy()
+
+                # 10/90 Global/Kelime harmanlaması (Test3/Results/global_segment_ratio_results.txt - En İyi Oran)
+                combined = 0.10 * g_mapped + 0.90 * seg_avg
+                c_sum = np.sum(combined)
+                if c_sum > 0:
+                    combined = combined / c_sum
+
+                m_pred_idx = int(np.argmax(combined))
+                per_model_details.append({
+                    'model': MODEL_DISPLAY_NAMES.get(m_key, m_key.upper()),
+                    'prediction': EMOTION_ORDER[m_pred_idx],
+                    'confidence': float(np.max(combined) * 100),
+                    'weight': float(w),
+                    'scores': {emo: float(combined[i] * 100) for i, emo in enumerate(EMOTION_ORDER)},
+                })
+
+                # Ağırlıklı toplama
+                ensemble_probs += (combined * w)
+                model_count += 1
+
+            # Ağırlıklar toplamı zaten ~1.0 olmalı ama garantiye alalım
+            total = np.sum(ensemble_probs)
+            if total > 0:
+                ensemble_probs /= total
+            
+            final = {emo: float(ensemble_probs[i]) * 100.0 for i, emo in enumerate(EMOTION_ORDER)}
+            return final, per_model_details
+
+        final_scores, model_details = score_v2_ensemble(global_f, feats_list)
+        final_emotion = max(final_scores.items(), key=lambda x: x[1])[0]
+        final_conf = final_scores[final_emotion]
+
+        # 5. Kelime bazlı duygu zaman damgaları (her kelime için tek model tahmininde hız öncelikli: lgbm_v2)
+        word_timestamps = []
+        word_feat_idx = 0
+        for i, seg in enumerate(segments_info):
+            start_s = float(seg.get('start', 0.0))
+            end_s = float(seg.get('end', 0.0))
+            word_text = seg.get('word', f'kelime_{i+1}')
+            word_emotion = final_emotion
+            word_conf = final_conf / 100.0
+
+            if word_feat_idx < len(feats_list):
+                wf = feats_list[word_feat_idx]
+                word_feat_idx += 1
+                # Hızlı: LightGBM_v2 ile kelime tahmini
+                if 'lgbm_v2' in loaded_models_v2:
+                    tools = loaded_models_v2['lgbm_v2']
+                    wf_scaled = tools['scaler'].transform(wf.reshape(1, -1))
+                    wp_raw = tools['model'].predict_proba(wf_scaled)[0]
+                    w_mapped = np.zeros(4)
+                    for idx, cls in enumerate(tools['encoder'].classes_):
+                        if cls.lower() in EMOTION_ORDER:
+                            w_mapped[EMOTION_ORDER.index(cls.lower())] = wp_raw[idx]
+                    word_emotion = EMOTION_ORDER[int(np.argmax(w_mapped))]
+                    word_conf = float(np.max(w_mapped))
+
+            word_timestamps.append({
+                'word': word_text,
+                'start': start_s,
+                'end': end_s,
+                'emotion': word_emotion,
+                'confidence': word_conf
+            })
+
+        return jsonify({
+            'emotion': final_emotion,
+            'confidence': f"%{final_conf:.2f}",
+            'all_scores': final_scores,
+            'word_timestamps': word_timestamps,
+            'model_details': model_details,
+            'model_used': 'ADVANCED_SENTENCE (Models_2, 5-Model Ensemble)',
+            'segments_analyzed': len(feats_list),
+        })
+
+    except Exception as e:
+        logger.error(f"Advanced Sentence Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        for p in segment_paths:
+            if os.path.exists(p):
+                os.remove(p)
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
+
 
 if __name__ == '__main__':
     # use_reloader=False ekleyerek klasördeki dosya değişikliklerinin (veya yeni kütüphane yüklemelerinin)

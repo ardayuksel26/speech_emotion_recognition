@@ -57,7 +57,7 @@ const Hero = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
   const [qualityMode, setQualityMode] = useState<'studio' | 'robust'>('robust');
-  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole'>('word');
+  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole' | 'advanced_sentence'>('word');
   const [sttEngine, setSttEngine] = useState<'vad' | 'vosk' | 'whisperx'>('vad');
 
   // Compute actual backend key
@@ -103,8 +103,7 @@ const Hero = () => {
     const levels = await generateWaveLevels(file, 60);
     setSavedLevels(levels);
 
-    if (mode === 'sentence_segmented') {
-      // Ayrıştırma için butona basılmasını bekle
+    if (mode === 'sentence_segmented' || mode === 'advanced_sentence') {
       setShowModelSelection(false);
     } else {
       setShowModelSelection(true);
@@ -242,6 +241,8 @@ const Hero = () => {
         endpoint = '/predict';
       } else if (mode === 'sentence_segmented') {
         endpoint = '/predict-sentence';
+      } else if (mode === 'advanced_sentence') {
+        endpoint = '/api/predict_advanced_sentence';
       } else {
         endpoint = '/api/predict_sentence_whole';
       }
@@ -266,6 +267,10 @@ const Hero = () => {
         }
       } else if (mode === 'sentence_whole') {
         // Whole Sentence endpoint returns 'emotion' directly
+        emotion = response.data.emotion;
+        confidence = response.data.confidence;
+        all_scores = response.data.all_scores;
+      } else if (mode === 'advanced_sentence') {
         emotion = response.data.emotion;
         confidence = response.data.confidence;
         all_scores = response.data.all_scores;
@@ -436,6 +441,16 @@ const Hero = () => {
               >
                 {t('mode_sentence_whole')}
               </button>
+              <button
+                onClick={() => { setMode('advanced_sentence'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'advanced_sentence'
+                  ? 'bg-red-600 text-white shadow-lg border-red-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-red-500 dark:text-red-400 hover:text-red-600 border-red-400 dark:border-red-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                Advanced Cümle Analizi
+              </button>
             </div>
           )}
 
@@ -457,8 +472,19 @@ const Hero = () => {
                 </div>
               )}
 
+              {mode === 'advanced_sentence' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-red-500/20 to-rose-500/20 border border-red-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-red-600 dark:text-red-400">
+                      Models_2 — 5-Model Noise-Augmented Ensemble
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Model Selection UI - Matrix Format */}
-              {(mode === 'word' || (showModelSelection && mode !== 'sentence_whole')) && (
+              {(mode === 'word' || (showModelSelection && mode !== 'sentence_whole' && mode !== 'advanced_sentence')) && (
                 <div className="w-full mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
 
                   {/* Glassmorphic overlay instead of solid gradient */}
@@ -664,9 +690,9 @@ const Hero = () => {
               <AudioPlayer
                 mode="preview"
                 analysisMode={mode === 'word' ? 'word' : 'sentence'}
-                selectedModelName={mode === 'sentence_whole' ? 'Experimental Ensemble' : activeModelName}
+                selectedModelName={mode === 'sentence_whole' ? 'Experimental Ensemble' : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)' : activeModelName}
                 recordedUrl={recordedUrl}
-                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || showModelSelection}
+                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || showModelSelection}
                 levels={savedLevels}
                 isPlaying={isPlaying}
                 playProgress={playProgress}
@@ -716,7 +742,7 @@ const Hero = () => {
                 {t('analyzing')}
               </p>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
-                {t('engine_used')}: {activeModelName}
+                {t('engine_used')}: {mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)' : mode === 'sentence_whole' ? 'Experimental Ensemble' : activeModelName}
               </p>
             </div>
           )}
