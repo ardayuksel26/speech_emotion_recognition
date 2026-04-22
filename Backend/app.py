@@ -13,6 +13,126 @@ from Voting.majority_voting import calculate_majority_vote, MODEL_WEIGHTS
 from stt_service import transcribe
 import librosa
 
+# Huggingface model integration
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+try:
+    from Huggingface.hubert_model import HubertEmotionPredictor
+    HUBERT_AVAILABLE = True
+except ImportError:
+    HUBERT_AVAILABLE = False
+
+_hubert_predictor = None
+_wav2vec2_turkish_predictor = None
+_sensevoice_predictor = None
+
+def get_hubert_predictor():
+    global _hubert_predictor
+    if _hubert_predictor is None:
+        try:
+            from Huggingface.hubert_model import HubertEmotionPredictor
+            _hubert_predictor = HubertEmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading HuBERT: {e}")
+            return None
+    return _hubert_predictor
+
+def get_wav2vec2_turkish_predictor():
+    global _wav2vec2_turkish_predictor
+    if _wav2vec2_turkish_predictor is None:
+        try:
+            from Huggingface.wav2vec2_model import Wav2Vec2TurkishPredictor
+            _wav2vec2_turkish_predictor = Wav2Vec2TurkishPredictor()
+        except Exception as e:
+            logger.error(f"Error loading Wav2Vec2 Turkish: {e}")
+            return None
+    return _wav2vec2_turkish_predictor
+
+_sensevoice_load_error = None
+_exhubert_predictor = None
+_wavlm_predictor = None
+_xlsr_predictor = None
+_qwen2_audio_predictor = None
+_wavlm_base_plus_predictor = None
+_wav2vec2_english_predictor = None
+
+def get_qwen2_audio_predictor():
+    global _qwen2_audio_predictor
+    if _qwen2_audio_predictor is None:
+        try:
+            from Huggingface.qwen2_audio_model import Qwen2AudioEmotionPredictor
+            _qwen2_audio_predictor = Qwen2AudioEmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading Qwen2-Audio: {e}")
+            return None
+    return _qwen2_audio_predictor
+
+def get_wavlm_base_plus_predictor():
+    global _wavlm_base_plus_predictor
+    if _wavlm_base_plus_predictor is None:
+        try:
+            from Huggingface.wavlm_model import WavLMBasePlusEmotionPredictor
+            _wavlm_base_plus_predictor = WavLMBasePlusEmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading WavLM Base Plus: {e}")
+            return None
+    return _wavlm_base_plus_predictor
+
+def get_wav2vec2_english_predictor():
+    global _wav2vec2_english_predictor
+    if _wav2vec2_english_predictor is None:
+        try:
+            from Huggingface.xlsr_model import Wav2Vec2EnglishPredictor
+            _wav2vec2_english_predictor = Wav2Vec2EnglishPredictor()
+        except Exception as e:
+            logger.error(f"Error loading Wav2Vec2 English: {e}")
+            return None
+    return _wav2vec2_english_predictor
+
+def get_exhubert_predictor():
+    global _exhubert_predictor
+    if _exhubert_predictor is None:
+        try:
+            from Huggingface.exhubert_model import ExHuBERTEmotionPredictor
+            _exhubert_predictor = ExHuBERTEmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading ExHuBERT: {e}")
+            return None
+    return _exhubert_predictor
+
+def get_wavlm_predictor():
+    global _wavlm_predictor
+    if _wavlm_predictor is None:
+        try:
+            from Huggingface.wavlm_model import WavLMEmotionPredictor
+            _wavlm_predictor = WavLMEmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading WavLM: {e}")
+            return None
+    return _wavlm_predictor
+
+def get_xlsr_predictor():
+    global _xlsr_predictor
+    if _xlsr_predictor is None:
+        try:
+            from Huggingface.xlsr_model import XLSREmotionPredictor
+            _xlsr_predictor = XLSREmotionPredictor()
+        except Exception as e:
+            logger.error(f"Error loading XLSR: {e}")
+            return None
+    return _xlsr_predictor
+
+def get_sensevoice_predictor():
+    global _sensevoice_predictor, _sensevoice_load_error
+    if _sensevoice_predictor is None and _sensevoice_load_error is None:
+        try:
+            from Huggingface.sensevoice_model import SenseVoiceEmotionPredictor
+            _sensevoice_predictor = SenseVoiceEmotionPredictor()
+        except Exception as e:
+            import traceback
+            _sensevoice_load_error = traceback.format_exc()
+            logger.error(f"Error loading SenseVoice: {e}\n{_sensevoice_load_error}")
+    return _sensevoice_predictor
+
 # TensorFlow imports for DL models
 try:
     import tensorflow as tf
@@ -1522,6 +1642,381 @@ def predict_advanced_sentence():
             if os.path.exists(p):
                 os.remove(p)
         if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
+
+@app.route('/analyze_hubert', methods=['POST'])
+def analyze_hubert():
+    """
+    Huggingface SeaBenSea/HuBERT model endpoint.
+    Directly predicts emotion from audio waveform using HubertForSequenceClassification.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_hubert_predictor()
+    if predictor is None:
+        return jsonify({'error': 'HuBERT modeli yüklenemedi. Bağımlılıkları kontrol edin.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_hubert_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        
+        result = predictor.predict(temp_path)
+        
+        # Standart skor formatına dönüştür (% bazlı)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        
+        elapsed = round(time.time() - start_time, 2)
+        
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'SeaBenSea / HuBERT (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"HuBERT Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_wav2vec2_turkish', methods=['POST'])
+def analyze_wav2vec2_turkish():
+    """
+    Sefa-Alper/wav2vec2-xlsr-turkish-speech-emotion-recognition-v3 endpoint.
+    Turkish speech sentiment/emotion: NEGATIVE, NEUTRAL, POSITIVE.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_wav2vec2_turkish_predictor()
+    if predictor is None:
+        return jsonify({'error': 'Wav2Vec2 Turkish modeli yüklenemedi. Bağımlılıkları kontrol edin.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_wav2vec2_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'Sefa-Alper / Wav2Vec2 Turkish (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"Wav2Vec2 Turkish Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_exhubert', methods=['POST'])
+def analyze_exhubert():
+    """
+    amiriparian/ExHuBERT endpoint.
+    6-class arousal-valence emotion: disgust, neutral, kind, angry, surprised, happy.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_exhubert_predictor()
+    if predictor is None:
+        return jsonify({'error': 'ExHuBERT modeli yüklenemedi.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_exhubert_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'amiriparian / ExHuBERT (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"ExHuBERT Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_sensevoice', methods=['POST'])
+def analyze_sensevoice():
+    """
+    FunAudioLLM/SenseVoiceSmall endpoint (Alibaba).
+    Multilingual speech emotion recognition with 7 emotion classes.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_sensevoice_predictor()
+    if predictor is None:
+        detail = _sensevoice_load_error or 'funasr paketi kurulu mu kontrol edin.'
+        return jsonify({'error': f'SenseVoice yüklenemedi: {detail}'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_sensevoice_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'FunAudioLLM / SenseVoiceSmall (Alibaba)',
+            'elapsed_seconds': elapsed,
+            'raw_text': result.get('raw_text', '')
+        })
+    except Exception as e:
+        logger.error(f"SenseVoice Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_wavlm', methods=['POST'])
+def analyze_wavlm():
+    """
+    3loi/SER-Odyssey-Baseline-WavLM-Categorical endpoint.
+    8-class emotion: Angry, Sad, Happy, Surprise, Fear, Disgust, Contempt, Neutral.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_wavlm_predictor()
+    if predictor is None:
+        return jsonify({'error': 'WavLM modeli yüklenemedi.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_wavlm_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': '3loi / WavLM-Categorical (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"WavLM Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_xlsr', methods=['POST'])
+def analyze_xlsr():
+    """
+    ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition endpoint.
+    8-class multilingual emotion: angry, calm, disgust, fearful, happy, neutral, sad, surprised.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_xlsr_predictor()
+    if predictor is None:
+        return jsonify({'error': 'XLSR modeli yüklenemedi.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_xlsr_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'ehcalabres / XLSR (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"XLSR Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_qwen2_audio', methods=['POST'])
+def analyze_qwen2_audio():
+    """
+    Qwen/Qwen2-Audio-7B-Instruct endpoint.
+    LLM-based speech emotion recognition.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_qwen2_audio_predictor()
+    if predictor is None:
+        return jsonify({'error': 'Qwen2-Audio modeli yüklenemedi. VRAM yetersiz olabilir.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_qwen_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'Qwen / Qwen2-Audio-7B (HuggingFace)',
+            'elapsed_seconds': elapsed,
+            'raw_text': result.get('raw_text', '')
+        })
+    except Exception as e:
+        logger.error(f"Qwen2-Audio Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_wavlm_base_plus', methods=['POST'])
+def analyze_wavlm_base_plus():
+    """
+    harritaylor/wavlm-base-plus-speech-emotion-recognition endpoint.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_wavlm_base_plus_predictor()
+    if predictor is None:
+        return jsonify({'error': 'WavLM Base Plus modeli yüklenemedi.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_wavlm_bp_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'harritaylor / WavLM Base Plus (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"WavLM Base Plus Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/analyze_wav2vec2_english', methods=['POST'])
+def analyze_wav2vec2_english():
+    """
+    r-f/wav2vec-english-speech-emotion-recognition endpoint.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Ses dosyası yok'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+    predictor = get_wav2vec2_english_predictor()
+    if predictor is None:
+        return jsonify({'error': 'Wav2Vec2 English modeli yüklenemedi.'}), 500
+
+    import uuid
+    temp_path = os.path.join(BASE_DIR, f"temp_w2v2_en_{uuid.uuid4().hex[:8]}.wav")
+    file.save(temp_path)
+
+    try:
+        import time
+        start_time = time.time()
+        result = predictor.predict(temp_path)
+        all_scores = {res['label']: res['score'] * 100 for res in result['scores']}
+        elapsed = round(time.time() - start_time, 2)
+        return jsonify({
+            'emotion': result['emotion'],
+            'confidence': f"%{all_scores.get(result['emotion'], 0):.2f}",
+            'all_scores': all_scores,
+            'model_used': 'r-f / Wav2Vec2 English (HuggingFace)',
+            'elapsed_seconds': elapsed
+        })
+    except Exception as e:
+        logger.error(f"Wav2Vec2 English Inference Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
             os.remove(temp_path)
 
 

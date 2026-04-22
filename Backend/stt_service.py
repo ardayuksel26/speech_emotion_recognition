@@ -26,7 +26,7 @@ _whisperx_model = None
 def _ensure_wav_format(audio_path: str) -> str:
     """
     Ses dosyasının 16kHz Mono PCM WAV formatında olduğundan emin olur.
-    Gerekirse ffmpeg ile dönüştürür.
+    Gerekirse librosa ve soundfile ile dönüştürür.
     """
     try:
         with wave.open(audio_path, 'rb') as wf:
@@ -35,20 +35,25 @@ def _ensure_wav_format(audio_path: str) -> str:
     except Exception:
         pass
 
-    # ffmpeg ile dönüştür
+    # librosa ve soundfile ile dönüştür
     converted_path = audio_path.replace('.wav', '_16k.wav')
     if converted_path == audio_path:
         converted_path = audio_path + '_16k.wav'
 
     try:
-        subprocess.run([
-            'ffmpeg', '-y', '-i', audio_path,
-            '-ar', '16000', '-ac', '1', '-sample_fmt', 's16',
-            converted_path
-        ], capture_output=True, check=True, timeout=30)
+        import librosa
+        import soundfile as sf
+        
+        logger.info(f"Ses formatı dönüştürülüyor (16kHz Mono WAV): {audio_path}")
+        # Sesi yükle (16kHz, Mono)
+        y, sr = librosa.load(audio_path, sr=16000, mono=True)
+        
+        # WAV olarak kaydet (PCM_16)
+        sf.write(converted_path, y, sr, subtype='PCM_16')
+        
         return converted_path
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        logger.warning(f"ffmpeg dönüştürme başarısız: {e}. Orijinal dosya kullanılacak.")
+    except Exception as e:
+        logger.warning(f"Ses dönüştürme başarısız: {e}. Orijinal dosya kullanılacak.")
         return audio_path
 
 

@@ -20,6 +20,13 @@ lightgbm
 
 # --- Deep Learning ---
 tensorflow
+torch
+transformers
+accelerate
+bitsandbytes
+
+# --- Huggingface Models ---
+funasr
 
 # --- Speech-to-Text ---
 vosk

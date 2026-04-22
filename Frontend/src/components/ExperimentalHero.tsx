@@ -57,7 +57,7 @@ const Hero = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
   const [qualityMode, setQualityMode] = useState<'studio' | 'robust'>('robust');
-  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole' | 'advanced_sentence'>('word');
+  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole' | 'advanced_sentence' | 'hubert' | 'wav2vec2_turkish' | 'sensevoice' | 'exhubert' | 'wavlm' | 'xlsr' | 'qwen2_audio' | 'wavlm_base_plus' | 'wav2vec2_english'>('word');
   const [sttEngine, setSttEngine] = useState<'vad' | 'vosk' | 'whisperx'>('vad');
 
   // Compute actual backend key
@@ -103,7 +103,7 @@ const Hero = () => {
     const levels = await generateWaveLevels(file, 60);
     setSavedLevels(levels);
 
-    if (mode === 'sentence_segmented' || mode === 'advanced_sentence') {
+    if (mode === 'sentence_segmented' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm' || mode === 'xlsr' || mode === 'qwen2_audio' || mode === 'wavlm_base_plus' || mode === 'wav2vec2_english') {
       setShowModelSelection(false);
     } else {
       setShowModelSelection(true);
@@ -235,7 +235,25 @@ const Hero = () => {
 
       // Determine endpoint
       let endpoint: string;
-      if (selectedModel === 'majority_voting') {
+      if (mode === 'hubert') {
+        endpoint = '/analyze_hubert';
+      } else if (mode === 'exhubert') {
+        endpoint = '/analyze_exhubert';
+      } else if (mode === 'wav2vec2_turkish') {
+        endpoint = '/analyze_wav2vec2_turkish';
+      } else if (mode === 'sensevoice') {
+        endpoint = '/analyze_sensevoice';
+      } else if (mode === 'wavlm') {
+        endpoint = '/analyze_wavlm';
+      } else if (mode === 'wavlm_base_plus') {
+        endpoint = '/analyze_wavlm_base_plus';
+      } else if (mode === 'xlsr') {
+        endpoint = '/analyze_xlsr';
+      } else if (mode === 'wav2vec2_english') {
+        endpoint = '/analyze_wav2vec2_english';
+      } else if (mode === 'qwen2_audio') {
+        endpoint = '/analyze_qwen2_audio';
+      } else if (selectedModel === 'majority_voting') {
         endpoint = '/analyze_voting';
       } else if (mode === 'word') {
         endpoint = '/predict';
@@ -246,6 +264,7 @@ const Hero = () => {
       } else {
         endpoint = '/api/predict_sentence_whole';
       }
+      
       const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -253,7 +272,11 @@ const Hero = () => {
       // Parse response based on endpoint type
       let emotion, confidence, all_scores;
 
-      if (selectedModel === 'majority_voting') {
+      if (mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm' || mode === 'xlsr' || mode === 'qwen2_audio' || mode === 'wavlm_base_plus' || mode === 'wav2vec2_english') {
+        emotion = response.data.emotion;
+        confidence = response.data.confidence;
+        all_scores = response.data.all_scores;
+      } else if (selectedModel === 'majority_voting') {
         // Voting endpoint returns standard format: { emotion, confidence, all_scores, model_details }
         emotion = response.data.emotion;
         confidence = response.data.confidence;
@@ -451,6 +474,96 @@ const Hero = () => {
               >
                 Advanced Cümle Analizi
               </button>
+              <button
+                onClick={() => { setMode('hubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'hubert'
+                  ? 'bg-emerald-600 text-white shadow-lg border-emerald-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 border-emerald-400 dark:border-emerald-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                HuBERT (HuggingFace)
+              </button>
+              <button
+                onClick={() => { setMode('wav2vec2_turkish'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wav2vec2_turkish'
+                  ? 'bg-sky-600 text-white shadow-lg border-sky-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-sky-600 dark:text-sky-400 hover:text-sky-700 border-sky-400 dark:border-sky-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                Wav2Vec2 Turkish
+              </button>
+              <button
+                onClick={() => { setMode('sensevoice'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sensevoice'
+                  ? 'bg-orange-600 text-white shadow-lg border-orange-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-orange-600 dark:text-orange-400 hover:text-orange-700 border-orange-400 dark:border-orange-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                SenseVoice (Alibaba)
+              </button>
+              <button
+                onClick={() => { setMode('exhubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'exhubert'
+                  ? 'bg-violet-600 text-white shadow-lg border-violet-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-violet-600 dark:text-violet-400 hover:text-violet-700 border-violet-400 dark:border-violet-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                ExHuBERT
+              </button>
+              <button
+                onClick={() => { setMode('qwen2_audio'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'qwen2_audio'
+                  ? 'bg-slate-900 text-white shadow-lg border-slate-700'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-300 hover:text-slate-950 border-slate-400 dark:border-slate-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                Qwen2-Audio (7B)
+              </button>
+              <button
+                onClick={() => { setMode('wavlm'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm'
+                  ? 'bg-indigo-600 text-white shadow-lg border-indigo-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 border-indigo-400 dark:border-indigo-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                WavLM Categorical
+              </button>
+              <button
+                onClick={() => { setMode('wavlm_base_plus'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm_base_plus'
+                  ? 'bg-indigo-800 text-white shadow-lg border-indigo-700'
+                  : 'bg-slate-200 dark:bg-slate-700 text-indigo-800 dark:text-indigo-300 hover:text-indigo-900 border-indigo-500 dark:border-indigo-600'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                WavLM Base Plus
+              </button>
+              <button
+                onClick={() => { setMode('xlsr'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'xlsr'
+                  ? 'bg-rose-600 text-white shadow-lg border-rose-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-rose-600 dark:text-rose-400 hover:text-rose-700 border-rose-400 dark:border-rose-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                XLSR (Multilingual)
+              </button>
+              <button
+                onClick={() => { setMode('wav2vec2_english'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wav2vec2_english'
+                  ? 'bg-rose-800 text-white shadow-lg border-rose-700'
+                  : 'bg-slate-200 dark:bg-slate-700 text-rose-800 dark:text-rose-300 hover:text-rose-900 border-rose-500 dark:border-rose-600'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                Wav2Vec2 English
+              </button>
             </div>
           )}
 
@@ -478,6 +591,50 @@ const Hero = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                     <span className="text-sm font-black uppercase tracking-widest text-red-600 dark:text-red-400">
                       Models_2 — 5-Model Noise-Augmented Ensemble
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'hubert' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                      SeaBenSea / HuBERT — HuggingFace Transformer
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'wav2vec2_turkish' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500/20 to-blue-500/20 border border-sky-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-sky-600 dark:text-sky-400">
+                      Sefa-Alper / Wav2Vec2 — Turkish Speech Emotion
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'sensevoice' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
+                      FunAudioLLM / SenseVoiceSmall — Alibaba
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'exhubert' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-500/20 to-purple-500/20 border border-violet-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">
+                      amiriparian / ExHuBERT — 6-Class Arousal-Valence
                     </span>
                   </div>
                 </div>
@@ -690,9 +847,22 @@ const Hero = () => {
               <AudioPlayer
                 mode="preview"
                 analysisMode={mode === 'word' ? 'word' : 'sentence'}
-                selectedModelName={mode === 'sentence_whole' ? 'Experimental Ensemble' : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)' : activeModelName}
+                selectedModelName={
+                  mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                  : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
+                  : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                  : mode === 'sensevoice' ? 'SenseVoiceSmall (Alibaba)'
+                  : mode === 'wavlm' ? '3loi / WavLM-Categorical'
+                  : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
+                  : mode === 'xlsr' ? 'ehcalabres / XLSR (Multilingual)'
+                  : mode === 'wav2vec2_english' ? 'r-f / Wav2Vec2 English'
+                  : mode === 'qwen2_audio' ? 'Qwen / Qwen2-Audio-7B'
+                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
+                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
+                  : activeModelName
+                }
                 recordedUrl={recordedUrl}
-                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || showModelSelection}
+                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'exhubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'wavlm' || mode === 'wavlm_base_plus' || mode === 'xlsr' || mode === 'wav2vec2_english' || mode === 'qwen2_audio' || showModelSelection}
                 levels={savedLevels}
                 isPlaying={isPlaying}
                 playProgress={playProgress}
@@ -742,7 +912,20 @@ const Hero = () => {
                 {t('analyzing')}
               </p>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
-                {t('engine_used')}: {mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)' : mode === 'sentence_whole' ? 'Experimental Ensemble' : activeModelName}
+                {t('engine_used')}: {
+                  mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                  : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
+                  : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                  : mode === 'sensevoice' ? 'FunAudioLLM/SenseVoiceSmall (Alibaba)'
+                  : mode === 'wavlm' ? '3loi / WavLM-Categorical'
+                  : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
+                  : mode === 'xlsr' ? 'ehcalabres / XLSR (Multilingual)'
+                  : mode === 'wav2vec2_english' ? 'r-f / Wav2Vec2 English'
+                  : mode === 'qwen2_audio' ? 'Qwen / Qwen2-Audio-7B'
+                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
+                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
+                  : activeModelName
+                }
               </p>
             </div>
           )}
