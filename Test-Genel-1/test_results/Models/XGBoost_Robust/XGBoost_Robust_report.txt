@@ -1,0 +1,15 @@
+=== XGBoost_Robust Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\XGBoost_Robust\xgboost_robust.pkl
+Doğruluk (Accuracy): %69.69
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.76      0.95      0.84        80
+        calm       0.56      0.80      0.66        80
+       happy       0.80      0.64      0.71        80
+         sad       0.76      0.40      0.52        80
+
+    accuracy                           0.70       320
+   macro avg       0.72      0.70      0.68       320
+weighted avg       0.72      0.70      0.68       320

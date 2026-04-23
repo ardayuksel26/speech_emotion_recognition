@@ -1,0 +1,15 @@
+=== KNN_Robust Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\KNN_Robust\knn_robust.pkl
+Doğruluk (Accuracy): %24.06
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.30      0.21      0.25        80
+        calm       0.23      0.59      0.33        80
+       happy       0.00      0.00      0.00        80
+         sad       0.22      0.16      0.19        80
+
+    accuracy                           0.24       320
+   macro avg       0.19      0.24      0.19       320
+weighted avg       0.19      0.24      0.19       320

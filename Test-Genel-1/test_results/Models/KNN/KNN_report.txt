@@ -1,0 +1,15 @@
+=== KNN Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\KNN\knn_model.pkl
+Doğruluk (Accuracy): %27.19
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.26      0.93      0.41        80
+        calm       0.35      0.16      0.22        80
+       happy       0.00      0.00      0.00        80
+         sad       0.00      0.00      0.00        80
+
+    accuracy                           0.27       320
+   macro avg       0.15      0.27      0.16       320
+weighted avg       0.15      0.27      0.16       320

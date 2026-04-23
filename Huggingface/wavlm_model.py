@@ -45,7 +45,7 @@ class WavLMEmotionPredictor:
 
 
 class WavLMBasePlusEmotionPredictor:
-    MODEL_NAME = "harritaylor/wavlm-base-plus-speech-emotion-recognition"
+    MODEL_NAME = "jihedjabnoun/wavlm-base-emotion"
 
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -1,0 +1,15 @@
+=== CatBoost Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\CatBoost\catboost_model.pkl
+Doğruluk (Accuracy): %43.12
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.33      1.00      0.50        80
+        calm       0.82      0.34      0.48        80
+       happy       0.60      0.26      0.37        80
+         sad       0.91      0.12      0.22        80
+
+    accuracy                           0.43       320
+   macro avg       0.66      0.43      0.39       320
+weighted avg       0.66      0.43      0.39       320

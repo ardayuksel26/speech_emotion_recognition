@@ -1,0 +1,15 @@
+=== MLP Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\Sentence_Models\MLP\mlp_model.pkl
+Doğruluk (Accuracy): %26.25
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.25      0.25      0.25        80
+        calm       0.00      0.00      0.00        80
+       happy       0.24      0.20      0.22        80
+         sad       0.28      0.60      0.38        80
+
+    accuracy                           0.26       320
+   macro avg       0.19      0.26      0.21       320
+weighted avg       0.19      0.26      0.21       320

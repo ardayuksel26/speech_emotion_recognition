@@ -6,7 +6,7 @@ from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
 
 
 class XLSREmotionPredictor:
-    MODEL_NAME = "ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition"
+    MODEL_NAME = "harshit345/xlsr-wav2vec-speech-emotion-recognition"
 
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -40,7 +40,7 @@ class XLSREmotionPredictor:
 
 
 class Wav2Vec2EnglishPredictor:
-    MODEL_NAME = "r-f/wav2vec-english-speech-emotion-recognition"
+    MODEL_NAME = "superb/wav2vec2-base-superb-er"
 
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

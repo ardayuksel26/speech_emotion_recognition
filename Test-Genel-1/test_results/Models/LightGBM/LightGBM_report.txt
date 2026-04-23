@@ -1,0 +1,15 @@
+=== LightGBM Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\LightGBM\lightgbm_model.pkl
+Doğruluk (Accuracy): %53.75
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.58      0.90      0.71        80
+        calm       0.43      0.86      0.57        80
+       happy       0.92      0.15      0.26        80
+         sad       0.83      0.24      0.37        80
+
+    accuracy                           0.54       320
+   macro avg       0.69      0.54      0.48       320
+weighted avg       0.69      0.54      0.48       320

@@ -1,0 +1,15 @@
+=== GradientBoosting_Robust Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\GradientBoosting_Robust\gradboost_robust.pkl
+Doğruluk (Accuracy): %70.31
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.59      0.99      0.74        80
+        calm       0.76      0.75      0.75        80
+       happy       0.77      0.76      0.77        80
+         sad       0.86      0.31      0.46        80
+
+    accuracy                           0.70       320
+   macro avg       0.75      0.70      0.68       320
+weighted avg       0.75      0.70      0.68       320

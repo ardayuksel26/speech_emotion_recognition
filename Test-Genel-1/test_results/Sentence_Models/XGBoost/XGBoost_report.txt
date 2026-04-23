@@ -1,0 +1,15 @@
+=== XGBoost Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\Sentence_Models\XGBoost\xgboost_model.pkl
+Doğruluk (Accuracy): %25.31
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.00      0.00      0.00        80
+        calm       0.00      0.00      0.00        80
+       happy       0.25      0.93      0.40        80
+         sad       0.24      0.09      0.13        80
+
+    accuracy                           0.25       320
+   macro avg       0.12      0.25      0.13       320
+weighted avg       0.12      0.25      0.13       320

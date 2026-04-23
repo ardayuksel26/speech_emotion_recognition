@@ -1,0 +1,15 @@
+=== Random Forest Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Models\Sentence_Models\Random Forest\random_forest_model.pkl
+Doğruluk (Accuracy): %40.94
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.34      0.96      0.50        80
+        calm       0.56      0.11      0.19        80
+       happy       0.88      0.19      0.31        80
+         sad       0.48      0.38      0.42        80
+
+    accuracy                           0.41       320
+   macro avg       0.57      0.41      0.36       320
+weighted avg       0.57      0.41      0.36       320
