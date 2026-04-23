@@ -7,7 +7,7 @@ import { FrequencyChart } from './Results/FrequencyChart';
 import { ExportButton } from './Results/ExportButton';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaPlay, FaPause, FaBrain, FaChartBar } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaPause, FaBrain, FaChartBar, FaRobot, FaMicrophone, FaNetworkWired } from 'react-icons/fa';
 import { clsx } from 'clsx';
 import EmotionBadge from './Results/EmotionBadge';
 
@@ -246,7 +246,7 @@ const Result: React.FC<ResultProps> = ({
                     </MotionWrapper>
 
                     {/* Word Timeline OR Voting Details */}
-                    {((result.word_timestamps && result.word_timestamps.length > 0) || (result.model_details && result.model_details.length > 0)) && (
+                    {((result.word_timestamps && result.word_timestamps.length > 0) || result.model_details) && (
                         <MotionWrapper delay={0.4}>
                             <div
                                 className={clsx(
@@ -288,41 +288,119 @@ const Result: React.FC<ResultProps> = ({
                                     </>
                                 )}
 
-                                {result.model_details && result.model_details.length > 0 && (
-                                    <>
-                                        <div className="px-4 md:px-6 mb-4">
-                                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
-                                                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                                {t('voting_details')}
-                                            </h3>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-2 md:px-6">
-                                            {result.model_details.map((detail, idx) => {
-                                                const emotionColors: Record<string, string> = { angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981' };
-                                                const dotColor = emotionColors[detail.prediction.toLowerCase()] || '#8b5cf6';
-
-                                                return (
-                                                    <div key={idx} className={clsx(
-                                                        "flex items-center rounded-2xl border shadow-sm transition-all duration-300",
-                                                        isDark ? "bg-slate-800/50 border-slate-700/50" : "bg-white/60 border-slate-200/50"
-                                                    )} style={{ padding: '12px', borderRadius: '16px' }}>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex justify-between items-center mb-1">
-                                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{detail.model}</p>
-                                                                <span className="text-[10px] font-bold opacity-30">wt: {detail.weight}x</span>
+                                {/* Model Details — Master Ensemble veya Experimental Voting */}
+                                {result.model_details && (
+                                    Array.isArray(result.model_details) ? (
+                                        /* ── Eski format: Experimental Voting Kartları ── */
+                                        result.model_details.length > 0 && (
+                                            <>
+                                                <div className="px-4 md:px-6 mb-4">
+                                                    <h3 className="text-sm font-black uppercase tracking-widest opacity-60 mb-6 flex items-center gap-3">
+                                                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                                        {t('voting_details')}
+                                                    </h3>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-2 md:px-6">
+                                                    {(result.model_details as Array<{model:string;key:string;weight:number;prediction:string;confidence:number;scores:{[k:string]:number}}>).map((detail, idx) => {
+                                                        const emotionColors: Record<string, string> = { angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981' };
+                                                        const dotColor = emotionColors[detail.prediction.toLowerCase()] || '#8b5cf6';
+                                                        return (
+                                                            <div key={idx} className={clsx(
+                                                                "flex items-center rounded-2xl border shadow-sm transition-all duration-300",
+                                                                isDark ? "bg-slate-800/50 border-slate-700/50" : "bg-white/60 border-slate-200/50"
+                                                            )} style={{ padding: '12px', borderRadius: '16px' }}>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex justify-between items-center mb-1">
+                                                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{detail.model}</p>
+                                                                        <span className="text-[10px] font-bold opacity-30">wt: {detail.weight}x</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
+                                                                        <span className="text-sm font-bold capitalize">{t(detail.prediction.toLowerCase())}</span>
+                                                                        <span className="text-xs font-bold opacity-50 ml-auto whitespace-nowrap">{detail.confidence.toFixed(1)}%</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
-                                                                <span className="text-sm font-bold capitalize">{t(detail.prediction.toLowerCase())}</span>
-                                                                <span className="text-xs font-bold opacity-50 ml-auto whitespace-nowrap">{detail.confidence.toFixed(1)}%</span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </>
+                                        )
+                                    ) : (
+                                        /* ── Yeni format: Master Ensemble Panel ── */
+                                        (() => {
+                                            const md = result.model_details as {v2_models:string[];v2_word_count:number;hubert_available:boolean;hubert_emotion:string|null;vosk_error:string|null};
+                                            const modelLabels: Record<string, string> = { cb_v2: 'CatBoost V2', lgbm_v2: 'LightGBM V2', xgb_v2: 'XGBoost V2' };
+                                            const emotionColors: Record<string, string> = { angry: '#ef4444', happy: '#f59e0b', sad: '#6366f1', calm: '#10b981' };
+                                            return (
+                                                <div className="px-2 md:px-6 space-y-5">
+                                                    <h3 className="text-sm font-black uppercase tracking-widest opacity-60 flex items-center gap-3">
+                                                        <FaNetworkWired className="text-indigo-400" />
+                                                        Master Ensemble
+                                                    </h3>
+
+                                                    {/* V2 Model Chips */}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {md.v2_models.map((key) => (
+                                                            <span key={key} className={clsx(
+                                                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border",
+                                                                isDark ? "bg-indigo-500/15 border-indigo-500/30 text-indigo-300" : "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                                            )}>
+                                                                <FaRobot className="text-[10px]" />
+                                                                {modelLabels[key] || key}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Stats Row */}
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        {/* Kelime Sayısı */}
+                                                        <div className={clsx(
+                                                            "flex items-center gap-3 p-4 rounded-2xl border",
+                                                            isDark ? "bg-slate-800/60 border-slate-700/50" : "bg-white/60 border-slate-200/50"
+                                                        )}>
+                                                            <FaMicrophone className={clsx("text-lg shrink-0", isDark ? "text-purple-400" : "text-purple-500")} />
+                                                            <div>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Kelime Analizi</p>
+                                                                <p className="text-lg font-black">
+                                                                    {md.v2_word_count > 0 ? `${md.v2_word_count} kelime` : (md.vosk_error ? 'Vosk Hatası' : 'Kelime yok')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* HuBERT Durumu */}
+                                                        <div className={clsx(
+                                                            "flex items-center gap-3 p-4 rounded-2xl border",
+                                                            isDark ? "bg-slate-800/60 border-slate-700/50" : "bg-white/60 border-slate-200/50"
+                                                        )}>
+                                                            <FaBrain className={clsx("text-lg shrink-0", md.hubert_available ? (isDark ? "text-emerald-400" : "text-emerald-600") : "text-slate-400")} />
+                                                            <div>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">HuBERT Jürisi</p>
+                                                                {md.hubert_available && md.hubert_emotion ? (
+                                                                    <p className="text-sm font-black flex items-center gap-2">
+                                                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: emotionColors[md.hubert_emotion] || '#8b5cf6' }} />
+                                                                        <span className="capitalize">{t(md.hubert_emotion)}</span>
+                                                                    </p>
+                                                                ) : (
+                                                                    <p className="text-sm font-bold opacity-40">Devre Dışı</p>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </>
+
+                                                    {/* Vosk Hatası Uyarısı */}
+                                                    {md.vosk_error && (
+                                                        <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                                                            Vosk segmentasyonu başarısız — sadece HuBERT ile analiz yapıldı
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()
+                                    )
                                 )}
+
                             </div>
                         </MotionWrapper>
                     )}

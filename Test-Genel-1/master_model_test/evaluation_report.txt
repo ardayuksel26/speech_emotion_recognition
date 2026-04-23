@@ -1,0 +1,135 @@
+======================================================================
+  MASTER ENSEMBLE MODEL — TEST RAPORU
+======================================================================
+
+  Test Verisi   : C:\Users\ilhan\Desktop\SER_PROJECT\Test-Genel-1\our_voices_for_test
+  Toplam Dosya  : 80
+  Genel Accuracy: %85.00
+  Süre          : 150.6s  (1.9s/dosya)
+
+  Pipeline Detayları
+  ─────────────────────────────────────────
+  HuBERT başarıyla çalıştı     : 80/80 dosya
+  Ortalama kelime/dosya        : 8.1
+  Kalibrasyon (master_calib)   : {'angry': 1.0, 'happy': 1.3, 'sad': 0.55, 'calm': 1.05}
+
+----------------------------------------------------------------------
+  SINIFLANDIRMA RAPORU (sklearn)
+----------------------------------------------------------------------
+              precision    recall  f1-score   support
+
+       angry     1.0000    1.0000    1.0000        20
+        calm     0.9167    0.5500    0.6875        20
+       happy     1.0000    0.8500    0.9189        20
+         sad     0.6452    1.0000    0.7843        20
+
+    accuracy                         0.8500        80
+   macro avg     0.8905    0.8500    0.8477        80
+weighted avg     0.8905    0.8500    0.8477        80
+
+----------------------------------------------------------------------
+  DUYGU BAZLI DETAYLAR
+----------------------------------------------------------------------
+  Duygu       Precision     Recall   F1-Score   Destek
+  ----------------------------------------------
+  angry          1.0000     1.0000     1.0000       20
+  calm           0.9167     0.5500     0.6875       20
+  happy          1.0000     0.8500     0.9189       20
+  sad            0.6452     1.0000     0.7843       20
+
+----------------------------------------------------------------------
+  CONFUSION MATRIX
+----------------------------------------------------------------------
+  Satırlar=Gerçek, Sütunlar=Tahmin  |  Etiketler: ['angry', 'calm', 'happy', 'sad']
+
+              angry      calm     happy       sad
+     angry        20         0         0         0
+      calm         0        11         0         9
+     happy         0         1        17         2
+       sad         0         0         0        20
+
+----------------------------------------------------------------------
+  DOSYA BAZLI TAHMİNLER
+----------------------------------------------------------------------
+  Dosya                                           Gerçek   Tahmin  Doğru
+  ----------------------------------------------------------------------
+  ilhan_angry (1).wav                              angry    angry      ✓
+  ilhan_angry (10).wav                             angry    angry      ✓
+  ilhan_angry (11).wav                             angry    angry      ✓
+  ilhan_angry (12).wav                             angry    angry      ✓
+  ilhan_angry (13).wav                             angry    angry      ✓
+  ilhan_angry (14).wav                             angry    angry      ✓
+  ilhan_angry (15).wav                             angry    angry      ✓
+  ilhan_angry (16).wav                             angry    angry      ✓
+  ilhan_angry (17).wav                             angry    angry      ✓
+  ilhan_angry (18).wav                             angry    angry      ✓
+  ilhan_angry (19).wav                             angry    angry      ✓
+  ilhan_angry (2).wav                              angry    angry      ✓
+  ilhan_angry (20).wav                             angry    angry      ✓
+  ilhan_angry (3).wav                              angry    angry      ✓
+  ilhan_angry (4).wav                              angry    angry      ✓
+  ilhan_angry (5).wav                              angry    angry      ✓
+  ilhan_angry (6).wav                              angry    angry      ✓
+  ilhan_angry (7).wav                              angry    angry      ✓
+  ilhan_angry (8).wav                              angry    angry      ✓
+  ilhan_angry (9).wav                              angry    angry      ✓
+  ilhan_calm (1).wav                                calm      sad      ✗
+  ilhan_calm (10).wav                               calm      sad      ✗
+  ilhan_calm (11).wav                               calm      sad      ✗
+  ilhan_calm (12).wav                               calm     calm      ✓
+  ilhan_calm (13).wav                               calm     calm      ✓
+  ilhan_calm (14).wav                               calm     calm      ✓
+  ilhan_calm (15).wav                               calm     calm      ✓
+  ilhan_calm (16).wav                               calm     calm      ✓
+  ilhan_calm (17).wav                               calm     calm      ✓
+  ilhan_calm (18).wav                               calm      sad      ✗
+  ilhan_calm (19).wav                               calm     calm      ✓
+  ilhan_calm (2).wav                                calm      sad      ✗
+  ilhan_calm (20).wav                               calm      sad      ✗
+  ilhan_calm (3).wav                                calm      sad      ✗
+  ilhan_calm (4).wav                                calm      sad      ✗
+  ilhan_calm (5).wav                                calm     calm      ✓
+  ilhan_calm (6).wav                                calm      sad      ✗
+  ilhan_calm (7).wav                                calm     calm      ✓
+  ilhan_calm (8).wav                                calm     calm      ✓
+  ilhan_calm (9).wav                                calm     calm      ✓
+  ilhan_happy (1).wav                              happy    happy      ✓
+  ilhan_happy (10).wav                             happy    happy      ✓
+  ilhan_happy (11).wav                             happy    happy      ✓
+  ilhan_happy (12).wav                             happy    happy      ✓
+  ilhan_happy (13).wav                             happy    happy      ✓
+  ilhan_happy (14).wav                             happy    happy      ✓
+  ilhan_happy (15).wav                             happy    happy      ✓
+  ilhan_happy (16).wav                             happy    happy      ✓
+  ilhan_happy (17).wav                             happy     calm      ✗
+  ilhan_happy (18).wav                             happy    happy      ✓
+  ilhan_happy (19).wav                             happy    happy      ✓
+  ilhan_happy (2).wav                              happy    happy      ✓
+  ilhan_happy (20).wav                             happy    happy      ✓
+  ilhan_happy (3).wav                              happy      sad      ✗
+  ilhan_happy (4).wav                              happy      sad      ✗
+  ilhan_happy (5).wav                              happy    happy      ✓
+  ilhan_happy (6).wav                              happy    happy      ✓
+  ilhan_happy (7).wav                              happy    happy      ✓
+  ilhan_happy (8).wav                              happy    happy      ✓
+  ilhan_happy (9).wav                              happy    happy      ✓
+  ilhan_sad (1).wav                                  sad      sad      ✓
+  ilhan_sad (10).wav                                 sad      sad      ✓
+  ilhan_sad (11).wav                                 sad      sad      ✓
+  ilhan_sad (12).wav                                 sad      sad      ✓
+  ilhan_sad (13).wav                                 sad      sad      ✓
+  ilhan_sad (14).wav                                 sad      sad      ✓
+  ilhan_sad (15).wav                                 sad      sad      ✓
+  ilhan_sad (16).wav                                 sad      sad      ✓
+  ilhan_sad (17).wav                                 sad      sad      ✓
+  ilhan_sad (18).wav                                 sad      sad      ✓
+  ilhan_sad (19).wav                                 sad      sad      ✓
+  ilhan_sad (2).wav                                  sad      sad      ✓
+  ilhan_sad (20).wav                                 sad      sad      ✓
+  ilhan_sad (3).wav                                  sad      sad      ✓
+  ilhan_sad (4).wav                                  sad      sad      ✓
+  ilhan_sad (5).wav                                  sad      sad      ✓
+  ilhan_sad (6).wav                                  sad      sad      ✓
+  ilhan_sad (7).wav                                  sad      sad      ✓
+  ilhan_sad (8).wav                                  sad      sad      ✓
+  ilhan_sad (9).wav                                  sad      sad      ✓

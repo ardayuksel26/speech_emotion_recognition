@@ -9,7 +9,8 @@ import { convertFileToWav } from "../utils/audioUtils";
 import { AnalysisResult } from "../types";
 import InteractiveBackground from "./InteractiveBackground";
 
-type SegmentItem = { start: number; end: number; word?: string; emotion?: string; confidence?: number };
+
+
 
 const MainHero = () => {
   const { t } = useTranslation();
@@ -28,47 +29,24 @@ const MainHero = () => {
   };
 
   const runSegmentAndAnalyze = async (file: File) => {
-    // Adım 1: Vosk segmentasyonu
     setIsSegmenting(true);
     setAnalysisResult(null);
 
-    let segs: SegmentItem[] = [];
-    try {
-      const wavBlob = await convertFileToWav(file);
-      const fd = new FormData();
-      fd.append("file", wavBlob, "converted_audio.wav");
-      fd.append("stt_engine", "vosk");
-      fd.append("model_type", "catboost");
-      const resp = await axios.post("http://localhost:5000/transcribe", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      segs = (resp.data.words || []).map((w: any) => ({
-        start: w.start,
-        end: w.end,
-        word: w.word,
-        emotion: w.emotion,
-        confidence: typeof w.confidence === 'number' ? w.confidence : undefined,
-      }));
-    } catch (err: any) {
-      console.error("Segmentation failed:", err);
-      // Segmentasyon başarısız olsa da analiz devam eder
-    } finally {
-      setIsSegmenting(false);
-    }
-
-    // Adım 2: Majority Voting analiz (studio)
-    setIsAnalyzing(true);
     try {
       const wavBlob = await convertFileToWav(file);
       const formData = new FormData();
       formData.append("file", wavBlob, "converted_audio.wav");
-      formData.append("quality", "studio");
 
-      const response = await axios.post("http://localhost:5000/analyze_voting", formData, {
+      // Master Ensemble: V2 (cb_v2 + lgbm_v2 + xgb_v2) kelime bazlı +
+      // HuBERT cümle jürisi → F1-ağırlıklı birleştirme
+      setIsSegmenting(false);
+      setIsAnalyzing(true);
+
+      const response = await axios.post("http://localhost:5000/analyze_master", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const { emotion, confidence, all_scores } = response.data;
+      const { emotion, confidence, all_scores, model_details, word_timestamps } = response.data;
 
       let confidenceValue = 0;
       if (typeof confidence === "string") confidenceValue = parseFloat(confidence.replace("%", ""));
@@ -88,31 +66,36 @@ const MainHero = () => {
       const totalSum = Object.values(emotionsMap).reduce((a, b) => a + b, 0);
       if (totalSum > 0) Object.keys(emotionsMap).forEach(k => { emotionsMap[k] = emotionsMap[k] / totalSum; });
 
-      const finalWordTimestamps = segs.map((seg, i) => ({
-        word: seg.word || `${t("word_label")} ${i + 1}`,
-        start: seg.start,
-        end: seg.end,
-        emotion: seg.emotion || "neutral",
-        confidence: seg.confidence ?? 1.0,
-      }));
+      // Her kelime için V2 modellerinin tahminlediği duyguyu timeline'a ver
+      const finalWordTimestamps = (word_timestamps && word_timestamps.length > 0)
+        ? word_timestamps.map((w: any) => ({
+            word: w.word || "—",
+            start: w.start,
+            end: w.end,
+            emotion: w.emotion || emotion.toLowerCase(),
+            confidence: typeof w.confidence === "number" ? w.confidence : normalizedConfidence,
+          }))
+        : [];
 
       setAnalysisResult({
         dominant_emotion: emotion,
         emotions: emotionsMap,
         confidence: normalizedConfidence,
         word_timestamps: finalWordTimestamps,
-        model_details: response.data.model_details || undefined,
+        model_details: model_details || undefined,
       });
     } catch (error: any) {
-      console.error("Analysis failed:", error);
+      console.error("Master analysis failed:", error);
       let msg = t("analysis_failed") || "Analiz hatası.";
       if (error.response?.data?.error) msg = `Hata: ${error.response.data.error}`;
       else if (error.message) msg = `Hata: ${error.message}`;
       alert(msg);
     } finally {
+      setIsSegmenting(false);
       setIsAnalyzing(false);
     }
   };
+
 
   const reset = () => {
     setRecordedUrl(null);
@@ -198,7 +181,7 @@ const MainHero = () => {
                 {t("analyzing")}
               </p>
               <p className="text-sm font-medium mt-2 tracking-widest uppercase opacity-50">
-                {t("majority_voting")} · Studio
+                Master Ensemble · V2 + HuBERT
               </p>
             </div>
           )}

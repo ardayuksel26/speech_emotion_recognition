@@ -29,7 +29,13 @@ export interface AnalysisResult {
         prediction: string;
         confidence: number;
         scores: { [key: string]: number };
-    }>;
+    }> | {
+        v2_models: string[];
+        v2_word_count: number;
+        hubert_available: boolean;
+        hubert_emotion: string | null;
+        vosk_error: string | null;
+    };
     veto_info?: {
         applied: boolean;
         rf_score: number;
