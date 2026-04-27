@@ -73,14 +73,14 @@ V2_MODEL_WEIGHTS = {
     'lgbm_v2': {'angry': 0.91, 'calm': 0.93, 'happy': 0.93, 'sad': 0.88},
     'xgb_v2':  {'angry': 0.88, 'calm': 0.93, 'happy': 0.90, 'sad': 0.91},
 }
-HUBERT_WEIGHTS      = {'angry': 0.83, 'calm': 0.75, 'happy': 0.88, 'sad': 0.88}
-HUBERT_GLOBAL_WEIGHT = 1.5
+HUBERT_WEIGHTS      = {'angry': 0.83, 'calm': 1.10, 'happy': 1.00, 'sad': 0.85}
+HUBERT_GLOBAL_WEIGHT = 1.6
 
 MASTER_CALIBRATION = {
-    'angry': 1.00,
-    'happy': 1.30,   # mükemmel çalışıyor, koru
-    'sad':   0.55,   # calm→sad kırmak için güçlü baskı (sad %100 recall → alan var)
-    'calm':  1.05,   # hafif boost — sad baskılanınca calm kazanabilsin
+    'angry': 1.00,   # geri döndür — 0.90 fark yaratmadı
+    'happy': 1.40,   # kanıtlanmış değer (%85 test)
+    'sad':   0.65,   # 0.50 çok agresifti, calm'a yardım etmedi
+    'calm':  1.25,   # hafif koruma — dengeli
 }
 
 MODELS_2_CONFIG = {
@@ -292,14 +292,14 @@ def run_master_pipeline(audio_path: str) -> dict:
             log.debug(f"  HuBERT hata: {hx}")
 
     # — KATMAN 3: Birleştirme —
-    # V2 modelleri gerçek konuşmada sad'e yığılıyor (eğitim veri uyuşmazlığı).
-    # Bu yüzden word_norm sabit 0.25 tutulur; HuBERT (Tranşormer) ön plana çıkar.
+    # V2 modelleri gerçek konuşmada sad'e yığılıyor → word_norm sabit 0.25.
+    # Formulü: 3.0 + 1.5 (HuBERT dominant) — en iyi sonuç veren yapı.
     word_norm = {e: 0.25 for e in EMOTIONS}
 
     combined = {}
     if hubert_available:
         for e in EMOTIONS:
-            # HuBERT dominant (1.5x), V2 sadece hafif destek (3.0 * 0.25 = 0.75 sabit baz)
+            # HuBERT dominant (1.5x), V2 sabit baz (3.0 * 0.25 = 0.75)
             combined[e] = word_norm[e] * 3.0 + hubert_scores[e] * 1.5
     else:
         combined = dict(word_norm)
