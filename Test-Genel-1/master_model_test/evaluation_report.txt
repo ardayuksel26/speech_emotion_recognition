@@ -2,15 +2,15 @@
   MASTER ENSEMBLE MODEL — TEST RAPORU
 ======================================================================
 
-  Test Verisi   : C:\Users\ilhan\Desktop\SER_PROJECT\Test-Genel-1\our_voices_for_test
-  Toplam Dosya  : 200
-  Genel Accuracy: %81.00
-  Süre          : 281.8s  (1.4s/dosya)
+  Test Verisi   : C:\Users\pc\Desktop\git_sonhali\Test-Genel-1\our_voices_for_test
+  Toplam Dosya  : 320
+  Genel Accuracy: %76.88
+  Süre          : 453.1s  (1.4s/dosya)
 
   Pipeline Detayları
   ─────────────────────────────────────────
-  HuBERT başarıyla çalıştı     : 200/200 dosya
-  Ortalama kelime/dosya        : 6.2
+  HuBERT başarıyla çalıştı     : 320/320 dosya
+  Ortalama kelime/dosya        : 5.8
   Kalibrasyon (master_calib)   : {'angry': 1.0, 'happy': 1.4, 'sad': 0.65, 'calm': 1.25}
 
 ----------------------------------------------------------------------
@@ -18,24 +18,24 @@
 ----------------------------------------------------------------------
               precision    recall  f1-score   support
 
-       angry     0.8909    0.9800    0.9333        50
-        calm     0.8000    0.5600    0.6588        50
-       happy     0.8974    0.7000    0.7865        50
-         sad     0.7042    1.0000    0.8264        50
+       angry     0.9130    0.7875    0.8456        80
+        calm     0.6375    0.6375    0.6375        80
+       happy     0.8413    0.6625    0.7413        80
+         sad     0.7315    0.9875    0.8404        80
 
-    accuracy                         0.8100       200
-   macro avg     0.8231    0.8100    0.8013       200
-weighted avg     0.8231    0.8100    0.8013       200
+    accuracy                         0.7688       320
+   macro avg     0.7808    0.7688    0.7662       320
+weighted avg     0.7808    0.7688    0.7662       320
 
 ----------------------------------------------------------------------
   DUYGU BAZLI DETAYLAR
 ----------------------------------------------------------------------
   Duygu       Precision     Recall   F1-Score   Destek
   ----------------------------------------------
-  angry          0.8909     0.9800     0.9333       50
-  calm           0.8000     0.5600     0.6588       50
-  happy          0.8974     0.7000     0.7865       50
-  sad            0.7042     1.0000     0.8264       50
+  angry          0.9130     0.7875     0.8456       80
+  calm           0.6375     0.6375     0.6375       80
+  happy          0.8413     0.6625     0.7413       80
+  sad            0.7315     0.9875     0.8404       80
 
 ----------------------------------------------------------------------
   CONFUSION MATRIX
@@ -43,10 +43,10 @@ weighted avg     0.8231    0.8100    0.8013       200
   Satırlar=Gerçek, Sütunlar=Tahmin  |  Etiketler: ['angry', 'calm', 'happy', 'sad']
 
               angry      calm     happy       sad
-     angry        49         0         1         0
-      calm         0        28         3        19
-     happy         6         7        35         2
-       sad         0         0         0        50
+     angry        63        10         7         0
+      calm         0        51         3        26
+     happy         6        18        53         3
+       sad         0         1         0        79
 
 ----------------------------------------------------------------------
   DOSYA BAZLI TAHMİNLER
@@ -103,6 +103,36 @@ weighted avg     0.8231    0.8100    0.8013       200
   yagiz_angry-8.wav                                angry    angry      ✓
   yagiz_angry-9.wav                                angry    angry      ✓
   yagiz_angry.wav                                  angry    angry      ✓
+  yagmur_angry (1).wav                             angry    angry      ✓
+  yagmur_angry (10).wav                            angry    angry      ✓
+  yagmur_angry (11).wav                            angry     calm      ✗
+  yagmur_angry (12).wav                            angry    angry      ✓
+  yagmur_angry (13).wav                            angry    angry      ✓
+  yagmur_angry (14).wav                            angry    happy      ✗
+  yagmur_angry (15).wav                            angry     calm      ✗
+  yagmur_angry (16).wav                            angry    angry      ✓
+  yagmur_angry (17).wav                            angry    happy      ✗
+  yagmur_angry (18).wav                            angry     calm      ✗
+  yagmur_angry (19).wav                            angry     calm      ✗
+  yagmur_angry (2).wav                             angry    angry      ✓
+  yagmur_angry (20).wav                            angry     calm      ✗
+  yagmur_angry (21).wav                            angry    angry      ✓
+  yagmur_angry (22).wav                            angry     calm      ✗
+  yagmur_angry (23).wav                            angry     calm      ✗
+  yagmur_angry (24).wav                            angry    angry      ✓
+  yagmur_angry (25).wav                            angry    happy      ✗
+  yagmur_angry (26).wav                            angry    happy      ✗
+  yagmur_angry (27).wav                            angry     calm      ✗
+  yagmur_angry (28).wav                            angry     calm      ✗
+  yagmur_angry (29).wav                            angry    happy      ✗
+  yagmur_angry (3).wav                             angry    angry      ✓
+  yagmur_angry (30).wav                            angry    happy      ✗
+  yagmur_angry (4).wav                             angry    angry      ✓
+  yagmur_angry (5).wav                             angry    angry      ✓
+  yagmur_angry (6).wav                             angry     calm      ✗
+  yagmur_angry (7).wav                             angry    angry      ✓
+  yagmur_angry (8).wav                             angry    angry      ✓
+  yagmur_angry (9).wav                             angry    angry      ✓
   ilhan_calm (1).wav                                calm      sad      ✗
   ilhan_calm (10).wav                               calm      sad      ✗
   ilhan_calm (11).wav                               calm     calm      ✓
@@ -153,6 +183,36 @@ weighted avg     0.8231    0.8100    0.8013       200
   yagiz_calm-8.wav                                  calm      sad      ✗
   yagiz_calm-9.wav                                  calm     calm      ✓
   yagiz_calm.wav                                    calm     calm      ✓
+  yagmur_calm (1).wav                               calm      sad      ✗
+  yagmur_calm (10).wav                              calm     calm      ✓
+  yagmur_calm (11).wav                              calm     calm      ✓
+  yagmur_calm (12).wav                              calm     calm      ✓
+  yagmur_calm (13).wav                              calm     calm      ✓
+  yagmur_calm (14).wav                              calm     calm      ✓
+  yagmur_calm (15).wav                              calm     calm      ✓
+  yagmur_calm (16).wav                              calm     calm      ✓
+  yagmur_calm (17).wav                              calm     calm      ✓
+  yagmur_calm (18).wav                              calm     calm      ✓
+  yagmur_calm (19).wav                              calm     calm      ✓
+  yagmur_calm (2).wav                               calm     calm      ✓
+  yagmur_calm (20).wav                              calm     calm      ✓
+  yagmur_calm (21).wav                              calm     calm      ✓
+  yagmur_calm (22).wav                              calm      sad      ✗
+  yagmur_calm (23).wav                              calm     calm      ✓
+  yagmur_calm (24).wav                              calm      sad      ✗
+  yagmur_calm (25).wav                              calm      sad      ✗
+  yagmur_calm (26).wav                              calm      sad      ✗
+  yagmur_calm (27).wav                              calm     calm      ✓
+  yagmur_calm (28).wav                              calm     calm      ✓
+  yagmur_calm (29).wav                              calm     calm      ✓
+  yagmur_calm (3).wav                               calm      sad      ✗
+  yagmur_calm (30).wav                              calm     calm      ✓
+  yagmur_calm (4).wav                               calm     calm      ✓
+  yagmur_calm (5).wav                               calm     calm      ✓
+  yagmur_calm (6).wav                               calm     calm      ✓
+  yagmur_calm (7).wav                               calm     calm      ✓
+  yagmur_calm (8).wav                               calm     calm      ✓
+  yagmur_calm (9).wav                               calm      sad      ✗
   ilhan_happy (1).wav                              happy     calm      ✗
   ilhan_happy (10).wav                             happy    happy      ✓
   ilhan_happy (11).wav                             happy    happy      ✓
@@ -203,6 +263,36 @@ weighted avg     0.8231    0.8100    0.8013       200
   yagiz_happy-8.wav                                happy    happy      ✓
   yagiz_happy-9.wav                                happy    happy      ✓
   yagiz_happy.wav                                  happy    angry      ✗
+  yagmur_happy (1).wav                             happy      sad      ✗
+  yagmur_happy (10).wav                            happy     calm      ✗
+  yagmur_happy (11).wav                            happy     calm      ✗
+  yagmur_happy (12).wav                            happy    happy      ✓
+  yagmur_happy (13).wav                            happy     calm      ✗
+  yagmur_happy (14).wav                            happy    happy      ✓
+  yagmur_happy (15).wav                            happy    happy      ✓
+  yagmur_happy (16).wav                            happy     calm      ✗
+  yagmur_happy (17).wav                            happy    happy      ✓
+  yagmur_happy (18).wav                            happy    happy      ✓
+  yagmur_happy (19).wav                            happy    happy      ✓
+  yagmur_happy (2).wav                             happy    happy      ✓
+  yagmur_happy (20).wav                            happy     calm      ✗
+  yagmur_happy (21).wav                            happy    happy      ✓
+  yagmur_happy (22).wav                            happy     calm      ✗
+  yagmur_happy (23).wav                            happy    happy      ✓
+  yagmur_happy (24).wav                            happy     calm      ✗
+  yagmur_happy (25).wav                            happy    happy      ✓
+  yagmur_happy (26).wav                            happy    happy      ✓
+  yagmur_happy (27).wav                            happy    happy      ✓
+  yagmur_happy (28).wav                            happy     calm      ✗
+  yagmur_happy (29).wav                            happy     calm      ✗
+  yagmur_happy (3).wav                             happy    happy      ✓
+  yagmur_happy (30).wav                            happy    happy      ✓
+  yagmur_happy (4).wav                             happy     calm      ✗
+  yagmur_happy (5).wav                             happy    happy      ✓
+  yagmur_happy (6).wav                             happy    happy      ✓
+  yagmur_happy (7).wav                             happy    happy      ✓
+  yagmur_happy (8).wav                             happy    happy      ✓
+  yagmur_happy (9).wav                             happy     calm      ✗
   ilhan_sad (1).wav                                  sad      sad      ✓
   ilhan_sad (10).wav                                 sad      sad      ✓
   ilhan_sad (11).wav                                 sad      sad      ✓
@@ -253,3 +343,33 @@ weighted avg     0.8231    0.8100    0.8013       200
   yagiz_sad-8.wav                                    sad      sad      ✓
   yagiz_sad-9.wav                                    sad      sad      ✓
   yagiz_sad.wav                                      sad      sad      ✓
+  yagmur_sad (1).wav                                 sad      sad      ✓
+  yagmur_sad (10).wav                                sad      sad      ✓
+  yagmur_sad (11).wav                                sad      sad      ✓
+  yagmur_sad (12).wav                                sad      sad      ✓
+  yagmur_sad (13).wav                                sad      sad      ✓
+  yagmur_sad (14).wav                                sad      sad      ✓
+  yagmur_sad (15).wav                                sad      sad      ✓
+  yagmur_sad (16).wav                                sad      sad      ✓
+  yagmur_sad (17).wav                                sad      sad      ✓
+  yagmur_sad (18).wav                                sad      sad      ✓
+  yagmur_sad (19).wav                                sad      sad      ✓
+  yagmur_sad (2).wav                                 sad      sad      ✓
+  yagmur_sad (20).wav                                sad      sad      ✓
+  yagmur_sad (21).wav                                sad      sad      ✓
+  yagmur_sad (22).wav                                sad      sad      ✓
+  yagmur_sad (23).wav                                sad      sad      ✓
+  yagmur_sad (24).wav                                sad      sad      ✓
+  yagmur_sad (25).wav                                sad      sad      ✓
+  yagmur_sad (26).wav                                sad      sad      ✓
+  yagmur_sad (27).wav                                sad      sad      ✓
+  yagmur_sad (28).wav                                sad      sad      ✓
+  yagmur_sad (29).wav                                sad      sad      ✓
+  yagmur_sad (3).wav                                 sad      sad      ✓
+  yagmur_sad (30).wav                                sad      sad      ✓
+  yagmur_sad (4).wav                                 sad      sad      ✓
+  yagmur_sad (5).wav                                 sad     calm      ✗
+  yagmur_sad (6).wav                                 sad      sad      ✓
+  yagmur_sad (7).wav                                 sad      sad      ✓
+  yagmur_sad (8).wav                                 sad      sad      ✓
+  yagmur_sad (9).wav                                 sad      sad      ✓
