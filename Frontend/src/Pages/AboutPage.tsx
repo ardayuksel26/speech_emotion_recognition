@@ -227,14 +227,8 @@ const AboutPage = () => {
                                             <h3 className={`text-2xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                                                 {TEAM[currentIndex].name}
                                             </h3>
-                                            <p className={`text-sm font-bold mb-3 ${TEAM[currentIndex].accentText}`}>
-                                                {t(TEAM[currentIndex].roleKey)}
-                                            </p>
-                                            <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                                {t(TEAM[currentIndex].descKey)}
-                                            </p>
                                             {/* Social Links */}
-                                            <div className="flex items-center gap-4 mt-5">
+                                            <div className="flex items-center gap-4 mt-4">
                                                 <a
                                                     href={TEAM[currentIndex].github}
                                                     target="_blank"
@@ -271,45 +265,20 @@ const AboutPage = () => {
                 <div className="w-full h-16 md:h-24"></div>
                 <motion.div {...fadeUp} className="mb-24 px-0">
                     <div
-                        className={`relative rounded-2xl overflow-hidden p-10 md:p-16 border ${
+                        className={`relative rounded-2xl overflow-hidden p-10 border ${
                             isDark ? 'border-white/5' : 'border-slate-200/60'
                         }`}
                         style={{
-                            background: isDark
-                                ? 'rgba(25,37,64,0.4)'
-                                : 'rgba(248,250,255,0.8)',
+                            background: isDark ? 'rgba(25,37,64,0.4)' : 'rgba(248,250,255,0.8)',
                             backdropFilter: 'blur(12px) saturate(180%)',
                         }}
                     >
-                        {/* Left accent bar removed per request */}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-14">
-                            {/* Mission */}
-                            <div className="flex flex-col gap-5">
-
-                                <div>
-                                    <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                                        {t('about_mission_title')}
-                                    </h2>
-                                    <p className={`leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                        {t('about_mission_desc')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Vision */}
-                            <div className="flex flex-col gap-5">
-
-                                <div>
-                                    <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                                        {t('about_vision_title')}
-                                    </h2>
-                                    <p className={`leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                        {t('about_vision_desc')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                        <h2 className={`text-2xl font-bold mb-4 text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {t('about_mission_vision_title')}
+                        </h2>
+                        <p className={`leading-relaxed text-center ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                            {t('about_mission_vision_desc')}
+                        </p>
                     </div>
                 </motion.div>
 

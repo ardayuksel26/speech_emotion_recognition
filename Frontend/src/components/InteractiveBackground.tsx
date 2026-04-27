@@ -15,18 +15,22 @@ const InteractiveBackground: React.FC = () => {
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
-        const particles: { x: number, y: number, vx: number, vy: number, size: number, color: string }[] = [];
+        const particles: { x: number, y: number, vx: number, vy: number, baseVx: number, baseVy: number, size: number, color: string }[] = [];
         const particleCount = 60;
-        const colors = isDark 
+        const colors = isDark
             ? ['#6366f1', '#a855f7', '#ec4899', '#3b82f6'] // darker mode glow
             : ['#818cf8', '#c084fc', '#f472b6', '#60a5fa']; // lighter mode glow
 
         for (let i = 0; i < particleCount; i++) {
+            const baseVx = (Math.random() - 0.5) * 1.5;
+            const baseVy = (Math.random() - 0.5) * 1.5;
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: (Math.random() - 0.5) * 1.5,
+                vx: baseVx,
+                vy: baseVy,
+                baseVx,
+                baseVy,
                 size: Math.random() * 80 + 20,
                 color: colors[Math.floor(Math.random() * colors.length)]
             });
@@ -63,21 +67,34 @@ const InteractiveBackground: React.FC = () => {
             ctx.fillRect(0, 0, width, height);
 
             particles.forEach((p) => {
+                // Repulsion: push particles away from mouse
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 300 && dist > 0) {
+                    const force = (1 - dist / 300) * 0.6;
+                    p.vx -= (dx / dist) * force;
+                    p.vy -= (dy / dist) * force;
+                }
+
+                // Gradually pull velocity back toward base so particles
+                // resume natural drifting once mouse moves away
+                p.vx += (p.baseVx - p.vx) * 0.03;
+                p.vy += (p.baseVy - p.vy) * 0.03;
+
+                // Clamp speed so particles don't fly off screen
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (speed > 5) {
+                    p.vx = (p.vx / speed) * 5;
+                    p.vy = (p.vy / speed) * 5;
+                }
+
                 p.x += p.vx;
                 p.y += p.vy;
 
                 // Bounce off edges
-                if (p.x < 0 || p.x > width) p.vx *= -1;
-                if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                // Interactivity: attract slightly to mouse based on distance
-                const dx = mouse.x - p.x;
-                const dy = mouse.y - p.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 300) {
-                    p.x += dx * 0.01;
-                    p.y += dy * 0.01;
-                }
+                if (p.x < 0 || p.x > width) { p.vx *= -1; p.baseVx *= -1; }
+                if (p.y < 0 || p.y > height) { p.vy *= -1; p.baseVy *= -1; }
 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);

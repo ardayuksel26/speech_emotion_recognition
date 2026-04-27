@@ -10,6 +10,34 @@ import { convertFileToWav } from "../utils/audioUtils";
 import { AnalysisResult } from "../types";
 import InteractiveBackground from "./InteractiveBackground";
 
+type JointResult = {
+  model: string;
+  url: string;
+  color: string;
+  emotion: string;
+  confidence: number;
+  status: 'loading' | 'done' | 'error';
+  error?: string;
+};
+
+const JOINT_MODELS = [
+  { name: 'Mastermind (Ana Sayfa)', url: '/api/predict_mastermind',        color: '#f59e0b' },
+  { name: 'Advanced Cümle Analizi', url: '/api/predict_advanced_sentence', color: '#ef4444' },
+  { name: 'HuBERT (HuggingFace)',   url: '/analyze_hubert',                color: '#10b981' },
+  { name: 'Wav2Vec2 Turkish',        url: '/analyze_wav2vec2_turkish',      color: '#0ea5e9' },
+  { name: 'SUPERB Wav2Vec2-ER',      url: '/analyze_superb',               color: '#14b8a6' },
+  { name: 'SenseVoice (Alibaba)',    url: '/analyze_sensevoice',            color: '#f97316' },
+  { name: 'ExHuBERT',               url: '/analyze_exhubert',              color: '#8b5cf6' },
+  { name: 'WavLM Base Plus',         url: '/analyze_wavlm_base_plus',      color: '#6366f1' },
+  { name: 'WavLM Large',             url: '/analyze_wavlm_large',          color: '#f43f5e' },
+];
+
+const parseConf = (c: any): number => {
+  if (typeof c === 'string') return parseFloat(c.replace('%', ''));
+  if (typeof c === 'number') return c <= 1 ? c * 100 : c;
+  return 0;
+};
+
 // Helper to generate levels for visualization from a file
 const generateWaveLevels = async (file: File, bars: number): Promise<number[]> => {
   const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -57,8 +85,11 @@ const Hero = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedModel, setSelectedModel] = useState('catboost');
   const [qualityMode, setQualityMode] = useState<'studio' | 'robust'>('robust');
-  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole' | 'advanced_sentence' | 'hubert' | 'wav2vec2_turkish' | 'sensevoice' | 'exhubert' | 'wavlm' | 'xlsr' | 'qwen2_audio' | 'wavlm_base_plus' | 'wav2vec2_english'>('word');
+  const [mode, setMode] = useState<'word' | 'sentence_segmented' | 'sentence_whole' | 'advanced_sentence' | 'hubert' | 'wav2vec2_turkish' | 'superb_er' | 'sensevoice' | 'exhubert' | 'wavlm_base_plus' | 'wavlm_large' | 'joint_test'>('word');
   const [sttEngine, setSttEngine] = useState<'vad' | 'vosk' | 'whisperx'>('vad');
+  const [jointResults, setJointResults] = useState<JointResult[]>([]);
+  const [isJointTesting, setIsJointTesting] = useState(false);
+  const [jointDone, setJointDone] = useState(false);
 
   // Compute actual backend key
   const activeModelKey = selectedModel === 'majority_voting'
@@ -103,7 +134,7 @@ const Hero = () => {
     const levels = await generateWaveLevels(file, 60);
     setSavedLevels(levels);
 
-    if (mode === 'sentence_segmented' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm' || mode === 'xlsr' || mode === 'qwen2_audio' || mode === 'wavlm_base_plus' || mode === 'wav2vec2_english') {
+    if (mode === 'sentence_segmented' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'superb_er' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm_base_plus' || mode === 'wavlm_large' || mode === 'joint_test') {
       setShowModelSelection(false);
     } else {
       setShowModelSelection(true);
@@ -241,18 +272,14 @@ const Hero = () => {
         endpoint = '/analyze_exhubert';
       } else if (mode === 'wav2vec2_turkish') {
         endpoint = '/analyze_wav2vec2_turkish';
+      } else if (mode === 'superb_er') {
+        endpoint = '/analyze_superb';
       } else if (mode === 'sensevoice') {
         endpoint = '/analyze_sensevoice';
-      } else if (mode === 'wavlm') {
-        endpoint = '/analyze_wavlm';
       } else if (mode === 'wavlm_base_plus') {
         endpoint = '/analyze_wavlm_base_plus';
-      } else if (mode === 'xlsr') {
-        endpoint = '/analyze_xlsr';
-      } else if (mode === 'wav2vec2_english') {
-        endpoint = '/analyze_wav2vec2_english';
-      } else if (mode === 'qwen2_audio') {
-        endpoint = '/analyze_qwen2_audio';
+      } else if (mode === 'wavlm_large') {
+        endpoint = '/analyze_wavlm_large';
       } else if (selectedModel === 'majority_voting') {
         endpoint = '/analyze_voting';
       } else if (mode === 'word') {
@@ -272,7 +299,7 @@ const Hero = () => {
       // Parse response based on endpoint type
       let emotion, confidence, all_scores;
 
-      if (mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm' || mode === 'xlsr' || mode === 'qwen2_audio' || mode === 'wavlm_base_plus' || mode === 'wav2vec2_english') {
+      if (mode === 'hubert' || mode === 'wav2vec2_turkish' || mode === 'superb_er' || mode === 'sensevoice' || mode === 'exhubert' || mode === 'wavlm_base_plus' || mode === 'wavlm_large') {
         emotion = response.data.emotion;
         confidence = response.data.confidence;
         all_scores = response.data.all_scores;
@@ -378,6 +405,46 @@ const Hero = () => {
     }
   };
 
+  const handleJointTest = async () => {
+    if (!audioFile) return;
+    setIsJointTesting(true);
+    setJointDone(false);
+    setJointResults(JOINT_MODELS.map(m => ({ ...m, emotion: '', confidence: 0, status: 'loading' })));
+
+    try {
+      const wavBlob = await convertFileToWav(audioFile);
+      await Promise.allSettled(
+        JOINT_MODELS.map(async (m, i) => {
+          try {
+            const fd = new FormData();
+            fd.append('file', wavBlob, 'audio.wav');
+            const resp = await axios.post(`http://localhost:5000${m.url}`, fd, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const emotion = resp.data.emotion || resp.data.final_emotion || 'unknown';
+            const confidence = parseConf(resp.data.confidence);
+            setJointResults(prev => {
+              const next = [...prev];
+              next[i] = { ...next[i], emotion, confidence, status: 'done' };
+              return next;
+            });
+          } catch (err: any) {
+            setJointResults(prev => {
+              const next = [...prev];
+              next[i] = { ...next[i], emotion: 'error', confidence: 0, status: 'error', error: err?.response?.data?.error || err?.message || 'Hata' };
+              return next;
+            });
+          }
+        })
+      );
+    } catch (err) {
+      console.error('Joint test error:', err);
+    }
+
+    setIsJointTesting(false);
+    setJointDone(true);
+  };
+
   const reset = () => {
     setAudioFile(null);
     setRecordedUrl(null);
@@ -389,28 +456,25 @@ const Hero = () => {
     setActiveSegTab('vad');
     setShowModelSelection(false);
     setSttEngine('vad');
+    setJointResults([]);
+    setIsJointTesting(false);
+    setJointDone(false);
   };
 
   return (
     <div className={clsx(
         "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
         isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
-        analysisResult
+        (analysisResult || jointDone)
             ? "justify-start pt-24 pb-12 overflow-x-hidden"
-            : "justify-center overflow-hidden"
+            : "justify-start pt-28 overflow-hidden"
     )}>
-      
+
       <InteractiveBackground />
 
-      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center py-20 mb-10">
+      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center pt-8 pb-20 mb-10">
 
-        <h1 className={`font-outfit text-5xl md:text-7xl font-black mb-4 py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 opacity-0 h-0" : "opacity-100"}`}>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
-            {t('discover_your_voice')}
-          </span>
-        </h1>
-
-        {!analysisResult && (
+        {!(analysisResult || jointDone) && (
           <p className={`text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
             <Trans i18nKey="experimental_subtitle">
               Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
@@ -422,17 +486,17 @@ const Hero = () => {
           relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
           flex flex-col items-center justify-center border
           ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
-          ${analysisResult ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] p-6 md:p-10 rounded-[3rem]"}
+          ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] p-6 md:p-10 rounded-[3rem]"}
         `}
-          style={!analysisResult ? { padding: '32px 40px 48px 40px' } : { marginTop: '80px' }}
+          style={!(analysisResult || jointDone) ? { padding: '32px 40px 48px 40px' } : { marginTop: '80px' }}
         >
 
           {/* Subtle Inner Glow */}
-          {!analysisResult && (
+          {!(analysisResult || jointDone) && (
              <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
           )}
           {/* Mode Switcher */}
-          {!analysisResult && (
+          {!(analysisResult || jointDone) && (
             <div className="flex flex-wrap justify-center relative z-20" style={{ gap: '12px', marginBottom: '24px' }}>
               <button
                 onClick={() => { setMode('word'); setShowModelSelection(true); }}
@@ -495,6 +559,16 @@ const Hero = () => {
                 Wav2Vec2 Turkish
               </button>
               <button
+                onClick={() => { setMode('superb_er'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'superb_er'
+                  ? 'bg-teal-600 text-white shadow-lg border-teal-500'
+                  : 'bg-slate-200 dark:bg-slate-700 text-teal-600 dark:text-teal-400 hover:text-teal-700 border-teal-400 dark:border-teal-500'
+                  }`}
+                style={{ padding: '10px 24px' }}
+              >
+                SUPERB Wav2Vec2-ER
+              </button>
+              <button
                 onClick={() => { setMode('sensevoice'); setShowModelSelection(false); setAllSegmentResults({}); }}
                 className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sensevoice'
                   ? 'bg-orange-600 text-white shadow-lg border-orange-500'
@@ -515,26 +589,6 @@ const Hero = () => {
                 ExHuBERT
               </button>
               <button
-                onClick={() => { setMode('qwen2_audio'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'qwen2_audio'
-                  ? 'bg-slate-900 text-white shadow-lg border-slate-700'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-300 hover:text-slate-950 border-slate-400 dark:border-slate-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                Qwen2-Audio (7B)
-              </button>
-              <button
-                onClick={() => { setMode('wavlm'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm'
-                  ? 'bg-indigo-600 text-white shadow-lg border-indigo-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 border-indigo-400 dark:border-indigo-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                WavLM Categorical
-              </button>
-              <button
                 onClick={() => { setMode('wavlm_base_plus'); setShowModelSelection(false); setAllSegmentResults({}); }}
                 className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm_base_plus'
                   ? 'bg-indigo-800 text-white shadow-lg border-indigo-700'
@@ -545,24 +599,25 @@ const Hero = () => {
                 WavLM Base Plus
               </button>
               <button
-                onClick={() => { setMode('xlsr'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'xlsr'
+                onClick={() => { setMode('wavlm_large'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm_large'
                   ? 'bg-rose-600 text-white shadow-lg border-rose-500'
                   : 'bg-slate-200 dark:bg-slate-700 text-rose-600 dark:text-rose-400 hover:text-rose-700 border-rose-400 dark:border-rose-500'
                   }`}
                 style={{ padding: '10px 24px' }}
               >
-                XLSR (Multilingual)
+                WavLM Large
               </button>
+              {/* ── Ortak Test ── */}
               <button
-                onClick={() => { setMode('wav2vec2_english'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wav2vec2_english'
-                  ? 'bg-rose-800 text-white shadow-lg border-rose-700'
-                  : 'bg-slate-200 dark:bg-slate-700 text-rose-800 dark:text-rose-300 hover:text-rose-900 border-rose-500 dark:border-rose-600'
+                onClick={() => { setMode('joint_test'); setShowModelSelection(false); setAllSegmentResults({}); setJointResults([]); setJointDone(false); }}
+                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'joint_test'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-amber-400'
+                  : 'bg-slate-200 dark:bg-slate-700 text-amber-600 dark:text-amber-400 hover:text-amber-700 border-amber-400 dark:border-amber-500'
                   }`}
                 style={{ padding: '10px 24px' }}
               >
-                Wav2Vec2 English
+                {t('joint_test_button')}
               </button>
             </div>
           )}
@@ -571,7 +626,7 @@ const Hero = () => {
             <AudioInput onAudioReady={handleAudioReady} />
           )}
 
-          {audioFile && recordedUrl && !analysisResult && !isAnalyzing && (
+          {audioFile && recordedUrl && !analysisResult && !isAnalyzing && !isJointTesting && !jointDone && (
             <div className="w-full max-w-2xl flex flex-col items-center animate-fadeIn">
               
               {mode === 'sentence_whole' && (
@@ -618,6 +673,17 @@ const Hero = () => {
                 </div>
               )}
 
+              {mode === 'superb_er' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-teal-600 dark:text-teal-400">
+                      SUPERB / Wav2Vec2-Base-ER — 4-Class Emotion
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {mode === 'sensevoice' && (
                 <div className="w-full mb-6 flex justify-center">
                   <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
@@ -635,6 +701,17 @@ const Hero = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse" />
                     <span className="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">
                       amiriparian / ExHuBERT — 6-Class Arousal-Valence
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'wavlm_large' && (
+                <div className="w-full mb-6 flex justify-center">
+                  <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500/20 to-pink-500/20 border border-rose-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                    <span className="text-sm font-black uppercase tracking-widest text-rose-600 dark:text-rose-400">
+                      3loi / WavLM Large — Odyssey 2024 · 8-Class
                     </span>
                   </div>
                 </div>
@@ -848,28 +925,27 @@ const Hero = () => {
                 mode="preview"
                 analysisMode={mode === 'word' ? 'word' : 'sentence'}
                 selectedModelName={
-                  mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                  mode === 'joint_test' ? `⚡ ${t('joint_test_button')} — ${JOINT_MODELS.length} Model`
+                  : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
                   : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
                   : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                  : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
                   : mode === 'sensevoice' ? 'SenseVoiceSmall (Alibaba)'
-                  : mode === 'wavlm' ? '3loi / WavLM-Categorical'
                   : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
-                  : mode === 'xlsr' ? 'ehcalabres / XLSR (Multilingual)'
-                  : mode === 'wav2vec2_english' ? 'r-f / Wav2Vec2 English'
-                  : mode === 'qwen2_audio' ? 'Qwen / Qwen2-Audio-7B'
+                  : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
                   : mode === 'sentence_whole' ? 'Experimental Ensemble'
                   : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
                   : activeModelName
                 }
                 recordedUrl={recordedUrl}
-                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'exhubert' || mode === 'wav2vec2_turkish' || mode === 'sensevoice' || mode === 'wavlm' || mode === 'wavlm_base_plus' || mode === 'xlsr' || mode === 'wav2vec2_english' || mode === 'qwen2_audio' || showModelSelection}
+                showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'exhubert' || mode === 'wav2vec2_turkish' || mode === 'superb_er' || mode === 'sensevoice' || mode === 'wavlm_base_plus' || mode === 'wavlm_large' || mode === 'joint_test' || showModelSelection}
                 levels={savedLevels}
                 isPlaying={isPlaying}
                 playProgress={playProgress}
                 playbackRate={playbackRate}
                 onTogglePlay={tooglePlayPause}
                 onSpeedChange={handleSpeedChange}
-                onAnalyze={handleAnalyze}
+                onAnalyze={mode === 'joint_test' ? handleJointTest : handleAnalyze}
                 onBack={reset}
                 isSpeedMenuOpen={isSpeedMenuOpen}
                 setIsSpeedMenuOpen={setIsSpeedMenuOpen}
@@ -913,15 +989,14 @@ const Hero = () => {
               </p>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
                 {t('engine_used')}: {
-                  mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                  mode === 'joint_test' ? `⚡ Joint Test — ${JOINT_MODELS.length} Model`
+                  : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
                   : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
                   : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                  : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
                   : mode === 'sensevoice' ? 'FunAudioLLM/SenseVoiceSmall (Alibaba)'
-                  : mode === 'wavlm' ? '3loi / WavLM-Categorical'
                   : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
-                  : mode === 'xlsr' ? 'ehcalabres / XLSR (Multilingual)'
-                  : mode === 'wav2vec2_english' ? 'r-f / Wav2Vec2 English'
-                  : mode === 'qwen2_audio' ? 'Qwen / Qwen2-Audio-7B'
+                  : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
                   : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
                   : mode === 'sentence_whole' ? 'Experimental Ensemble'
                   : activeModelName
@@ -937,6 +1012,98 @@ const Hero = () => {
                 onBack={reset}
                 audioUrl={recordedUrl || undefined}
               />
+            </div>
+          )}
+
+          {/* ── Joint Test: Loading ── */}
+          {isJointTesting && (
+            <div className="flex flex-col items-center justify-center w-full py-16 animate-fadeIn gap-6">
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 border-4 border-amber-200/20 rounded-full" />
+                <div className="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-[spin_1s_linear_infinite]" />
+                <div className="absolute inset-2 border-4 border-orange-400 border-b-transparent rounded-full animate-[spin_1.5s_linear_infinite_reverse]" />
+              </div>
+              <p className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 animate-pulse">
+                ⚡ {JOINT_MODELS.length} {t('joint_test_analyzing')}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full max-w-4xl px-4">
+                {jointResults.map((r, i) => (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 ${
+                    r.status === 'done' ? 'border-emerald-500/40 bg-emerald-500/10' :
+                    r.status === 'error' ? 'border-red-500/40 bg-red-500/10' :
+                    'border-white/10 bg-white/5'
+                  }`}>
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.status === 'done' ? '#10b981' : r.status === 'error' ? '#ef4444' : '#94a3b8' }} />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold truncate opacity-70">{r.name || r.model}</p>
+                      {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: r.color }}>{r.emotion}</p>}
+                      {r.status === 'error' && <p className="text-xs text-red-400">{t('joint_test_error_label')}</p>}
+                      {r.status === 'loading' && <p className="text-xs opacity-40">{t('joint_test_waiting')}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Joint Test: Results ── */}
+          {jointDone && !isJointTesting && (
+            <div className="w-full animate-fadeIn px-4 md:px-8 py-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-8 max-w-5xl mx-auto">
+                <button
+                  onClick={reset}
+                  className={`w-11 h-11 flex items-center justify-center rounded-full transition-all hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">{t('joint_test_results_title')}</span>
+                </div>
+                <div className="w-11" />
+              </div>
+
+              {/* Results Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                {jointResults.map((r, i) => (
+                  <div
+                    key={i}
+                    className={`relative flex flex-col items-center text-center gap-3 p-6 rounded-2xl border transition-all duration-300 ${
+                      r.status === 'error'
+                        ? isDark ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200'
+                        : isDark ? 'bg-slate-900/60 border-white/10' : 'bg-white/70 border-slate-200/60'
+                    }`}
+                    style={{ backdropFilter: 'blur(12px)' }}
+                  >
+                    {/* Color accent top bar */}
+                    <div className="absolute top-0 left-6 right-6 h-0.5 rounded-full" style={{ background: r.color }} />
+
+                    <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {r.name || r.model}
+                    </p>
+
+                    {r.status === 'done' ? (
+                      <>
+                        <p className="text-2xl font-black capitalize" style={{ color: r.color }}>
+                          {r.emotion}
+                        </p>
+                        <div className="w-full">
+                          <div className="flex justify-between text-xs font-bold mb-1 opacity-60">
+                            <span>{t('joint_test_confidence')}</span>
+                            <span>{r.confidence.toFixed(1)}%</span>
+                          </div>
+                          <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(r.confidence, 100)}%`, background: r.color }} />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm font-bold text-red-400">{r.error || t('joint_test_error_occurred')}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -73,6 +73,40 @@ class Wav2Vec2ForSpeechClassification(Wav2Vec2PreTrainedModel):
         )
 
 
+class SuperbEmotionPredictor:
+    MODEL_NAME = "superb/wav2vec2-base-superb-er"
+    LABEL_MAP = {'hap': 'happy', 'ang': 'angry', 'neu': 'calm', 'sad': 'sad'}
+
+    def __init__(self):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Loading SUPERB Wav2Vec2 model on {self.device}")
+        from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
+        self.feature_extractor = AutoFeatureExtractor.from_pretrained(self.MODEL_NAME)
+        self.model = AutoModelForAudioClassification.from_pretrained(self.MODEL_NAME).to(self.device)
+        self.model.eval()
+        self.id2label = self.model.config.id2label
+
+    def predict(self, audio_path: str) -> dict:
+        speech, _ = librosa.load(audio_path, sr=16000)
+        inputs = self.feature_extractor(speech, sampling_rate=16000, return_tensors="pt", padding=True)
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            logits = self.model(**inputs).logits
+
+        scores = F.softmax(logits, dim=1).detach().cpu().numpy()[0]
+        best_idx = int(np.argmax(scores))
+
+        raw_label = self.id2label[best_idx].lower()
+        emotion = self.LABEL_MAP.get(raw_label, raw_label)
+
+        results = [
+            {"label": self.LABEL_MAP.get(self.id2label[i].lower(), self.id2label[i].lower()), "score": float(s)}
+            for i, s in enumerate(scores)
+        ]
+        return {"emotion": emotion, "scores": results}
+
+
 class Wav2Vec2TurkishPredictor:
     MODEL_NAME = "sefa-alper/wav2vec2-xlsr-turkish-speech-emotion-recognition-v3"
 

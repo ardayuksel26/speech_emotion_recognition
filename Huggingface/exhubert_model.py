@@ -42,11 +42,32 @@ class ExHuBERTEmotionPredictor:
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
             self.FEATURE_EXTRACTOR_NAME
         )
+
+        # ExHuBERT's custom ExHuBERTEncoderLayer calls HubertAttention(embed_dim=...,
+        # num_heads=...) without passing config. In newer transformers, HubertAttention
+        # stores self.config and checks self.config._attn_implementation in forward,
+        # causing AttributeError when config is None. Patch __init__ to inject a
+        # default config with attn_implementation='eager' in that case.
+        from transformers.models.hubert.modeling_hubert import HubertAttention as _HA
+        from transformers import HubertConfig as _HC
+        _default_cfg = _HC()
+        _default_cfg._attn_implementation = 'eager'
+        _orig_ha_init = _HA.__init__
+
+        def _patched_ha_init(self_attn, *args, **kwargs):
+            _orig_ha_init(self_attn, *args, **kwargs)
+            if getattr(self_attn, 'config', None) is None:
+                self_attn.config = _default_cfg
+
+        _HA.__init__ = _patched_ha_init
+
         self.model = AutoModelForAudioClassification.from_pretrained(
             self.MODEL_NAME,
             trust_remote_code=True,
             revision=self.REVISION,
         ).to(self.device)
+
+        _HA.__init__ = _orig_ha_init  # restore after loading
         self.model.eval()
 
     def predict(self, audio_path: str) -> dict:

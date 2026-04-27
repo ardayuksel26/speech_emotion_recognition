@@ -53,6 +53,8 @@
   "about_mission_desc": "Yapay sistemler içinde duygusal zekayı sentezlemek. Yapay zekanın insanlığa gerçekten yardımcı olabilmesi için önce insan duygusunun nüansını anlaması gerektiğine inanıyoruz. Empatik bilişimin temel katmanını inşa ediyoruz.",
   "about_vision_title": "Vizyonumuz",
   "about_vision_desc": "Teknolojinin bize adapte olduğu, tersinin değil; dijital arayüzlerin hayal kırıklığına sabırla, sevince coşkuyla ve kedere şefkatle karşılık verdiği bir gelecek. Silikon ile ruhun kusursuz bir entegrasyonu.",
+  "about_mission_vision_title": "Misyon & Vizyon",
+  "about_mission_vision_desc": "Empatik bilişimin temel katmanını inşa ediyoruz — yapay sistemler içinde duygusal zekayı sentezlemek için yola çıktık. Yapay zekanın insanlığa gerçekten yardımcı olabilmesi için önce insan duygusunun nüansını anlaması gerektiğine inanıyoruz. Vizyonumuz ise teknolojinin bize adapte olduğu bir gelecek; dijital arayüzlerin hayal kırıklığına sabırla, sevince coşkuyla ve kedere şefkatle karşılık verdiği, silikon ile ruhun kusursuz biçimde buluştuğu o geleceği birlikte kuruyoruz.",
   "about_member_1_role": "Makine Öğrenimi Mühendisi",
   "about_member_1_desc": "Ses tabanlı duygu tanıma için özellik çıkarımı ve model mimarileri üzerine çalışıyor. Mastermind karar katmanının mimarı.",
   "about_member_2_role": "Makine Öğrenimi & Backend Mühendisi",
@@ -375,5 +377,12 @@
   "acoustic_report": "Akustik Frekans Raporu",
   "acoustic_pitch_contour": "Akustik Perde Konturu (Hz)",
   "start": "Başlangıç",
-  "end": "Bitiş"
+  "end": "Bitiş",
+  "joint_test_button": "⚡ Ortak Test",
+  "joint_test_analyzing": "model analiz ediliyor...",
+  "joint_test_waiting": "Bekleniyor...",
+  "joint_test_error_label": "Hata",
+  "joint_test_results_title": "Ortak Test Sonuçları",
+  "joint_test_confidence": "Güven",
+  "joint_test_error_occurred": "Hata oluştu"
 }

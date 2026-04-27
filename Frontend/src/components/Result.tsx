@@ -4,10 +4,9 @@ import { AnalysisResult } from '../types';
 import ProbabilityChart from './Results/ProbabilityChart';
 import { WordTimeline } from './Results/WordTimeline';
 import { FrequencyChart } from './Results/FrequencyChart';
-import { ExportButton } from './Results/ExportButton';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaPlay, FaPause, FaBrain, FaChartBar, FaRobot, FaMicrophone, FaNetworkWired } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaPause, FaChartBar, FaRobot, FaMicrophone, FaNetworkWired, FaBrain } from 'react-icons/fa';
 import { clsx } from 'clsx';
 import EmotionBadge from './Results/EmotionBadge';
 
@@ -105,13 +104,6 @@ const Result: React.FC<ResultProps> = ({
                     <FaArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
                 </button>
 
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-3 px-8 py-3 rounded-sm bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase shadow-sm">
-                        <FaBrain className="animate-pulse text-sm" />
-                        {t('mastermind_report')}
-                    </div>
-                    <ExportButton result={result} />
-                </div>
             </div>
 
             {/* DASHBOARD GRID */}

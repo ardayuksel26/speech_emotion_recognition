@@ -57,6 +57,8 @@
   "about_mission_desc": "To synthesize emotional intelligence within artificial systems. We believe that for AI to truly assist humanity, it must first understand the nuance of human feeling. We are building the foundational layer of empathetic computing.",
   "about_vision_title": "Our Vision",
   "about_vision_desc": "A future where technology adapts to us, not the other way around. Where digital interfaces respond to frustration with patience, to joy with celebration, and to sorrow with comfort. A seamless integration of silicon and soul.",
+  "about_mission_vision_title": "Our Mission & Vision",
+  "about_mission_vision_desc": "We are building the foundational layer of empathetic computing — synthesizing emotional intelligence within artificial systems. We believe that for AI to truly assist humanity, it must first understand the nuance of human feeling. Our vision is a future where technology adapts to us, not the other way around; where digital interfaces respond to frustration with patience, to joy with celebration, and to sorrow with comfort. A seamless integration of silicon and soul.",
   "about_member_1_role": "Machine Learning Engineer",
   "about_member_1_desc": "Works on feature extraction and model architectures for audio-based emotion recognition. The architect of the Mastermind decision layer.",
   "about_member_2_role": "ML & Backend Engineer",
@@ -377,5 +379,12 @@
   "acoustic_report": "Acoustic Frequency Report",
   "acoustic_pitch_contour": "Acoustic Pitch Contour (Hz)",
   "start": "Start",
-  "end": "End"
+  "end": "End",
+  "joint_test_button": "⚡ Joint Test",
+  "joint_test_analyzing": "models being analyzed...",
+  "joint_test_waiting": "Waiting...",
+  "joint_test_error_label": "Error",
+  "joint_test_results_title": "Joint Test Results",
+  "joint_test_confidence": "Confidence",
+  "joint_test_error_occurred": "An error occurred"
 }

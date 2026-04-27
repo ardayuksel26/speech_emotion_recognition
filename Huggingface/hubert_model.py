@@ -81,7 +81,11 @@ class HubertEmotionPredictor:
         print(f"Loading HuBERT model: {self.MODEL_NAME} on {self.device}")
         self.config = AutoConfig.from_pretrained(self.MODEL_NAME)
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(self.MODEL_NAME)
-        self.model = HubertForSpeechClassification.from_pretrained(self.MODEL_NAME).to(self.device)
+        self.model = HubertForSpeechClassification.from_pretrained(
+            self.MODEL_NAME,
+            config=self.config,
+            attn_implementation='eager',
+        ).to(self.device)
         self.model.eval()
         self.id2label = self.config.id2label
 
