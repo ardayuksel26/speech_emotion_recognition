@@ -10,10 +10,8 @@ import { FaGraduationCap, FaNetworkWired, FaServer, FaMicrophoneAlt, FaBrain, Fa
 import InteractiveBackground from '../components/InteractiveBackground';
 
 import { MastermindMetrics } from '../data/realWorldResults';
-import { combinedWordBenchmarks } from '../data/wordBenchmarks';
-import { sentenceVoskSynthetic15, sentenceVoskHq } from '../data/sentenceBenchmarkCharts';
-import { segmentationCatBoostOnly, segmentationQuadMean, vadEnergyIllustration } from '../data/segmentationBenchmark';
-import { emotionPerformanceMetrics, confusionMatrix, validationRobustMetrics } from '../data/performanceMetrics';
+import { vadEnergyIllustration } from '../data/segmentationBenchmark';
+import { emotionPerformanceMetrics, confusionMatrix, experimentalModelsData } from '../data/performanceMetrics';
 
 const turEvData = [
     { name: "Angry", value: 487, color: "#ef4444" },
@@ -192,23 +190,28 @@ const TechnicalInfoPage = () => {
                                 <Trans i18nKey="tech_s1_p1"><i className={strongClass}>kelime (word) ve cümle (sentence)</i></Trans>
                             </p>
                             <p className="mb-8">
-                                <Trans i18nKey="tech_s1_p2"><span className={strongClass}>Mastermind (Üst Akıl)</span></Trans>
+                                <Trans i18nKey="tech_s1_p2"><span className={strongClass}>Master Ensemble Model</span></Trans>
                             </p>
                             <SubTitle color="#818cf8" isDark={isDark}>{t('tech_s1_1_title')}</SubTitle>
                             <Blockquote color="#6366f1" isDark={isDark}>{t('tech_s1_1_intro')}</Blockquote>
-                            <ul className="space-y-3 text-base ml-2">
-                                {[
-                                    { title: 'tech_s1_li1_title', body: 'tech_s1_li1' },
-                                    { title: 'tech_s1_li2_title', body: 'tech_s1_li2' },
-                                ].map((item, i) => (
-                                    <li key={i} className="flex items-start gap-3">
-                                        <span className="mt-1.5 w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
-                                        <span><span className={strongClass}>{t(item.title)}</span> {t(item.body)}</span>
-                                    </li>
-                                ))}
-                                <li className="flex items-start gap-3">
-                                    <span className="mt-1.5 w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
-                                    <Trans i18nKey="tech_s1_li3"><span className={strongClass}>{t('tech_s1_li3_title')}</span><span className={strongClass}>Robust Katmanlarımız</span></Trans>
+                            <ul className="space-y-4 text-base ml-2 mt-4">
+                                <li className="flex items-start gap-4">
+                                    <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
+                                        <span className={strongClass}>Diller Arası Fonetik Farklılıklar (Cross-lingual Bias):</span> Yabancı dilde eğitilmiş bir model, Türkçe'deki kelime vurgularını (stress) yanlış anlayıp hatalı duygu sınıflandırması yapabilir. Bu projede, modele bizzat Türkçe kelime ve hecelerden oluşan kütüphanelerle antrenman yaptırılarak fonetik uçurumlar kapatılmıştır.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
+                                        <span className={strongClass}>Zaman Sınırları ve Ses Boşlukları (Silence boundaries):</span> İnsanlar genellikle duygusal durumlarda duraklar veya nefes alırlar. Silero VAD ve VOSK tabanlı kesme algoritmalarımız bu sessizlik kısımlarını izole ederek makinenin gürültüyü bir duygu olarak tahmin etmesini önler.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
+                                        <span className={strongClass}>Robust Katmanlarımız:</span> Üst düzey stüdyo frekanslarındaki veri setleri ile eğitilen modeller gerçek dünyada (arka plan gürültüsü vb.) başarısız olur. Buna karşın, V2 algoritmalarının kelime düzeyindeki keskinliği ile Huggingface HuBERT modelinin cümle düzeyindeki geniş bağlam gücünü ağırlıklı (weighted-fusion) olarak harmanlayan sistemimiz, olağanüstü dayanıklı ve kararlı hale (Noise Resilient) gelmiştir.
+                                    </span>
                                 </li>
                             </ul>
                         </SectionCard>
@@ -279,44 +282,39 @@ const TechnicalInfoPage = () => {
                         </SectionCard>
                     </motion.div>
 
-                    {/* 3. MASTERMIND YAPISI */}
+                    {/* 3. MASTER ENSEMBLE MODEL YAPISI */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
-                            <SectionTitle num="03" icon={<FaServer />} title={t('tech_s3_title')} iconColor="#06b6d4" isDark={isDark} />
-                            <p className="mb-6">{t('tech_s3_intro')}</p>
+                            <SectionTitle num="03" icon={<FaServer />} title="3. Master Ensemble Model Mimarisi" iconColor="#06b6d4" isDark={isDark} />
+                            <p className="mb-6">
+                                Önceki Mastermind mimarimizin yerini alan yeni <strong className={strongClass}>Master Ensemble Model</strong>, kelime bazlı makine öğrenimi algoritmalarının hassasiyeti ile HuggingFace HuBERT transformatörünün derin bağlamsal analiz gücünü birleştirerek eşsiz bir performans sunar.
+                            </p>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>{t('tech_s3_1_title')}</SubTitle>
-                            <Blockquote color="#06b6d4" isDark={isDark}>{t('tech_s3_1_p')}</Blockquote>
+                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 1: Vosk Segmentasyonu ve V2 Modelleri</SubTitle>
+                            <Blockquote color="#06b6d4" isDark={isDark}>
+                                Ses dosyası öncelikle Vosk motoru ile milisaniyelik zaman damgalarına sahip kelimelere bölünür. Her kelime 1582 boyutlu özellik çıkarımından (OpenSMILE IS10) geçirilir ve CatBoost, LightGBM, XGBoost modellerinden oluşan V2 havuzu ile test edilir. Bu modellerin F1-skorlarına dayalı ağırlıklı oylaması sonucunda kelime bazlı "Word" tahmin skoru elde edilir.
+                            </Blockquote>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>{t('tech_s3_2_title')}</SubTitle>
-                            <p className="mb-4">{t('tech_s3_2_p')}</p>
+                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 2: HuBERT Tam Cümle Analizi</SubTitle>
+                            <p className="mb-4">
+                                SeaBenSea/HuBERT transformatörü kullanılarak, kelimelerin ötesinde sesin genel melodisi, ritmi ve tonlamasından global bir cümle skoru çıkarılır.
+                            </p>
+
+                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 3: Füzyon ve Kalibrasyon</SubTitle>
+                            <p className="mb-4">
+                                Elde edilen iki farklı bakış açısı, test sonuçlarımızdan elde edilen optimal katsayılarla birleştirilir ve Master Ensemble sonucu ortaya çıkar:
+                            </p>
                             <TerminalBlock isDark={isDark} accentColor="#67e8f9">
-                                <p className="mb-2 opacity-60 text-xs">// Global probability vector</p>
-                                <p className="mb-3"><strong>P</strong><sup>(g)</sup> = softmax / <strong>predict_proba</strong>(<strong>x</strong><sub>global</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">// Average over S segments</p>
-                                <p className="mb-3"><strong>P</strong><sup>(seg)</sup> = (1/S) Σ<sub>s=1..S</sub> <strong>P</strong>(<strong>x</strong><sub>s</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">// Blended distribution (backend constant)</p>
-                                <p><strong>p̂</strong><sup>(m)</sup> = 0.60 · <strong>P</strong><sup>(g)</sup> + 0.40 · <strong>P</strong><sup>(seg)</sup></p>
+                                <p className="mb-2 opacity-60 text-xs">// Katman 1: Kelime bazlı V2 Tahmini</p>
+                                <p className="mb-3"><strong>P</strong><sup>(word)</sup> = (1/N) Σ<sub>n=1..N</sub> <strong>predict_v2</strong>(<strong>x</strong><sub>n</sub>)</p>
+                                <p className="mb-2 opacity-60 text-xs">// Katman 2: Cümle bazlı HuBERT Tahmini</p>
+                                <p className="mb-3"><strong>P</strong><sup>(global)</sup> = <strong>HuBERT</strong>(<strong>x</strong><sub>audio</sub>)</p>
+                                <p className="mb-2 opacity-60 text-xs">// Katman 3: Ağırlıklı Dağılım</p>
+                                <p><strong>Score</strong><sub>e</sub> = <strong>P</strong><sup>(word)</sup><sub>e</sub> · 2.2 + <strong>P</strong><sup>(global)</sup><sub>e</sub> · 1.8</p>
                             </TerminalBlock>
-                            <Blockquote color="#06b6d4" isDark={isDark}>{t('tech_s3_2_blend')}</Blockquote>
-
-                            <SubTitle color="#22d3ee" isDark={isDark}>{t('tech_s3_3_title')}</SubTitle>
-                            <Blockquote color="#06b6d4" isDark={isDark}>{t('tech_s3_3_p')}</Blockquote>
-                            <TerminalBlock isDark={isDark} accentColor="#c084fc">
-                                main<sub>k</sub> = ( score<sub>k</sub><sup>(CatBoost)</sup> + score<sub>k</sub><sup>(XGBoost)</sup> ) / 2
-                            </TerminalBlock>
-                            <p className="mb-6">{t('tech_s3_3_decision')}</p>
-
-                            <SubTitle color="#22d3ee" isDark={isDark}>{t('tech_s3_4_title')}</SubTitle>
-                            <p className="mb-4">{t('tech_s3_4_p')}</p>
-                            <ul className="space-y-3 mb-6">
-                                <li className="flex items-start gap-3"><span className="mt-1.5 w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0" /><span><span className={strongClass}>{t('tech_s3_4_rule1_title')}</span> {t('tech_s3_4_rule1')}</span></li>
-                                <li className="flex items-start gap-3"><span className="mt-1.5 w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0" /><span><span className={strongClass}>{t('tech_s3_4_rule2_title')}</span> {t('tech_s3_4_rule2')}</span></li>
-                            </ul>
-                            <Blockquote color="#06b6d4" isDark={isDark}>{t('tech_s3_4_summary')}</Blockquote>
-
-                            <SubTitle color="#22d3ee" isDark={isDark}>{t('tech_s3_5_title')}</SubTitle>
-                            <p className="mb-6">{t('tech_s3_5_p')}</p>
+                            <Blockquote color="#06b6d4" isDark={isDark}>
+                                Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> sözlüğü ile duygu ağırlıkları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) çarpılarak en iyi dengeye (80.94% Accuracy) ulaşılır.
+                            </Blockquote>
 
                             {/* Accuracy stat */}
                             <div
@@ -326,7 +324,7 @@ const TechnicalInfoPage = () => {
                                     border: '1px solid rgba(99,102,241,0.2)',
                                 }}
                             >
-                                <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-3">{t('tech_mm_acc_label')}</span>
+                                <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-3">Model Accuracy (Doğruluk)</span>
                                 <span
                                     className="text-7xl md:text-8xl font-black tracking-tighter"
                                     style={{
@@ -336,10 +334,10 @@ const TechnicalInfoPage = () => {
                                         backgroundClip: 'text',
                                     }}
                                 >
-                                    %{(MastermindMetrics.accuracy * 100).toFixed(1)}
+                                    %{(MastermindMetrics.accuracy * 100).toFixed(2)}
                                 </span>
                                 <p className={`mt-4 text-sm max-w-2xl mx-auto text-center opacity-75 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                    {t('tech_mm_f1_label')}
+                                    Bu doğruluk oranı, 320 ses dosyasından oluşan özel test seti (our_voices_for_test) üzerinde yapılan testlerde kanıtlanmıştır.
                                 </p>
                             </div>
 
@@ -358,83 +356,12 @@ const TechnicalInfoPage = () => {
                                 </ResponsiveContainer>
                             </div>
                             <p className={`text-sm text-center max-w-3xl mx-auto mt-2 mb-2 opacity-70 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                {t('tech_s3_5_note')}
+                                * Yukarıdaki grafik, Master Ensemble modelinin 4 duygu sınıfı üzerindeki Precision, Recall ve F1 metriklerini gösterir.
                             </p>
                         </SectionCard>
                     </motion.div>
 
-                    {/* 4. SINIFLANDIRMA MODELLERİ */}
-                    <motion.div {...fadeUp}>
-                        <SectionCard isDark={isDark}>
-                            <SectionTitle num="04" icon={<FaFlask />} title={t('tech_s4_title')} iconColor="#f59e0b" isDark={isDark} />
-                            <p className="mb-8">{t('tech_s4_intro')}</p>
 
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_1_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_1_p')}</Blockquote>
-                            <TerminalBlock isDark={isDark} accentColor="#fde68a">
-                                <p className="mb-2">Class <span className="font-mono">k</span>: Precision<sub>k</sub> = TP<sub>k</sub> / (TP<sub>k</sub> + FP<sub>k</sub>), Recall<sub>k</sub> = TP<sub>k</sub> / (TP<sub>k</sub> + FN<sub>k</sub>)</p>
-                                <p>F1<sub>k</sub> = 2 · Precision<sub>k</sub> · Recall<sub>k</sub> / (Precision<sub>k</sub> + Recall<sub>k</sub>) &nbsp;·&nbsp; Macro-F1 = (1/C) Σ<sub>k</sub> F1<sub>k</sub></p>
-                            </TerminalBlock>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_1_metrics')}</Blockquote>
-
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_2_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_2_p')}</Blockquote>
-                            <p className="mb-4 opacity-90 text-sm">{t('tech_s4_2_chart_desc')}</p>
-                            <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-2xl">
-                                <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                    {t('tech_chart_word_title')}
-                                </h4>
-                                <ResponsiveContainer width="100%" height="88%">
-                                    <BarChart data={combinedWordBenchmarks} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="14%">
-                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                        <XAxis dataKey="name" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 11, fontWeight: 700 }} interval={0} angle={-28} textAnchor="end" height={68} />
-                                        <YAxis width={54} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[60, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
-                                        <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '13px', fontWeight: 'bold' }} />
-                                        <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
-                                        <Bar dataKey="Standard_Accuracy" name="Standart TurEV (%)" fill={isDark ? '#d97706' : '#f59e0b'} radius={[5, 5, 0, 0]} />
-                                        <Bar dataKey="Robust_Accuracy" name="Robust / gürültülü (%)" fill={isDark ? '#7c3aed' : '#8b5cf6'} radius={[5, 5, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_3_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_3_p')}</Blockquote>
-
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_4_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_4_p')}</Blockquote>
-
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_5_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_5_p')}</Blockquote>
-                            <div className="grid gap-10 lg:grid-cols-1">
-                                {[
-                                    { data: sentenceVoskSynthetic15, title: 'tech_chart_sent_synth_acc', k1: 'accStd', k2: 'accRob', n1: 'Accuracy standart', n2: 'Accuracy robust', c1: isDark ? '#0ea5e9' : '#0284c7', c2: isDark ? '#22c55e' : '#16a34a' },
-                                    { data: sentenceVoskSynthetic15, title: 'tech_chart_sent_synth_f1', k1: 'f1Std', k2: 'f1Rob', n1: 'Macro-F1 standart', n2: 'Macro-F1 robust', c1: isDark ? '#c084fc' : '#a855f7', c2: isDark ? '#f472b6' : '#db2777' },
-                                    { data: sentenceVoskHq, title: 'tech_chart_sent_hq_acc', k1: 'accStd', k2: 'accRob', n1: 'Accuracy standart', n2: 'Accuracy robust', c1: isDark ? '#0ea5e9' : '#0284c7', c2: isDark ? '#22c55e' : '#16a34a' },
-                                    { data: sentenceVoskHq, title: 'tech_chart_sent_hq_f1', k1: 'f1Std', k2: 'f1Rob', n1: 'Macro-F1 standart', n2: 'Macro-F1 robust', c1: isDark ? '#c084fc' : '#a855f7', c2: isDark ? '#f472b6' : '#db2777' },
-                                ].map((chart, i) => (
-                                    <div key={i} className="w-full min-h-[380px] h-[420px]">
-                                        <h4 className={`text-center font-bold text-xs tracking-widest uppercase mb-4 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                            {t(chart.title)}
-                                        </h4>
-                                        <ResponsiveContainer width="100%" height="88%">
-                                            <BarChart data={[...chart.data]} margin={{ top: 8, right: 12, left: 8, bottom: 4 }} barCategoryGap="12%">
-                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                                <XAxis dataKey="name" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 11, fontWeight: 700 }} interval={0} angle={-26} textAnchor="end" height={62} />
-                                                <YAxis width={50} domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 11 }} />
-                                                <RechartsTooltip contentStyle={tooltipStyle} />
-                                                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                                                <Bar dataKey={chart.k1} name={chart.n1} fill={chart.c1} radius={[4, 4, 0, 0]} />
-                                                <Bar dataKey={chart.k2} name={chart.n2} fill={chart.c2} radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <SubTitle color="#fbbf24" isDark={isDark}>{t('tech_s4_6_title')}</SubTitle>
-                            <Blockquote color="#f59e0b" isDark={isDark}>{t('tech_s4_6_p')}</Blockquote>
-                        </SectionCard>
-                    </motion.div>
 
                     {/* 5. KELİME BÖLME METOTLARI */}
                     <motion.div {...fadeUp}>
@@ -477,34 +404,7 @@ const TechnicalInfoPage = () => {
                             <SubTitle color="#2dd4bf" isDark={isDark}>{t('tech_s5_5_title')}</SubTitle>
                             <Blockquote color="#14b8a6" isDark={isDark}>{t('tech_s5_5_p')}</Blockquote>
 
-                            <SubTitle color="#2dd4bf" isDark={isDark}>{t('tech_s5_6_title')}</SubTitle>
-                            <p className="mb-4 opacity-90 text-sm">{t('tech_s5_6_p')}</p>
-                            <div className="grid gap-8 lg:grid-cols-2">
-                                {[
-                                    { data: segmentationCatBoostOnly, title: 'tech_chart_catboost' },
-                                    { data: segmentationQuadMean, title: 'tech_chart_quad' },
-                                ].map((chart, i) => (
-                                    <div key={i} className="w-full min-h-[300px] h-[340px]">
-                                        <h4 className={`text-center font-bold text-xs tracking-widest uppercase mb-3 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                            {t(chart.title)}
-                                        </h4>
-                                        <ResponsiveContainer width="100%" height="88%">
-                                            <BarChart data={[...chart.data]} margin={{ top: 8, right: 8, left: 4, bottom: 4 }} barCategoryGap="18%">
-                                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 700 }} stroke={isDark ? '#64748b' : '#94a3b8'} />
-                                                <YAxis width={46} domain={[0, 45]} tickFormatter={(v) => `${v}%`} stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 10 }} />
-                                                <RechartsTooltip contentStyle={tooltipStyle} />
-                                                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                                <Bar dataKey="acc" name="Accuracy" fill={isDark ? '#14b8a6' : '#0d9488'} radius={[4, 4, 0, 0]} />
-                                                <Bar dataKey="macroF1" name="Macro-F1" fill={isDark ? '#6366f1' : '#4f46e5'} radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                ))}
-                            </div>
-                            <p className={`mt-4 text-sm text-center max-w-3xl mx-auto opacity-70 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                {t('tech_seg_note')}
-                            </p>
+
                         </SectionCard>
                     </motion.div>
 
@@ -563,18 +463,70 @@ const TechnicalInfoPage = () => {
                         </SectionCard>
                     </motion.div>
 
-                    {/* 7. DOĞRULAMA SONUÇLARI */}
+                    {/* 7. TEST SONUÇLARI VE DEĞERLENDİRME */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
-                            <SectionTitle num="07" icon={<FaMicrophoneAlt />} title={t('tech_s7_title')} iconColor="#10b981" isDark={isDark} />
-                            <p className="mb-8">{t('tech_s7_intro')}</p>
+                            <SectionTitle num="07" icon={<FaMicrophoneAlt />} title="7. Test Sonuçları ve Değerlendirme" iconColor="#10b981" isDark={isDark} />
+                            <p className="mb-8">
+                                Geliştirdiğimiz konuşma duygu tanıma (SER) sistemini test etmek için iki farklı yaklaşım ve veri seti kullandık: <span className={strongClass}>Sentetik Cümle Testi</span> ve <span className={strongClass}>Gerçek Hayat Testi</span>. Modellerimiz bu aşamalarda tekil olarak test edildi ve nihayetinde Master Ensemble çatısı altında birleştirildi.
+                            </p>
 
-                            {/* 7.1 Per-Class */}
-                            <SubTitle color="#34d399" isDark={isDark}>{t('tech_s7_emotion_f1_title')}</SubTitle>
-                            <Blockquote color="#10b981" isDark={isDark}>{t('tech_s7_emotion_f1_desc')}</Blockquote>
-                            <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-2xl">
+                            {/* 7.1 Test Yöntemleri */}
+                            <SubTitle color="#34d399" isDark={isDark}>1. Test Metodolojileri</SubTitle>
+                            <div className="grid gap-6 md:grid-cols-2 mb-8 mt-4">
+                                <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Sentetik Cümle Testi (sentencevoice_test)</h4>
+                                    <p className="text-sm">
+                                        TurEV-DB veri setindeki bağımsız kelimeler (özneler, yüklemler vb.) algoritmik olarak birleştirilerek anlamlı veya anlamsız ancak fonetik olarak tam cümleler oluşturuldu. Bu cümlelerin aralarına gerçekçi duraklar, yapay zeka ile üretilmiş nefes sesleri ve arka plan gürültüleri eklendi.
+                                    </p>
+                                </div>
+                                <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Gerçek Hayat Testi (our_voices_for_test)</h4>
+                                    <p className="text-sm">
+                                        Eğitim setinde (TurEV) hiç bulunmayan, farklı kişilerin (örneğin İlhan, Yağız, Yağmur) kendi sesleriyle kaydettiği toplam 320 adet doğal ve kesintisiz (in-the-wild) cümleden oluşur. Modellerin asıl kalibrasyonu ve "gerçek dünya" performansı bu veri seti ile ölçülmüştür.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 7.2 Tekil Modeller */}
+                            <SubTitle color="#34d399" isDark={isDark}>2. Tekil Model Performansları (Sentetik vs. Gerçek Hayat)</SubTitle>
+                            <Blockquote color="#10b981" isDark={isDark}>
+                                Modellerimizi önce <span className="font-mono">sentencevoice_test</span> (sentetik) üzerinde, ardından <span className="font-mono">our_voices_for_test</span> (gerçek) üzerinde test ettik. Sentetik veride %90'lara varan doğruluk oranları, gerçek hayat testlerinde (farklı konuşmacılar ve doğal ortam) %32'lere kadar düştü.
+                            </Blockquote>
+                            <div className="flex flex-col md:flex-row gap-6 mb-8 mt-4">
+                                <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
+                                    <p className="font-bold mb-2 text-sm text-center">Sentetik Cümle Testi (sentencevoice_test)</p>
+                                    <p className="text-xs text-center opacity-70 mb-3">Sadece V2 Modelleri (Models_2)</p>
+                                    <ul className="text-sm space-y-1.5 opacity-90 text-center">
+                                        <li>LightGBM: <strong className="text-emerald-500">%90.94</strong></li>
+                                        <li>XGBoost: <strong className="text-emerald-500">%90.31</strong></li>
+                                        <li>CatBoost: <strong className="text-emerald-500">%84.38</strong></li>
+                                    </ul>
+                                </div>
+                                <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-red-500/30 bg-red-500/10' : 'border-red-200 bg-red-50'}`}>
+                                    <p className="font-bold mb-2 text-sm text-center">Gerçek Hayat Testi (our_voices_for_test)</p>
+                                    <p className="text-xs text-center opacity-70 mb-3">V2 Bireysel Düşüş & HuBERT</p>
+                                    <ul className="text-sm space-y-1.5 opacity-90 text-center">
+                                        <li>HuBERT (Huggingface): <strong className="text-amber-500">%60.94</strong></li>
+                                        <li>CatBoost (V2): <strong className="text-red-500">%32.81</strong></li>
+                                        <li>LightGBM (V2): <strong className="text-red-500">%31.56</strong></li>
+                                        <li>WavLM (Huggingface): <strong className="text-red-500">%11.56</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p className="text-sm opacity-70 mb-8 text-center max-w-4xl mx-auto">
+                                * Görüldüğü üzere, sadece akustik özelliklere (V2) dayalı modeller gerçek hayattaki tonlamalarda yetersiz kalırken, HuBERT %60.94 ile tek başına en iyi bağlamı yakalamıştır. (Wav2Vec2Turkish %0.00 gibi sıfır-atış başarısızlıkları listeye eklenmemiştir.)
+                            </p>
+
+                            {/* 7.3 Master Ensemble */}
+                            <SubTitle color="#34d399" isDark={isDark}>3. Birlikten Doğan Güç: Master Ensemble Modeli (%80.94)</SubTitle>
+                            <Blockquote color="#10b981" isDark={isDark}>
+                                Tek başlarına %32 gibi düşük doğruluk oranlarına sahip V2 modelleri, kendi içlerinde "Majority Voting" ile birleşip kelime bazlı sağlam bir temel oluşturduğunda ve bu temel HuBERT'in %60'lık genel cümle anlayışıyla ağırlıklı (1.8x HuBERT, 2.2x V2) olarak harmanlandığında sistemin genel doğruluğu <strong>%80.94</strong>'e fırlamıştır. Aşağıdaki grafikler bu nihai başarının sınıf bazlı detaylarını göstermektedir.
+                            </Blockquote>
+
+                            <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-2xl mt-6">
                                 <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                    emotion_performance_metrics.txt — Precision / Recall / F1-Score (%)
+                                    Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)
                                 </h4>
                                 <ResponsiveContainer width="100%" height="88%">
                                     <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
@@ -590,21 +542,23 @@ const TechnicalInfoPage = () => {
                                 </ResponsiveContainer>
                             </div>
 
-                            {/* 7.2 Confusion Matrix */}
-                            <SubTitle color="#34d399" isDark={isDark}>{t('tech_s7_confusion_title')}</SubTitle>
-                            <Blockquote color="#10b981" isDark={isDark}>{t('tech_s7_confusion_desc')}</Blockquote>
+                            {/* 7.4 Confusion Matrix */}
+                            <SubTitle color="#34d399" isDark={isDark}>Karmaşıklık Matrisi (Confusion Matrix)</SubTitle>
+                            <p className="mb-6 opacity-80 text-sm">
+                                320 ses dosyasından (her sınıftan 80 adet) oluşan testimizde modelimizin hangi duyguları birbiriyle karıştırdığını aşağıdaki tablodan detaylıca inceleyebilirsiniz.
+                            </p>
                             <div className="flex justify-center mb-6 overflow-x-auto">
                                 <table className="border-collapse text-sm md:text-base">
                                     <thead>
                                         <tr>
                                             <th className={`p-4 text-xs font-bold opacity-50 text-right align-bottom ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                                {t('tech_s7_actual')} ↓
+                                                Gerçek ↓
                                             </th>
                                             <th
                                                 colSpan={confusionMatrix.labels.length}
                                                 className={`p-3 text-center text-xs font-bold uppercase tracking-widest opacity-60 border-b ${isDark ? 'text-slate-300 border-slate-700' : 'text-slate-600 border-slate-300'}`}
                                             >
-                                                {t('tech_s7_predicted')} →
+                                                Tahmin →
                                             </th>
                                         </tr>
                                         <tr>
@@ -644,28 +598,51 @@ const TechnicalInfoPage = () => {
                                 </table>
                             </div>
 
-                            {/* 7.3 Robust Validation */}
-                            <SubTitle color="#34d399" isDark={isDark}>{t('tech_s7_robust_title')}</SubTitle>
-                            <Blockquote color="#10b981" isDark={isDark}>{t('tech_s7_robust_desc')}</Blockquote>
-                            <div className="w-full min-h-[380px] h-[420px] py-4 px-1 sm:px-4 rounded-2xl">
-                                <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                    validation_robust_metrics.txt — F1-Score: Standard vs. Robust (%)
-                                </h4>
-                                <ResponsiveContainer width="100%" height="88%">
-                                    <BarChart data={validationRobustMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="22%">
-                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                        <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} />
-                                        <YAxis width={54} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
-                                        <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '13px', fontWeight: 'bold' }} formatter={(v: unknown) => `${(v as number).toFixed(1)}%`} />
-                                        <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
-                                        <Bar dataKey="f1_standard" name="F1 Standard (%)" fill={isDark ? '#34d399' : '#059669'} radius={[5, 5, 0, 0]} />
-                                        <Bar dataKey="f1_robust" name="F1 Robust (%)" fill={isDark ? '#f97316' : '#ea580c'} radius={[5, 5, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                            <p className={`text-sm text-center max-w-3xl mx-auto mt-6 mb-2 opacity-60 italic ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                {t('tech_s7_note')}
+                        </SectionCard>
+                    </motion.div>
+
+                    {/* 8. DENEYSEL MODELLER */}
+                    <motion.div {...fadeUp}>
+                        <SectionCard isDark={isDark}>
+                            <SectionTitle num="08" icon={<FaFlask />} title="8. Deneysel Modeller ve Analizleri" iconColor="#f59e0b" isDark={isDark} />
+                            <p className="mb-8">
+                                Projenin araştırma sürecinde <span className="font-mono">sentencevoice_test</span> ve <span className="font-mono">Models</span> gibi klasörlerde çeşitli algoritmalar denenmiştir. %30'un üzerinde başarı gösteren modeller, eğitim/test süreçlerindeki karakteristik özellikleriyle birlikte en yüksek doğrudan düşüğe doğru aşağıda listelenmiştir.
                             </p>
+
+                            <div className="space-y-12">
+                                {experimentalModelsData.map((model, idx) => (
+                                    <div key={idx} className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                                            <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                                                <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm ${isDark ? 'bg-amber-500/20' : 'bg-amber-100'}`}>{idx + 1}</span>
+                                                {model.name}
+                                            </h3>
+                                            <div className={`px-4 py-1.5 rounded-full font-black text-sm border ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-300 bg-amber-50 text-amber-700'}`}>
+                                                Doğruluk: %{model.accuracy}
+                                            </div>
+                                        </div>
+                                        
+                                        <p className="text-sm mb-6 opacity-90 leading-relaxed">
+                                            {t(model.descriptionKey)}
+                                        </p>
+
+                                        <div className="w-full h-[280px]">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={model.metrics} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barSize={30}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
+                                                    <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 12, fontWeight: 600 }} />
+                                                    <YAxis width={40} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
+                                                    <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} />
+                                                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
+                                                    <Bar dataKey="precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[4, 4, 0, 0]} />
+                                                    <Bar dataKey="recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[4, 4, 0, 0]} />
+                                                    <Bar dataKey="f1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[4, 4, 0, 0]} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </SectionCard>
                     </motion.div>
 

@@ -1,0 +1,15 @@
+=== HuBERT Test Sonuçları ===
+Model Konumu: c:\Users\ilhan\Desktop\SER_PROJECT\Huggingface\hubert_model.py
+Doğruluk (Accuracy): %60.94
+Toplam Test Edilen Dosya: 320
+
+              precision    recall  f1-score   support
+
+       angry       0.80      0.84      0.82        80
+        calm       0.36      0.11      0.17        80
+       happy       0.93      0.49      0.64        80
+         sad       0.47      1.00      0.64        80
+
+    accuracy                           0.61       320
+   macro avg       0.64      0.61      0.57       320
+weighted avg       0.64      0.61      0.57       320

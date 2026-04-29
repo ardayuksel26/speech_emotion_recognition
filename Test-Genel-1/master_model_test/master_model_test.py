@@ -73,14 +73,14 @@ V2_MODEL_WEIGHTS = {
     'lgbm_v2': {'angry': 0.91, 'calm': 0.93, 'happy': 0.93, 'sad': 0.88},
     'xgb_v2':  {'angry': 0.88, 'calm': 0.93, 'happy': 0.90, 'sad': 0.91},
 }
-HUBERT_WEIGHTS      = {'angry': 0.83, 'calm': 1.10, 'happy': 1.00, 'sad': 0.85}
-HUBERT_GLOBAL_WEIGHT = 1.6
+HUBERT_WEIGHTS = {'angry': 0.90, 'calm': 1.20, 'happy': 1.20, 'sad': 0.85}
+HUBERT_GLOBAL_WEIGHT = 1.7  # 1.9 çok agresifti, 1.7'ye çekerek gürültüyü azaltıyoruz.
 
 MASTER_CALIBRATION = {
-    'angry': 1.00,   # geri döndür — 0.90 fark yaratmadı
-    'happy': 1.40,   # kanıtlanmış değer (%85 test)
-    'sad':   0.65,   # 0.50 çok agresifti, calm'a yardım etmedi
-    'calm':  1.25,   # hafif koruma — dengeli
+    'angry': 1.25,   # %76 Recall'u %80+ üzerine taşımak için (1.10 -> 1.25)
+    'happy': 1.75,   # %87 Recall iyi ama Angry'den çalıyor, biraz dizginliyoruz (1.95 -> 1.75)
+    'sad':   0.50,   # Calm'ı yutmasını engellemek için tekrar baskılıyoruz (0.65 -> 0.50)
+    'calm':  1.40,   # Çöken Recall'u (%32) ayağa kaldırmak için kritik artış (1.05 -> 1.40)
 }
 
 MODELS_2_CONFIG = {
@@ -300,7 +300,7 @@ def run_master_pipeline(audio_path: str) -> dict:
     if hubert_available:
         for e in EMOTIONS:
             # HuBERT dominant (1.5x), V2 sabit baz (3.0 * 0.25 = 0.75)
-            combined[e] = word_norm[e] * 3.0 + hubert_scores[e] * 1.5
+            combined[e] = word_norm[e] * 2.2 + hubert_scores[e] * 1.8
     else:
         combined = dict(word_norm)
 

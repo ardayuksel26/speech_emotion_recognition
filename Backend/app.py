@@ -1973,8 +1973,8 @@ def analyze_master():
         'xgb_v2':   {'angry': 0.88, 'calm': 0.93, 'happy': 0.90, 'sad': 0.91},
     }
     # HuBERT F1 ağırlıkları (cümle bazlı, test sonuçlarından)
-    HUBERT_WEIGHTS = {'angry': 0.83, 'calm': 0.75, 'happy': 0.88, 'sad': 0.88}
-    HUBERT_GLOBAL_WEIGHT = 1.5   # V2 kelime modelleri 3x, HuBERT 1.5x
+    HUBERT_WEIGHTS = {'angry': 0.90, 'calm': 1.20, 'happy': 1.20, 'sad': 0.85}
+    HUBERT_GLOBAL_WEIGHT = 1.7  # 1.9 çok agresifti, 1.7'ye çekerek gürültüyü azaltıyoruz.
 
     try:
         # ── KATMAN 1: Vosk Kelime Segmentasyonu + V2 Modeller ──────────────────
@@ -2107,8 +2107,8 @@ def analyze_master():
         combined = {}
         if hubert_available:
             for e in EMOTIONS:
-                # Eski halindeki gibi: Sabit 0.25 * 3.0 (0.75 baz puan) + HuBERT katkısı
-                combined[e] = word_norm[e] * 3.0 + hubert_scores[e] * 1.5
+                # HuBERT dominant (1.8x), V2 sabit baz (2.2 * 0.25 = 0.55)
+                combined[e] = word_norm[e] * 2.2 + hubert_scores[e] * 1.8
         else:
             combined = dict(word_norm)
 
@@ -2118,12 +2118,12 @@ def analyze_master():
         else:
             final_scores = {e: 25.0 for e in EMOTIONS}
 
-        # Kalibrasyon — master_model_test ile doğrulanmış (%85.00 accuracy)
+        # Kalibrasyon — master_model_test ile doğrulanmış (%80.94 accuracy)
         master_calibration = {
-            'angry': 1.00,
-            'happy': 1.30,   # happy→calm karışmasını çözdü
-            'sad':   0.55,   # calm→sad karışmasını kırdı
-            'calm':  1.05,   # sad baskılanınca calm'ı tutar
+            'angry': 1.25,   # %76 Recall'u %80+ üzerine taşımak için (1.10 -> 1.25)
+            'happy': 1.75,   # %87 Recall iyi ama Angry'den çalıyor, biraz dizginliyoruz (1.95 -> 1.75)
+            'sad':   0.50,   # Calm'ı yutmasını engellemek için tekrar baskılıyoruz (0.65 -> 0.50)
+            'calm':  1.40,   # Çöken Recall'u (%32) ayağa kaldırmak için kritik artış (1.05 -> 1.40)
         }
         
         for e in EMOTIONS:

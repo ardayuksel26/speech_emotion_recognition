@@ -12,14 +12,14 @@ import seaborn as sns
 BASE_DIR = r"c:\Users\ilhan\Desktop\SER_PROJECT"
 TEST_GENEL_DIR = os.path.join(BASE_DIR, "Test-Genel-1")
 TEST_CODES_DIR = os.path.join(TEST_GENEL_DIR, "test_codes")
-TEST_RESULTS_DIR = os.path.join(TEST_GENEL_DIR, "test_results")
+TEST_RESULTS_DIR = os.path.join(TEST_GENEL_DIR, "test_results", "v2models_ve_hubert_test_result")
 
 BACKEND_DIR = os.path.join(BASE_DIR, "Backend")
 MODELS_DIR = os.path.join(BASE_DIR, "Models")
 MODELS_2_DIR = os.path.join(BASE_DIR, "Models_2")
 SENTENCE_MODELS_DIR = os.path.join(MODELS_DIR, "Sentence_Models")
 HF_DIR = os.path.join(BASE_DIR, "Huggingface")
-DATASET_DIR = os.path.join(BASE_DIR, "Test", "sentencevoice_test")
+DATASET_DIR = os.path.join(TEST_GENEL_DIR, "our_voices_for_test")
 
 os.makedirs(TEST_CODES_DIR, exist_ok=True)
 os.makedirs(TEST_RESULTS_DIR, exist_ok=True)
@@ -281,9 +281,9 @@ def discover_models_in_dir(base_dir):
     return config
 
 # ================= 1. MODELS (V1 Word-Level) =================
-models_v1_config = discover_models_in_dir(MODELS_DIR)
-print(f"\n--- Değerlendiriliyor: Models (V1) - Word-Level Majority Voting ---")
-evaluate_sklearn_group("Models", models_v1_config, is_word_model=True, features_sentence=None, features_words=word_features_v1, valid_indices=valid_indices_words)
+# models_v1_config = discover_models_in_dir(MODELS_DIR)
+# print(f"\n--- Değerlendiriliyor: Models (V1) - Word-Level Majority Voting ---")
+# evaluate_sklearn_group("Models", models_v1_config, is_word_model=True, features_sentence=None, features_words=word_features_v1, valid_indices=valid_indices_words)
 
 # ================= 2. MODELS 2 (V2 Word-Level - IS10 1582 Dims) =================
 models_v2_config = discover_models_in_dir(MODELS_2_DIR)
@@ -291,23 +291,23 @@ print(f"\n--- Değerlendiriliyor: Models_2 (V2) - Word-Level Majority Voting ---
 evaluate_sklearn_group("Models_2", models_v2_config, is_word_model=True, features_sentence=None, features_words=word_features_v2, valid_indices=valid_indices_words)
 
 # ================= 3. SENTENCE MODELS (Full Sentence) =================
-sentence_config = discover_models_in_dir(SENTENCE_MODELS_DIR)
-print(f"\n--- Değerlendiriliyor: Sentence_Models - Full Sentence Analysis ---")
-evaluate_sklearn_group("Sentence_Models", sentence_config, is_word_model=False, features_sentence=features_v1_sentence, features_words=None, valid_indices=valid_indices_sentence_v1)
+# sentence_config = discover_models_in_dir(SENTENCE_MODELS_DIR)
+# print(f"\n--- Değerlendiriliyor: Sentence_Models - Full Sentence Analysis ---")
+# evaluate_sklearn_group("Sentence_Models", sentence_config, is_word_model=False, features_sentence=features_v1_sentence, features_words=None, valid_indices=valid_indices_sentence_v1)
 
 # ================= 4. HUGGINGFACE MODELS (Full Sentence) =================
 print("\n--- Değerlendiriliyor: Huggingface Modelleri ---")
 hf_out_dir = os.path.join(TEST_RESULTS_DIR, "Huggingface")
 
 hf_predictors = [
-    ("SenseVoice", "sensevoice_model", "SenseVoiceEmotionPredictor"),
-    ("Wav2Vec2Turkish", "wav2vec2_model", "Wav2Vec2TurkishPredictor"),
-    ("WavLM", "wavlm_model", "WavLMEmotionPredictor"),
-    ("WavLMBasePlus", "wavlm_model", "WavLMBasePlusEmotionPredictor"),
-    ("XLSR", "xlsr_model", "XLSREmotionPredictor"),
-    ("Wav2Vec2English", "xlsr_model", "Wav2Vec2EnglishPredictor"),
+    # ("SenseVoice", "sensevoice_model", "SenseVoiceEmotionPredictor"),
+    # ("Wav2Vec2Turkish", "wav2vec2_model", "Wav2Vec2TurkishPredictor"),
+    # ("WavLM", "wavlm_model", "WavLMEmotionPredictor"),
+    # ("WavLMBasePlus", "wavlm_model", "WavLMBasePlusEmotionPredictor"),
+    # ("XLSR", "xlsr_model", "XLSREmotionPredictor"),
+    # ("Wav2Vec2English", "xlsr_model", "Wav2Vec2EnglishPredictor"),
     ("HuBERT", "hubert_model", "HubertEmotionPredictor"),
-    ("ExHuBERT", "exhubert_model", "ExHuBERTEmotionPredictor")
+    # ("ExHuBERT", "exhubert_model", "ExHuBERTEmotionPredictor")
 ]
 
 for name, module_name, class_name in hf_predictors:
