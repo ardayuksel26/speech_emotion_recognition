@@ -22,7 +22,7 @@ const turEvData = [
 
 /* ─── Sub-components ─── */
 
-const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: boolean; accent?: string }) => (
+const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: boolean }) => (
     <div
         className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words mx-4 md:mx-0"
         style={{
@@ -40,10 +40,12 @@ const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: 
 );
 
 const SectionTitle = ({
-    title, iconColor, isDark
+    num, icon, title, iconColor, isDark
 }: { num?: string; icon?: React.ReactNode; title: string; iconColor: string; isDark: boolean }) => (
     <div className="flex items-center gap-3 mb-8">
         <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ background: iconColor }} />
+        {num && <span className="text-sm font-black opacity-30 font-mono tracking-wider">{num}</span>}
+        {icon && <span className="text-xl shrink-0" style={{ color: iconColor }}>{icon}</span>}
         <h2 className={`text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             {title}
         </h2>
@@ -508,23 +510,21 @@ const TechnicalInfoPage = () => {
                                 <table className="w-full text-left text-sm md:text-base border-collapse">
                                     <thead>
                                         <tr style={{ background: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)' }}>
-                                            <th className="p-4 font-black w-[26%]" style={{ color: isDark ? '#fca5a5' : '#991b1b' }}>{t('tech_stack_layer')}</th>
-                                            <th className="p-4 font-black" style={{ color: isDark ? '#fca5a5' : '#991b1b' }}>{t('tech_stack_components')}</th>
+                                            <th className="font-black w-[28%] min-w-[160px]" style={{ paddingLeft: '4rem', paddingRight: '1.5rem', paddingTop: '1.25rem', paddingBottom: '1.25rem', color: isDark ? '#fca5a5' : '#991b1b' }}>{t('tech_stack_layer')}</th>
+                                            <th className="px-6 py-5 font-black" style={{ color: isDark ? '#fca5a5' : '#991b1b' }}>{t('tech_stack_components')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className={isDark ? 'text-slate-300' : 'text-slate-700'}>
                                         {[
                                             { layer: t('tech_stack_frontend'), content: 'React 19, Vite, TypeScript, Tailwind CSS, Framer Motion, Recharts, React Router, Axios, i18next' },
-                                            { layer: t('tech_stack_api'), content: 'Python 3.x, Flask, flask-cors, JSON REST, multipart form-data (ses)' },
-                                            { layer: t('tech_stack_ml'), content: 'scikit-learn, joblib, CatBoost, XGBoost, LightGBM, TensorFlow (isteğe bağlı), Librosa, OpenSMILE, NumPy, Pandas, SoundFile' },
-                                            { layer: t('tech_stack_stt'), content: null },
+                                            { layer: t('tech_stack_api'), content: isTr ? 'Python 3.x, Flask, flask-cors, JSON REST, multipart form-data (ses)' : 'Python 3.x, Flask, flask-cors, JSON REST, multipart form-data (audio)' },
+                                            { layer: t('tech_stack_ml'), content: isTr ? 'scikit-learn, joblib, CatBoost, XGBoost, LightGBM, TensorFlow (isteğe bağlı), Librosa, OpenSMILE, NumPy, Pandas, SoundFile' : 'scikit-learn, joblib, CatBoost, XGBoost, LightGBM, TensorFlow (optional), Librosa, OpenSMILE, NumPy, Pandas, SoundFile' },
+                                            { layer: t('tech_stack_stt'), content: isTr ? 'Vosk (KaldiRecognizer), WhisperX (ASR + align), Librosa tabanlı VAD (SentenceProcessor)' : 'Vosk (KaldiRecognizer), WhisperX (ASR + align), Librosa-based VAD (SentenceProcessor)' },
                                         ].map((row, i) => (
                                             <tr key={i} style={{ borderTop: isDark ? '1px solid rgba(239,68,68,0.1)' : '1px solid rgba(239,68,68,0.15)' }}>
-                                                <td className="p-4 font-bold align-top" style={{ color: '#ef4444' }}>{row.layer}</td>
-                                                <td className="p-4">
-                                                    {row.content ?? (
-                                                        <>Vosk (KaldiRecognizer), WhisperX (ASR + align), Librosa tabanlı VAD (<code className="text-xs opacity-70">SentenceProcessor</code>)</>
-                                                    )}
+                                                <td className="font-bold align-top" style={{ paddingLeft: '4rem', paddingRight: '1.5rem', paddingTop: '1.25rem', paddingBottom: '1.25rem', color: '#ef4444' }}>{row.layer}</td>
+                                                <td className="px-6 py-5 leading-relaxed">
+                                                    {row.content}
                                                 </td>
                                             </tr>
                                         ))}
@@ -580,20 +580,20 @@ const TechnicalInfoPage = () => {
                                 <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                                     <p className="font-bold mb-2 text-sm text-center">{isTr ? "Sentetik Cümle Testi (sentencevoice_test)" : "Synthetic Sentence Test (sentencevoice_test)"}</p>
                                     <p className="text-xs text-center opacity-70 mb-3">{isTr ? "Sadece V2 Modelleri (Models_2)" : "Only V2 Models (Models_2)"}</p>
-                                    <ul className="text-sm space-y-1.5 opacity-90 text-center">
-                                        <li>LightGBM: <strong className="text-emerald-500">%90.94</strong></li>
-                                        <li>XGBoost: <strong className="text-emerald-500">%90.31</strong></li>
-                                        <li>CatBoost: <strong className="text-emerald-500">%84.38</strong></li>
+                                    <ul className="text-sm space-y-2 opacity-90 list-none flex flex-col items-center justify-center">
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>LightGBM:</span> <strong className="text-emerald-500">%90.94</strong></li>
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>XGBoost:</span> <strong className="text-emerald-500">%90.31</strong></li>
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>CatBoost:</span> <strong className="text-emerald-500">%84.38</strong></li>
                                     </ul>
                                 </div>
                                 <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-red-500/30 bg-red-500/10' : 'border-red-200 bg-red-50'}`}>
                                     <p className="font-bold mb-2 text-sm text-center">{isTr ? "Gerçek Hayat Testi (our_voices_for_test)" : "Real World Test (our_voices_for_test)"}</p>
                                     <p className="text-xs text-center opacity-70 mb-3">{isTr ? "V2 Bireysel Düşüş & HuBERT" : "V2 Individual Drop & HuBERT"}</p>
-                                    <ul className="text-sm space-y-1.5 opacity-90 text-center">
-                                        <li>HuBERT (Huggingface): <strong className="text-amber-500">%60.94</strong></li>
-                                        <li>CatBoost (V2): <strong className="text-red-500">%32.81</strong></li>
-                                        <li>LightGBM (V2): <strong className="text-red-500">%31.56</strong></li>
-                                        <li>WavLM (Huggingface): <strong className="text-red-500">%11.56</strong></li>
+                                    <ul className="text-sm space-y-2 opacity-90 list-none flex flex-col items-center justify-center">
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>HuBERT (Huggingface):</span> <strong className="text-amber-500">%60.94</strong></li>
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>CatBoost (V2):</span> <strong className="text-red-500">%32.81</strong></li>
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>LightGBM (V2):</span> <strong className="text-red-500">%31.56</strong></li>
+                                        <li className="flex items-center gap-1.5"><span>•</span> <span>WavLM (Huggingface):</span> <strong className="text-red-500">%11.56</strong></li>
                                     </ul>
                                 </div>
                             </div>
@@ -612,6 +612,25 @@ const TechnicalInfoPage = () => {
                                   : <>When the V2 models, which have low accuracy rates like 32% on their own, combine through "Majority Voting" to create a solid word-based foundation, and this foundation is combined weighted (1.8x HuBERT, 2.2x V2) with HuBERT's 60% general sentence comprehension, the overall accuracy of the system jumps to <strong>80.94%</strong>. The graphs below show the class-level details of this ultimate success.</>
                                 }
                             </Blockquote>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-2">
+                                <div className={`p-4 rounded-xl border ${isDark ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-emerald-200 bg-emerald-50/50'}`}>
+                                    <p className="font-bold text-sm mb-1" style={{ color: '#10b981' }}>{isTr ? "Türkçe Ses Kalibrasyon Matrisi" : "Turkish Vocal Calibration Matrix"}</p>
+                                    <p className="text-xs opacity-80 leading-relaxed">
+                                        {isTr 
+                                            ? "Modelin duygu tahminlerini dengelemek amacıyla şu katsayılar uygulanır: Angry (1.25), Happy (1.75), Sad (0.50), Calm (1.40)." 
+                                            : "The following calibration coefficients are applied to balance emotion predictions: Angry (1.25), Happy (1.75), Sad (0.50), Calm (1.40)."}
+                                    </p>
+                                </div>
+                                <div className={`p-4 rounded-xl border ${isDark ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-200 bg-blue-50/50'}`}>
+                                    <p className="font-bold text-sm mb-1" style={{ color: '#3b82f6' }}>{isTr ? "İşleme Hızı" : "Processing Speed"}</p>
+                                    <p className="text-xs opacity-80 leading-relaxed">
+                                        {isTr 
+                                            ? "Uçtan uca (STT, Öznitelik Çıkarımı, ML oylaması ve Master Ensemble) ortalama dosya başına işleme hızı: ~1.4 saniye." 
+                                            : "Average end-to-end processing speed per file (STT, Feature Extraction, ML voting, Master Ensemble): ~1.4 seconds."}
+                                    </p>
+                                </div>
+                            </div>
 
                             <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-2xl mt-6">
                                 <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
