@@ -110,7 +110,7 @@ const AboutPage = () => {
             <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-32" style={{ paddingTop: '7rem' }}>
 
                 {/* ════════════════════ HERO ════════════════════ */}
-                <motion.div {...fadeUp} className="mb-24">
+                <motion.div {...fadeUp} className="mb-24 mx-4 md:mx-0">
                     <div
                         className="relative rounded-2xl overflow-hidden flex flex-col items-center text-center"
                         style={{
@@ -263,7 +263,7 @@ const AboutPage = () => {
 
                 {/* ════════════════════ MISSION & VISION ════════════════════ */}
                 <div className="w-full h-16 md:h-24"></div>
-                <motion.div {...fadeUp} className="mb-24 px-0">
+                <motion.div {...fadeUp} className="mb-24 px-0 mx-4 md:mx-0">
                     <div
                         className={`relative rounded-2xl overflow-hidden p-10 border ${
                             isDark ? 'border-white/5' : 'border-slate-200/60'
@@ -287,7 +287,7 @@ const AboutPage = () => {
                 {/* ════════════════════ UNIVERSITY BADGE ════════════════════ */}
                 <motion.div
                     {...fadeUp}
-                    className={`relative rounded-xl overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-4 border ${
+                    className={`relative rounded-xl overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-4 border mx-4 md:mx-0 ${
                         isDark
                             ? 'bg-violet-500/5 border-violet-500/20'
                             : 'bg-indigo-50 border-indigo-100'

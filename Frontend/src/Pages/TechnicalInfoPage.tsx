@@ -24,9 +24,9 @@ const turEvData = [
 
 const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: boolean; accent?: string }) => (
     <div
-        className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words"
+        className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words mx-4 md:mx-0"
         style={{
-            padding: 'clamp(32px, 5vw, 64px)',   /* Zorunlu CSS padding (iç boşluk) */
+            padding: 'clamp(16px, 5vw, 64px)',   /* Zorunlu CSS padding (iç boşluk) */
             borderRadius: '40px',                /* Zorunlu CSS yuvarlatma */
             background: isDark ? 'rgba(13,21,41,0.65)' : 'rgba(255,255,255,0.72)',
             border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(203,213,225,0.6)',
@@ -98,7 +98,8 @@ const fadeUp = {
 
 /* ─── Main Page ─── */
 const TechnicalInfoPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isTr = i18n.language === 'tr';
     const { isDark } = useTheme();
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -197,20 +198,44 @@ const TechnicalInfoPage = () => {
                             <ul className="space-y-4 text-base ml-2 mt-4">
                                 <li className="flex items-start gap-4">
                                     <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
-                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
-                                        <span className={strongClass}>Diller Arası Fonetik Farklılıklar (Cross-lingual Bias):</span> Yabancı dilde eğitilmiş bir model, Türkçe'deki kelime vurgularını (stress) yanlış anlayıp hatalı duygu sınıflandırması yapabilir. Bu projede, modele bizzat Türkçe kelime ve hecelerden oluşan kütüphanelerle antrenman yaptırılarak fonetik uçurumlar kapatılmıştır.
+                                    <span className="flex-1">
+                                        {isTr ? (
+                                            <>
+                                                <span className={strongClass}>Diller Arası Fonetik Farklılıklar (Cross-lingual Bias):</span> Yabancı dilde eğitilmiş bir model, Türkçe'deki kelime vurgularını (stress) yanlış anlayıp hatalı duygu sınıflandırması yapabilir. Bu projede, modele bizzat Türkçe kelime ve hecelerden oluşan kütüphanelerle antrenman yaptırılarak fonetik uçurumlar kapatılmıştır.
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className={strongClass}>Cross-lingual Phonetic Differences (Cross-lingual Bias):</span> A model trained in a foreign language might misinterpret stress and accents in Turkish, leading to incorrect emotion classification. In this project, the phonetic gaps were bridged by training the model directly with libraries composed of Turkish words and syllables.
+                                            </>
+                                        )}
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-4">
                                     <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
-                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
-                                        <span className={strongClass}>Zaman Sınırları ve Ses Boşlukları (Silence boundaries):</span> İnsanlar genellikle duygusal durumlarda duraklar veya nefes alırlar. Silero VAD ve VOSK tabanlı kesme algoritmalarımız bu sessizlik kısımlarını izole ederek makinenin gürültüyü bir duygu olarak tahmin etmesini önler.
+                                    <span className="flex-1">
+                                        {isTr ? (
+                                            <>
+                                                <span className={strongClass}>Zaman Sınırları ve Ses Boşlukları (Silence boundaries):</span> İnsanlar genellikle duygusal durumlarda duraklar veya nefes alırlar. Silero VAD ve VOSK tabanlı kesme algoritmalarımız bu sessizlik kısımlarını izole ederek makinenin gürültüyü bir duygu olarak tahmin etmesini önler.
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className={strongClass}>Temporal Boundaries and Silence Gaps:</span> Humans often pause or take breaths in emotional states. Our Silero VAD and VOSK-based segmentation algorithms isolate these silent parts to prevent the machine from predicting background noise as an emotion.
+                                            </>
+                                        )}
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-4">
                                     <span className="mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
-                                    <span className="flex-1 text-slate-700 dark:text-slate-300">
-                                        <span className={strongClass}>Robust Katmanlarımız:</span> Üst düzey stüdyo frekanslarındaki veri setleri ile eğitilen modeller gerçek dünyada (arka plan gürültüsü vb.) başarısız olur. Buna karşın, V2 algoritmalarının kelime düzeyindeki keskinliği ile Huggingface HuBERT modelinin cümle düzeyindeki geniş bağlam gücünü ağırlıklı (weighted-fusion) olarak harmanlayan sistemimiz, olağanüstü dayanıklı ve kararlı hale (Noise Resilient) gelmiştir.
+                                    <span className="flex-1">
+                                        {isTr ? (
+                                            <>
+                                                <span className={strongClass}>Robust Katmanlarımız:</span> Üst düzey stüdyo frekanslarındaki veri setleri ile eğitilen modeller gerçek dünyada (arka plan gürültüsü vb.) başarısız olur. Buna karşın, V2 algoritmalarının kelime düzeyindeki keskinliği ile Huggingface HuBERT modelinin cümle düzeyindeki geniş bağlam gücünü ağırlıklı (weighted-fusion) olarak harmanlayan sistemimiz, olağanüstü dayanıklı ve kararlı hale (Noise Resilient) gelmiştir.
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className={strongClass}>Our Robust Layers:</span> Models trained on high-level studio frequency datasets fail in the real world. In contrast, our system blends the sharpness of V2 algorithms at the word level with the wide context power of the HuggingFace HuBERT model at the sentence level in a weighted fusion, making it exceptionally resilient and stable against noise.
+                                            </>
+                                        )}
                                     </span>
                                 </li>
                             </ul>
@@ -285,35 +310,50 @@ const TechnicalInfoPage = () => {
                     {/* 3. MASTER ENSEMBLE MODEL YAPISI */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
-                            <SectionTitle num="03" icon={<FaServer />} title="3. Master Ensemble Model Mimarisi" iconColor="#06b6d4" isDark={isDark} />
+                            <SectionTitle num="03" icon={<FaServer />} title={isTr ? "3. Master Ensemble Model Mimarisi" : "3. Master Ensemble Model Architecture"} iconColor="#06b6d4" isDark={isDark} />
                             <p className="mb-6">
-                                Önceki Mastermind mimarimizin yerini alan yeni <strong className={strongClass}>Master Ensemble Model</strong>, kelime bazlı makine öğrenimi algoritmalarının hassasiyeti ile HuggingFace HuBERT transformatörünün derin bağlamsal analiz gücünü birleştirerek eşsiz bir performans sunar.
+                                {isTr 
+                                  ? <>Önceki Mastermind mimarimizin yerini alan yeni <strong className={strongClass}>Master Ensemble Model</strong>, kelime bazlı makine öğrenimi algoritmalarının hassasiyeti ile HuggingFace HuBERT transformatörünün derin bağlamsal analiz gücünü birleştirerek eşsiz bir performans sunar.</>
+                                  : <>Replacing our previous Mastermind architecture, the new <strong className={strongClass}>Master Ensemble Model</strong> combines the precision of word-level machine learning algorithms with the deep contextual analysis power of the HuggingFace HuBERT transformer to deliver unprecedented performance.</>
+                                }
                             </p>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 1: Vosk Segmentasyonu ve V2 Modelleri</SubTitle>
+                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 1: Vosk Segmentasyonu ve V2 Modelleri" : "Layer 1: Vosk Segmentation and V2 Models"}</SubTitle>
                             <Blockquote color="#06b6d4" isDark={isDark}>
-                                Ses dosyası öncelikle Vosk motoru ile milisaniyelik zaman damgalarına sahip kelimelere bölünür. Her kelime 1582 boyutlu özellik çıkarımından (OpenSMILE IS10) geçirilir ve CatBoost, LightGBM, XGBoost modellerinden oluşan V2 havuzu ile test edilir. Bu modellerin F1-skorlarına dayalı ağırlıklı oylaması sonucunda kelime bazlı "Word" tahmin skoru elde edilir.
+                                {isTr
+                                  ? "Ses dosyası öncelikle Vosk motoru ile milisaniyelik zaman damgalarına sahip kelimelere bölünür. Her kelime 1582 boyutlu özellik çıkarımından (OpenSMILE IS10) geçirilir ve CatBoost, LightGBM, XGBoost modellerinden oluşan V2 havuzu ile test edilir. Bu modellerin F1-skorlarına dayalı ağırlıklı oylaması sonucunda kelime bazlı \"Word\" tahmin skoru elde edilir."
+                                  : "The audio file is first segmented by the Vosk engine into words with millisecond timestamps. Each word undergoes a 1582-dimensional feature extraction (OpenSMILE IS10) and is tested with the V2 pool consisting of CatBoost, LightGBM, XGBoost models. As a result of the weighted voting of these models based on F1-scores, a word-level \"Word\" prediction score is obtained."
+                                }
                             </Blockquote>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 2: HuBERT Tam Cümle Analizi</SubTitle>
+                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 2: HuBERT Tam Cümle Analizi" : "Layer 2: HuBERT Full Sentence Analysis"}</SubTitle>
                             <p className="mb-4">
-                                SeaBenSea/HuBERT transformatörü kullanılarak, kelimelerin ötesinde sesin genel melodisi, ritmi ve tonlamasından global bir cümle skoru çıkarılır.
+                                {isTr
+                                  ? "SeaBenSea/HuBERT transformatörü kullanılarak, kelimelerin ötesinde sesin genel melodisi, ritmi ve tonlamasından global bir cümle skoru çıkarılır."
+                                  : "By using the SeaBenSea/HuBERT transformer, a global sentence score is extracted from the general melody, rhythm, and intonation of the voice beyond words."
+                                }
                             </p>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>Katman 3: Füzyon ve Kalibrasyon</SubTitle>
+                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 3: Füzyon ve Kalibrasyon" : "Layer 3: Fusion and Calibration"}</SubTitle>
                             <p className="mb-4">
-                                Elde edilen iki farklı bakış açısı, test sonuçlarımızdan elde edilen optimal katsayılarla birleştirilir ve Master Ensemble sonucu ortaya çıkar:
+                                {isTr
+                                  ? "Elde edilen iki farklı bakış açısı, test sonuçlarımızdan elde edilen optimal katsayılarla birleştirilir ve Master Ensemble sonucu ortaya çıkar:"
+                                  : "The two different perspectives obtained are combined with the optimal coefficients obtained from our test results, and the Master Ensemble result emerges:"
+                                }
                             </p>
                             <TerminalBlock isDark={isDark} accentColor="#67e8f9">
-                                <p className="mb-2 opacity-60 text-xs">// Katman 1: Kelime bazlı V2 Tahmini</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 1: Kelime bazlı V2 Tahmini" : "// Layer 1: Word-level V2 Prediction"}</p>
                                 <p className="mb-3"><strong>P</strong><sup>(word)</sup> = (1/N) Σ<sub>n=1..N</sub> <strong>predict_v2</strong>(<strong>x</strong><sub>n</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">// Katman 2: Cümle bazlı HuBERT Tahmini</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 2: Cümle bazlı HuBERT Tahmini" : "// Layer 2: Sentence-level HuBERT Prediction"}</p>
                                 <p className="mb-3"><strong>P</strong><sup>(global)</sup> = <strong>HuBERT</strong>(<strong>x</strong><sub>audio</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">// Katman 3: Ağırlıklı Dağılım</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 3: Ağırlıklı Dağılım" : "// Layer 3: Weighted Distribution"}</p>
                                 <p><strong>Score</strong><sub>e</sub> = <strong>P</strong><sup>(word)</sup><sub>e</sub> · 2.2 + <strong>P</strong><sup>(global)</sup><sub>e</sub> · 1.8</p>
                             </TerminalBlock>
                             <Blockquote color="#06b6d4" isDark={isDark}>
-                                Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> sözlüğü ile duygu ağırlıkları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) çarpılarak en iyi dengeye (80.94% Accuracy) ulaşılır.
+                                {isTr
+                                  ? <>Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> sözlüğü ile duygu ağırlıkları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) çarpılarak en iyi dengeye (80.94% Accuracy) ulaşılır.</>
+                                  : <>In the final stage, emotion weights (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) are multiplied with the <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> dictionary to achieve the best balance (80.94% Accuracy).</>
+                                }
                             </Blockquote>
 
                             {/* Accuracy stat */}
@@ -324,7 +364,7 @@ const TechnicalInfoPage = () => {
                                     border: '1px solid rgba(99,102,241,0.2)',
                                 }}
                             >
-                                <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-3">Model Accuracy (Doğruluk)</span>
+                                <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-3">{isTr ? "Model Doğruluğu (Accuracy)" : "Model Accuracy"}</span>
                                 <span
                                     className="text-7xl md:text-8xl font-black tracking-tighter"
                                     style={{
@@ -337,7 +377,10 @@ const TechnicalInfoPage = () => {
                                     %{(MastermindMetrics.accuracy * 100).toFixed(2)}
                                 </span>
                                 <p className={`mt-4 text-sm max-w-2xl mx-auto text-center opacity-75 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                    Bu doğruluk oranı, 320 ses dosyasından oluşan özel test seti (our_voices_for_test) üzerinde yapılan testlerde kanıtlanmıştır.
+                                    {isTr
+                                      ? "Bu doğruluk oranı, 320 ses dosyasından oluşan özel test seti (our_voices_for_test) üzerinde yapılan testlerde kanıtlanmıştır."
+                                      : "This accuracy rate has been proven in tests conducted on a specific test set (our_voices_for_test) consisting of 320 audio files."
+                                    }
                                 </p>
                             </div>
 
@@ -356,12 +399,40 @@ const TechnicalInfoPage = () => {
                                 </ResponsiveContainer>
                             </div>
                             <p className={`text-sm text-center max-w-3xl mx-auto mt-2 mb-2 opacity-70 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                                * Yukarıdaki grafik, Master Ensemble modelinin 4 duygu sınıfı üzerindeki Precision, Recall ve F1 metriklerini gösterir.
+                                {isTr
+                                  ? "* Yukarıdaki grafik, Master Ensemble modelinin 4 duygu sınıfı üzerindeki Precision, Recall ve F1 metriklerini gösterir."
+                                  : "* The graph above shows the Precision, Recall, and F1 metrics of the Master Ensemble model across 4 emotion classes."
+                                }
                             </p>
                         </SectionCard>
                     </motion.div>
 
+                    {/* 4. SINIFLANDIRMA MODELLERİ */}
+                    <motion.div {...fadeUp}>
+                        <SectionCard isDark={isDark}>
+                            <SectionTitle num="04" icon={<FaBrain />} title={t('tech_s4_title')} iconColor="#ec4899" isDark={isDark} />
+                            <p className="mb-6">{t('tech_s4_intro')}</p>
 
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_1_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_1_p')}</Blockquote>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_1_metrics')}</Blockquote>
+
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_2_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_2_p')}</Blockquote>
+
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_3_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_3_p')}</Blockquote>
+
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_4_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_4_p')}</Blockquote>
+
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_5_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_5_p')}</Blockquote>
+
+                            <SubTitle color="#f472b6" isDark={isDark}>{t('tech_s4_6_title')}</SubTitle>
+                            <Blockquote color="#ec4899" isDark={isDark}>{t('tech_s4_6_p')}</Blockquote>
+                        </SectionCard>
+                    </motion.div>
 
                     {/* 5. KELİME BÖLME METOTLARI */}
                     <motion.div {...fadeUp}>
@@ -466,37 +537,49 @@ const TechnicalInfoPage = () => {
                     {/* 7. TEST SONUÇLARI VE DEĞERLENDİRME */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
-                            <SectionTitle num="07" icon={<FaMicrophoneAlt />} title="7. Test Sonuçları ve Değerlendirme" iconColor="#10b981" isDark={isDark} />
+                            <SectionTitle num="07" icon={<FaMicrophoneAlt />} title={isTr ? "7. Test Sonuçları ve Değerlendirme" : "7. Test Results and Evaluation"} iconColor="#10b981" isDark={isDark} />
                             <p className="mb-8">
-                                Geliştirdiğimiz konuşma duygu tanıma (SER) sistemini test etmek için iki farklı yaklaşım ve veri seti kullandık: <span className={strongClass}>Sentetik Cümle Testi</span> ve <span className={strongClass}>Gerçek Hayat Testi</span>. Modellerimiz bu aşamalarda tekil olarak test edildi ve nihayetinde Master Ensemble çatısı altında birleştirildi.
+                                {isTr
+                                  ? <>Geliştirdiğimiz konuşma duygu tanıma (SER) sistemini test etmek için iki farklı yaklaşım ve veri seti kullandık: <span className={strongClass}>Sentetik Cümle Testi</span> ve <span className={strongClass}>Gerçek Hayat Testi</span>. Modellerimiz bu aşamalarda tekil olarak test edildi ve nihayetinde Master Ensemble çatısı altında birleştirildi.</>
+                                  : <>We used two different approaches and datasets to test our Speech Emotion Recognition (SER) system: <span className={strongClass}>Synthetic Sentence Test</span> and <span className={strongClass}>Real World Test</span>. Our models were tested individually at these stages and finally integrated under the Master Ensemble framework.</>
+                                }
                             </p>
 
                             {/* 7.1 Test Yöntemleri */}
-                            <SubTitle color="#34d399" isDark={isDark}>1. Test Metodolojileri</SubTitle>
+                            <SubTitle color="#34d399" isDark={isDark}>{isTr ? "1. Test Metodolojileri" : "1. Test Methodologies"}</SubTitle>
                             <div className="grid gap-6 md:grid-cols-2 mb-8 mt-4">
                                 <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
-                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Sentetik Cümle Testi (sentencevoice_test)</h4>
+                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{isTr ? "Sentetik Cümle Testi (sentencevoice_test)" : "Synthetic Sentence Test (sentencevoice_test)"}</h4>
                                     <p className="text-sm">
-                                        TurEV-DB veri setindeki bağımsız kelimeler (özneler, yüklemler vb.) algoritmik olarak birleştirilerek anlamlı veya anlamsız ancak fonetik olarak tam cümleler oluşturuldu. Bu cümlelerin aralarına gerçekçi duraklar, yapay zeka ile üretilmiş nefes sesleri ve arka plan gürültüleri eklendi.
+                                        {isTr
+                                          ? "TurEV-DB veri setindeki bağımsız kelimeler (özneler, yüklemler vb.) algoritmik olarak birleştirilerek anlamlı veya anlamsız ancak fonetik olarak tam cümleler oluşturuldu. Bu cümlelerin aralarına gerçekçi duraklar, yapay zeka ile üretilmiş nefes sesleri ve arka plan gürültüleri eklendi."
+                                          : "Independent words (subjects, predicates, etc.) in the TurEV-DB dataset were algorithmically combined to create meaningful or nonsense but phonetically complete sentences. Realistic pauses, AI-generated breath sounds, and background noises were added between these sentences."
+                                        }
                                     </p>
                                 </div>
                                 <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
-                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Gerçek Hayat Testi (our_voices_for_test)</h4>
+                                    <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{isTr ? "Gerçek Hayat Testi (our_voices_for_test)" : "Real World Test (our_voices_for_test)"}</h4>
                                     <p className="text-sm">
-                                        Eğitim setinde (TurEV) hiç bulunmayan, farklı kişilerin (örneğin İlhan, Yağız, Yağmur) kendi sesleriyle kaydettiği toplam 320 adet doğal ve kesintisiz (in-the-wild) cümleden oluşur. Modellerin asıl kalibrasyonu ve "gerçek dünya" performansı bu veri seti ile ölçülmüştür.
+                                        {isTr
+                                          ? "Eğitim setinde (TurEV) hiç bulunmayan, farklı kişilerin (örneğin İlhan, Yağız, Yağmur) kendi sesleriyle kaydettiği toplam 320 adet doğal ve kesintisiz (in-the-wild) cümleden oluşur. Modellerin asıl kalibrasyonu ve \"gerçek dünya\" performansı bu veri seti ile ölçülmüştür."
+                                          : "It consists of a total of 320 natural and continuous (in-the-wild) sentences recorded by different people (e.g., İlhan, Yağız, Yağmur) whose voices were not in the training set (TurEV). The main calibration and \"real world\" performance of the models were measured using this dataset."
+                                        }
                                     </p>
                                 </div>
                             </div>
 
                             {/* 7.2 Tekil Modeller */}
-                            <SubTitle color="#34d399" isDark={isDark}>2. Tekil Model Performansları (Sentetik vs. Gerçek Hayat)</SubTitle>
+                            <SubTitle color="#34d399" isDark={isDark}>{isTr ? "2. Tekil Model Performansları (Sentetik vs. Gerçek Hayat)" : "2. Individual Model Performance (Synthetic vs. Real World)"}</SubTitle>
                             <Blockquote color="#10b981" isDark={isDark}>
-                                Modellerimizi önce <span className="font-mono">sentencevoice_test</span> (sentetik) üzerinde, ardından <span className="font-mono">our_voices_for_test</span> (gerçek) üzerinde test ettik. Sentetik veride %90'lara varan doğruluk oranları, gerçek hayat testlerinde (farklı konuşmacılar ve doğal ortam) %32'lere kadar düştü.
+                                {isTr
+                                  ? <>Modellerimizi önce <span className="font-mono">sentencevoice_test</span> (sentetik) üzerinde, ardından <span className="font-mono">our_voices_for_test</span> (gerçek) üzerinde test ettik. Sentetik veride %90'lara varan doğruluk oranları, gerçek hayat testlerinde (farklı konuşmacılar ve doğal ortam) %32'lere kadar düştü.</>
+                                  : <>We tested our models first on <span className="font-mono">sentencevoice_test</span> (synthetic) and then on <span className="font-mono">our_voices_for_test</span> (real). Accuracy rates up to 90% in synthetic data dropped to 32% in real-life tests (different speakers and natural environments).</>
+                                }
                             </Blockquote>
                             <div className="flex flex-col md:flex-row gap-6 mb-8 mt-4">
                                 <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
-                                    <p className="font-bold mb-2 text-sm text-center">Sentetik Cümle Testi (sentencevoice_test)</p>
-                                    <p className="text-xs text-center opacity-70 mb-3">Sadece V2 Modelleri (Models_2)</p>
+                                    <p className="font-bold mb-2 text-sm text-center">{isTr ? "Sentetik Cümle Testi (sentencevoice_test)" : "Synthetic Sentence Test (sentencevoice_test)"}</p>
+                                    <p className="text-xs text-center opacity-70 mb-3">{isTr ? "Sadece V2 Modelleri (Models_2)" : "Only V2 Models (Models_2)"}</p>
                                     <ul className="text-sm space-y-1.5 opacity-90 text-center">
                                         <li>LightGBM: <strong className="text-emerald-500">%90.94</strong></li>
                                         <li>XGBoost: <strong className="text-emerald-500">%90.31</strong></li>
@@ -504,8 +587,8 @@ const TechnicalInfoPage = () => {
                                     </ul>
                                 </div>
                                 <div className={`flex-1 p-5 rounded-xl border ${isDark ? 'border-red-500/30 bg-red-500/10' : 'border-red-200 bg-red-50'}`}>
-                                    <p className="font-bold mb-2 text-sm text-center">Gerçek Hayat Testi (our_voices_for_test)</p>
-                                    <p className="text-xs text-center opacity-70 mb-3">V2 Bireysel Düşüş & HuBERT</p>
+                                    <p className="font-bold mb-2 text-sm text-center">{isTr ? "Gerçek Hayat Testi (our_voices_for_test)" : "Real World Test (our_voices_for_test)"}</p>
+                                    <p className="text-xs text-center opacity-70 mb-3">{isTr ? "V2 Bireysel Düşüş & HuBERT" : "V2 Individual Drop & HuBERT"}</p>
                                     <ul className="text-sm space-y-1.5 opacity-90 text-center">
                                         <li>HuBERT (Huggingface): <strong className="text-amber-500">%60.94</strong></li>
                                         <li>CatBoost (V2): <strong className="text-red-500">%32.81</strong></li>
@@ -515,18 +598,24 @@ const TechnicalInfoPage = () => {
                                 </div>
                             </div>
                             <p className="text-sm opacity-70 mb-8 text-center max-w-4xl mx-auto">
-                                * Görüldüğü üzere, sadece akustik özelliklere (V2) dayalı modeller gerçek hayattaki tonlamalarda yetersiz kalırken, HuBERT %60.94 ile tek başına en iyi bağlamı yakalamıştır. (Wav2Vec2Turkish %0.00 gibi sıfır-atış başarısızlıkları listeye eklenmemiştir.)
+                                {isTr
+                                  ? "* Görüldüğü üzere, sadece akustik özelliklere (V2) dayalı modeller gerçek hayattaki tonlamalarda yetersiz kalırken, HuBERT %60.94 ile tek başına en iyi bağlamı yakalamıştır. (Wav2Vec2Turkish %0.00 gibi sıfır-atış başarısızlıkları listeye eklenmemiştir.)"
+                                  : "* As can be seen, models based solely on acoustic features (V2) fall short in real-world intonation, while HuBERT alone captured the best context at 60.94%. (Zero-shot failures such as Wav2Vec2Turkish 0.00% are excluded from the list.)"
+                                }
                             </p>
 
                             {/* 7.3 Master Ensemble */}
-                            <SubTitle color="#34d399" isDark={isDark}>3. Birlikten Doğan Güç: Master Ensemble Modeli (%80.94)</SubTitle>
+                            <SubTitle color="#34d399" isDark={isDark}>{isTr ? "3. Birlikten Doğan Güç: Master Ensemble Modeli (%80.94)" : "3. Power of Unity: Master Ensemble Model (80.94%)"}</SubTitle>
                             <Blockquote color="#10b981" isDark={isDark}>
-                                Tek başlarına %32 gibi düşük doğruluk oranlarına sahip V2 modelleri, kendi içlerinde "Majority Voting" ile birleşip kelime bazlı sağlam bir temel oluşturduğunda ve bu temel HuBERT'in %60'lık genel cümle anlayışıyla ağırlıklı (1.8x HuBERT, 2.2x V2) olarak harmanlandığında sistemin genel doğruluğu <strong>%80.94</strong>'e fırlamıştır. Aşağıdaki grafikler bu nihai başarının sınıf bazlı detaylarını göstermektedir.
+                                {isTr
+                                  ? <>Tek başlarına %32 gibi düşük doğruluk oranlarına sahip V2 modelleri, kendi içlerinde "Majority Voting" ile birleşip kelime bazlı sağlam bir temel oluşturduğunda ve bu temel HuBERT'in %60'lık genel cümle anlayışıyla ağırlıklı (1.8x HuBERT, 2.2x V2) olarak harmanlandığında sistemin genel doğruluğu <strong>%80.94</strong>'e fırlamıştır. Aşağıdaki grafikler bu nihai başarının sınıf bazlı detaylarını göstermektedir.</>
+                                  : <>When the V2 models, which have low accuracy rates like 32% on their own, combine through "Majority Voting" to create a solid word-based foundation, and this foundation is combined weighted (1.8x HuBERT, 2.2x V2) with HuBERT's 60% general sentence comprehension, the overall accuracy of the system jumps to <strong>80.94%</strong>. The graphs below show the class-level details of this ultimate success.</>
+                                }
                             </Blockquote>
 
                             <div className="w-full min-h-[400px] h-[440px] py-4 px-1 sm:px-4 rounded-2xl mt-6">
                                 <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                                    Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)
+                                    {isTr ? "Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)" : "Master Ensemble Class-Based F1, Precision, and Recall (%)"}
                                 </h4>
                                 <ResponsiveContainer width="100%" height="88%">
                                     <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
@@ -543,29 +632,32 @@ const TechnicalInfoPage = () => {
                             </div>
 
                             {/* 7.4 Confusion Matrix */}
-                            <SubTitle color="#34d399" isDark={isDark}>Karmaşıklık Matrisi (Confusion Matrix)</SubTitle>
+                            <SubTitle color="#34d399" isDark={isDark}>{isTr ? "Karmaşıklık Matrisi (Confusion Matrix)" : "Confusion Matrix"}</SubTitle>
                             <p className="mb-6 opacity-80 text-sm">
-                                320 ses dosyasından (her sınıftan 80 adet) oluşan testimizde modelimizin hangi duyguları birbiriyle karıştırdığını aşağıdaki tablodan detaylıca inceleyebilirsiniz.
+                                {isTr
+                                  ? "320 ses dosyasından (her sınıftan 80 adet) oluşan testimizde modelimizin hangi duyguları birbiriyle karıştırdığını aşağıdaki tablodan detaylıca inceleyebilirsiniz."
+                                  : "In our test consisting of 320 audio files (80 from each class), you can examine in detail from the table below which emotions our model confuses with each other."
+                                }
                             </p>
                             <div className="flex justify-center mb-6 overflow-x-auto">
                                 <table className="border-collapse text-sm md:text-base">
                                     <thead>
                                         <tr>
                                             <th className={`p-4 text-xs font-bold opacity-50 text-right align-bottom ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                                Gerçek ↓
+                                                {isTr ? "Gerçek ↓" : "True ↓"}
                                             </th>
                                             <th
                                                 colSpan={confusionMatrix.labels.length}
                                                 className={`p-3 text-center text-xs font-bold uppercase tracking-widest opacity-60 border-b ${isDark ? 'text-slate-300 border-slate-700' : 'text-slate-600 border-slate-300'}`}
                                             >
-                                                Tahmin →
+                                                {isTr ? "Tahmin →" : "Predicted →"}
                                             </th>
                                         </tr>
                                         <tr>
                                             <th className="p-4" />
                                             {confusionMatrix.labels.map((label) => (
                                                 <th key={label} className={`p-4 font-black text-center min-w-[90px] ${label === 'Angry' ? 'text-red-500' : label === 'Calm' ? 'text-teal-500' : label === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
-                                                    }`}>{label}</th>
+                                                    }`}>{isTr ? t(`emotions.${label.toLowerCase()}`) || label : label}</th>
                                             ))}
                                         </tr>
                                     </thead>
@@ -575,7 +667,7 @@ const TechnicalInfoPage = () => {
                                             return (
                                                 <tr key={ri}>
                                                     <td className={`p-4 font-black text-right ${confusionMatrix.labels[ri] === 'Angry' ? 'text-red-500' : confusionMatrix.labels[ri] === 'Calm' ? 'text-teal-500' : confusionMatrix.labels[ri] === 'Happy' ? 'text-amber-500' : 'text-indigo-500'
-                                                        }`}>{confusionMatrix.labels[ri]}</td>
+                                                        }`}>{isTr ? t(`emotions.${confusionMatrix.labels[ri].toLowerCase()}`) || confusionMatrix.labels[ri] : confusionMatrix.labels[ri]}</td>
                                                     {row.map((val, ci) => {
                                                         const isCorrect = ri === ci;
                                                         const intensity = Math.round((val / rowSum) * 100);
@@ -604,9 +696,12 @@ const TechnicalInfoPage = () => {
                     {/* 8. DENEYSEL MODELLER */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
-                            <SectionTitle num="08" icon={<FaFlask />} title="8. Deneysel Modeller ve Analizleri" iconColor="#f59e0b" isDark={isDark} />
+                            <SectionTitle num="08" icon={<FaFlask />} title={isTr ? "8. Deneysel Modeller ve Analizleri" : "8. Experimental Models and Analysis"} iconColor="#f59e0b" isDark={isDark} />
                             <p className="mb-8">
-                                Projenin araştırma sürecinde <span className="font-mono">sentencevoice_test</span> ve <span className="font-mono">Models</span> gibi klasörlerde çeşitli algoritmalar denenmiştir. %30'un üzerinde başarı gösteren modeller, eğitim/test süreçlerindeki karakteristik özellikleriyle birlikte en yüksek doğrudan düşüğe doğru aşağıda listelenmiştir.
+                                {isTr
+                                  ? <>Projenin araştırma sürecinde <span className="font-mono">sentencevoice_test</span> ve <span className="font-mono">Models</span> gibi klasörlerde çeşitli algoritmalar denenmiştir. %30'un üzerinde başarı gösteren modeller, eğitim/test süreçlerindeki karakteristik özellikleriyle birlikte en yüksek doğrudan düşüğe doğru aşağıda listelenmiştir.</>
+                                  : <>During the research process of the project, various algorithms were tested in folders such as <span className="font-mono">sentencevoice_test</span> and <span className="font-mono">Models</span>. Models that performed above 30% are listed below from highest to lowest, along with their characteristic features in the training/testing processes.</>
+                                }
                             </p>
 
                             <div className="space-y-12">
@@ -618,7 +713,7 @@ const TechnicalInfoPage = () => {
                                                 {model.name}
                                             </h3>
                                             <div className={`px-4 py-1.5 rounded-full font-black text-sm border ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-300 bg-amber-50 text-amber-700'}`}>
-                                                Doğruluk: %{model.accuracy}
+                                                {isTr ? `Doğruluk: %${model.accuracy}` : `Accuracy: ${model.accuracy}%`}
                                             </div>
                                         </div>
                                         

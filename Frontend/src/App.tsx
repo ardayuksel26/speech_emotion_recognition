@@ -14,9 +14,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw]">
           <Header />
-          <main className="flex-grow flex flex-col pt-16">
+          <main className="flex-grow flex flex-col pt-16 w-full">
             <ScrollToTop />
             <Routes>
               <Route path="/" element={<MainPage />} />

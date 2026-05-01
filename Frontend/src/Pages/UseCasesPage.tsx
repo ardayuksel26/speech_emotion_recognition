@@ -58,7 +58,7 @@ const UseCasesPage = () => {
             <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-24" style={{ paddingTop: '7rem' }}>
 
                 {/* ══════════ HERO ══════════ */}
-                <motion.div {...fadeUp} className="mb-16">
+                <motion.div {...fadeUp} className="mb-16 mx-4 md:mx-0">
                     <div
                         className="relative rounded-xl overflow-hidden flex flex-col items-center justify-center min-h-[380px] p-8 text-center"
                         style={{
@@ -123,7 +123,7 @@ const UseCasesPage = () => {
                     </div>
 
                     {/* cards grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-2 mx-4 md:mx-0">
                         {CASES.map((item, idx) => (
                             <div
                                 key={idx}

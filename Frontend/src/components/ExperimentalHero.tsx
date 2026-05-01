@@ -22,13 +22,13 @@ type JointResult = {
 
 const JOINT_MODELS = [
   { name: 'Advanced Cümle Analizi', url: '/api/predict_advanced_sentence', color: '#ef4444' },
-  { name: 'HuBERT (HuggingFace)',   url: '/analyze_hubert',                color: '#10b981' },
-  { name: 'Wav2Vec2 Turkish',        url: '/analyze_wav2vec2_turkish',      color: '#0ea5e9' },
-  { name: 'SUPERB Wav2Vec2-ER',      url: '/analyze_superb',               color: '#14b8a6' },
-  { name: 'SenseVoice (Alibaba)',    url: '/analyze_sensevoice',            color: '#f97316' },
-  { name: 'ExHuBERT',               url: '/analyze_exhubert',              color: '#8b5cf6' },
-  { name: 'WavLM Base Plus',         url: '/analyze_wavlm_base_plus',      color: '#6366f1' },
-  { name: 'WavLM Large',             url: '/analyze_wavlm_large',          color: '#f43f5e' },
+  { name: 'HuBERT (HuggingFace)', url: '/analyze_hubert', color: '#10b981' },
+  { name: 'Wav2Vec2 Turkish', url: '/analyze_wav2vec2_turkish', color: '#0ea5e9' },
+  { name: 'SUPERB Wav2Vec2-ER', url: '/analyze_superb', color: '#14b8a6' },
+  { name: 'SenseVoice (Alibaba)', url: '/analyze_sensevoice', color: '#f97316' },
+  { name: 'ExHuBERT', url: '/analyze_exhubert', color: '#8b5cf6' },
+  { name: 'WavLM Base Plus', url: '/analyze_wavlm_base_plus', color: '#6366f1' },
+  { name: 'WavLM Large', url: '/analyze_wavlm_large', color: '#f43f5e' },
 ];
 
 const parseConf = (c: any): number => {
@@ -58,8 +58,9 @@ const generateWaveLevels = async (file: File, bars: number): Promise<number[]> =
 };
 
 const Hero = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDark } = useTheme();
+  const isTr = i18n.language === 'tr';
 
   // Base models list
   const BASE_MODELS = [
@@ -290,7 +291,7 @@ const Hero = () => {
       } else {
         endpoint = '/api/predict_sentence_whole';
       }
-      
+
       const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -462,16 +463,16 @@ const Hero = () => {
 
   return (
     <div className={clsx(
-        "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
-        isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
-        (analysisResult || jointDone)
-            ? "justify-start pt-24 pb-12 overflow-x-hidden"
-            : "justify-start pt-28 overflow-hidden"
+      "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
+      isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
+      (analysisResult || jointDone)
+        ? "justify-start pt-24 pb-12 overflow-x-hidden"
+        : "justify-center"
     )}>
 
       <InteractiveBackground />
 
-      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center pt-8 pb-20 mb-10">
+      <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center pb-8 md:pb-20">
 
         {!(analysisResult || jointDone) && (
           <p className={`text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
@@ -483,151 +484,143 @@ const Hero = () => {
 
         <div className={`
           relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
-          flex flex-col items-center justify-center border
+          flex flex-col items-center justify-center border mt-8 md:mt-0
           ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
-          ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] p-6 md:p-10 rounded-[3rem]"}
+          ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
         `}
-          style={!(analysisResult || jointDone) ? { padding: '32px 40px 48px 40px' } : { marginTop: '80px' }}
+          style={!(analysisResult || jointDone) ? {} : { marginTop: '80px' }}
         >
 
           {/* Subtle Inner Glow */}
           {!(analysisResult || jointDone) && (
-             <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
+            <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
           )}
           {/* Mode Switcher */}
           {!(analysisResult || jointDone) && (
-            <div className="flex flex-wrap justify-center relative z-20" style={{ gap: '12px', marginBottom: '24px' }}>
-              <button
-                onClick={() => { setMode('word'); setShowModelSelection(true); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'word'
-                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                {t('mode_word')}
-              </button>
-              <button
-                onClick={() => { setMode('sentence_segmented'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sentence_segmented'
-                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                {t('mode_sentence_segmented')}
-              </button>
-              <button
-                onClick={() => { setMode('sentence_whole'); setShowModelSelection(true); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sentence_whole'
-                  ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                {t('mode_sentence_whole')}
-              </button>
-              <button
-                onClick={() => { setMode('advanced_sentence'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'advanced_sentence'
-                  ? 'bg-red-600 text-white shadow-lg border-red-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-red-500 dark:text-red-400 hover:text-red-600 border-red-400 dark:border-red-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                Advanced Cümle Analizi
-              </button>
-              <button
-                onClick={() => { setMode('hubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'hubert'
-                  ? 'bg-emerald-600 text-white shadow-lg border-emerald-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 border-emerald-400 dark:border-emerald-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                HuBERT (HuggingFace)
-              </button>
-              <button
-                onClick={() => { setMode('wav2vec2_turkish'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wav2vec2_turkish'
-                  ? 'bg-sky-600 text-white shadow-lg border-sky-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-sky-600 dark:text-sky-400 hover:text-sky-700 border-sky-400 dark:border-sky-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                Wav2Vec2 Turkish
-              </button>
-              <button
-                onClick={() => { setMode('superb_er'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'superb_er'
-                  ? 'bg-teal-600 text-white shadow-lg border-teal-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-teal-600 dark:text-teal-400 hover:text-teal-700 border-teal-400 dark:border-teal-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                SUPERB Wav2Vec2-ER
-              </button>
-              <button
-                onClick={() => { setMode('sensevoice'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'sensevoice'
-                  ? 'bg-orange-600 text-white shadow-lg border-orange-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-orange-600 dark:text-orange-400 hover:text-orange-700 border-orange-400 dark:border-orange-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                SenseVoice (Alibaba)
-              </button>
-              <button
-                onClick={() => { setMode('exhubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'exhubert'
-                  ? 'bg-violet-600 text-white shadow-lg border-violet-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-violet-600 dark:text-violet-400 hover:text-violet-700 border-violet-400 dark:border-violet-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                ExHuBERT
-              </button>
-              <button
-                onClick={() => { setMode('wavlm_base_plus'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm_base_plus'
-                  ? 'bg-indigo-800 text-white shadow-lg border-indigo-700'
-                  : 'bg-slate-200 dark:bg-slate-700 text-indigo-800 dark:text-indigo-300 hover:text-indigo-900 border-indigo-500 dark:border-indigo-600'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                WavLM Base Plus
-              </button>
-              <button
-                onClick={() => { setMode('wavlm_large'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'wavlm_large'
-                  ? 'bg-rose-600 text-white shadow-lg border-rose-500'
-                  : 'bg-slate-200 dark:bg-slate-700 text-rose-600 dark:text-rose-400 hover:text-rose-700 border-rose-400 dark:border-rose-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                WavLM Large
-              </button>
-              {/* ── Ortak Test ── */}
-              <button
-                onClick={() => { setMode('joint_test'); setShowModelSelection(false); setAllSegmentResults({}); setJointResults([]); setJointDone(false); }}
-                className={`rounded-xl text-sm font-bold transition-all duration-300 border-2 ${mode === 'joint_test'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-amber-400'
-                  : 'bg-slate-200 dark:bg-slate-700 text-amber-600 dark:text-amber-400 hover:text-amber-700 border-amber-400 dark:border-amber-500'
-                  }`}
-                style={{ padding: '10px 24px' }}
-              >
-                {t('joint_test_button')}
-              </button>
+            <div className="w-full relative z-20 mb-8 mt-2">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 w-full">
+                <button
+                  onClick={() => { setMode('word'); setShowModelSelection(true); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'word'
+                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                    }`}
+                >
+                  {t('mode_word')}
+                </button>
+                <button
+                  onClick={() => { setMode('sentence_segmented'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'sentence_segmented'
+                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                    }`}
+                >
+                  {t('mode_sentence_segmented')}
+                </button>
+                <button
+                  onClick={() => { setMode('sentence_whole'); setShowModelSelection(true); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-3 sm:px-4 flex items-center justify-center text-center ${mode === 'sentence_whole'
+                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                    }`}
+                >
+                  {t('mode_sentence_whole')}
+                </button>
+                <button
+                  onClick={() => { setMode('advanced_sentence'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'advanced_sentence'
+                    ? 'bg-red-600 text-white shadow-lg border-red-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-red-500 dark:text-red-400 hover:text-red-600 border-red-400 dark:border-red-500'
+                    }`}
+                >
+                  {isTr ? "Advanced Cümle Analizi" : "Advanced Sentence Analysis"}
+                </button>
+                <button
+                  onClick={() => { setMode('hubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'hubert'
+                    ? 'bg-emerald-600 text-white shadow-lg border-emerald-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 border-emerald-400 dark:border-emerald-500'
+                    }`}
+                >
+                  HuBERT (HuggingFace)
+                </button>
+                <button
+                  onClick={() => { setMode('wav2vec2_turkish'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wav2vec2_turkish'
+                    ? 'bg-sky-600 text-white shadow-lg border-sky-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-sky-600 dark:text-sky-400 hover:text-sky-700 border-sky-400 dark:border-sky-500'
+                    }`}
+                >
+                  Wav2Vec2 Turkish
+                </button>
+                <button
+                  onClick={() => { setMode('superb_er'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'superb_er'
+                    ? 'bg-teal-600 text-white shadow-lg border-teal-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-teal-600 dark:text-teal-400 hover:text-teal-700 border-teal-400 dark:border-teal-500'
+                    }`}
+                >
+                  SUPERB Wav2Vec2-ER
+                </button>
+                <button
+                  onClick={() => { setMode('sensevoice'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'sensevoice'
+                    ? 'bg-orange-600 text-white shadow-lg border-orange-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-orange-600 dark:text-orange-400 hover:text-orange-700 border-orange-400 dark:border-orange-500'
+                    }`}
+                >
+                  SenseVoice (Alibaba)
+                </button>
+                <button
+                  onClick={() => { setMode('exhubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'exhubert'
+                    ? 'bg-violet-600 text-white shadow-lg border-violet-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-violet-600 dark:text-violet-400 hover:text-violet-700 border-violet-400 dark:border-violet-500'
+                    }`}
+                >
+                  ExHuBERT
+                </button>
+                <button
+                  onClick={() => { setMode('wavlm_base_plus'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wavlm_base_plus'
+                    ? 'bg-indigo-800 text-white shadow-lg border-indigo-700'
+                    : 'bg-slate-200 dark:bg-slate-700 text-indigo-800 dark:text-indigo-300 hover:text-indigo-900 border-indigo-500 dark:border-indigo-600'
+                    }`}
+                >
+                  WavLM Base Plus
+                </button>
+                <button
+                  onClick={() => { setMode('wavlm_large'); setShowModelSelection(false); setAllSegmentResults({}); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wavlm_large'
+                    ? 'bg-rose-600 text-white shadow-lg border-rose-500'
+                    : 'bg-slate-200 dark:bg-slate-700 text-rose-600 dark:text-rose-400 hover:text-rose-700 border-rose-400 dark:border-rose-500'
+                    }`}
+                >
+                  WavLM Large
+                </button>
+                {/* ── Ortak Test ── */}
+                <button
+                  onClick={() => { setMode('joint_test'); setShowModelSelection(false); setAllSegmentResults({}); setJointResults([]); setJointDone(false); }}
+                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-3 sm:px-4 flex items-center justify-center text-center ${mode === 'joint_test'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-amber-400'
+                    : 'bg-slate-200 dark:bg-slate-700 text-amber-600 dark:text-amber-400 hover:text-amber-700 border-amber-400 dark:border-amber-500'
+                    }`}
+                >
+                  {t('joint_test_button')}
+                </button>
+              </div>
             </div>
           )}
 
           {!audioFile && (
-            <AudioInput onAudioReady={handleAudioReady} />
+            <div className="w-full mt-6 flex justify-center">
+              <AudioInput onAudioReady={handleAudioReady} />
+            </div>
           )}
 
           {audioFile && recordedUrl && !analysisResult && !isAnalyzing && !isJointTesting && !jointDone && (
             <div className="w-full max-w-2xl flex flex-col items-center animate-fadeIn">
-              
+
               {mode === 'sentence_whole' && (
                 <div className="w-full mb-6 flex justify-center">
                   <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
@@ -718,7 +711,7 @@ const Hero = () => {
 
               {/* Model Selection UI - Matrix Format */}
               {(mode === 'word' || (showModelSelection && mode !== 'sentence_whole' && mode !== 'advanced_sentence')) && (
-                <div className="w-full mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
+                <div className="w-full mt-6 mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
 
                   {/* Glassmorphic overlay instead of solid gradient */}
                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent dark:from-slate-700/20 pointer-events-none" />
@@ -925,16 +918,16 @@ const Hero = () => {
                 analysisMode={mode === 'word' ? 'word' : 'sentence'}
                 selectedModelName={
                   mode === 'joint_test' ? `⚡ ${t('joint_test_button')} — ${JOINT_MODELS.length} Model`
-                  : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
-                  : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
-                  : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
-                  : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
-                  : mode === 'sensevoice' ? 'SenseVoiceSmall (Alibaba)'
-                  : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
-                  : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
-                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
-                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
-                  : activeModelName
+                    : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                      : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
+                        : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                          : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
+                            : mode === 'sensevoice' ? 'SenseVoiceSmall (Alibaba)'
+                              : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
+                                : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
+                                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
+                                    : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
+                                      : activeModelName
                 }
                 recordedUrl={recordedUrl}
                 showAnalyzeButton={mode === 'word' || mode === 'sentence_whole' || mode === 'advanced_sentence' || mode === 'hubert' || mode === 'exhubert' || mode === 'wav2vec2_turkish' || mode === 'superb_er' || mode === 'sensevoice' || mode === 'wavlm_base_plus' || mode === 'wavlm_large' || mode === 'joint_test' || showModelSelection}
@@ -979,9 +972,9 @@ const Hero = () => {
           {isAnalyzing && (
             <div className="flex flex-col items-center justify-center w-full h-full animate-fadeIn py-20 z-10">
               <div className="relative w-24 h-24 mb-6">
-                 <div className="absolute inset-0 border-4 border-indigo-200/20 dark:border-indigo-500/20 rounded-full" />
-                 <div className="absolute inset-0 border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-[spin_1s_linear_infinite]" />
-                 <div className="absolute inset-2 border-4 border-purple-600 dark:border-purple-400 border-b-transparent rounded-full animate-[spin_1.5s_linear_infinite_reverse]" />
+                <div className="absolute inset-0 border-4 border-indigo-200/20 dark:border-indigo-500/20 rounded-full" />
+                <div className="absolute inset-0 border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-[spin_1s_linear_infinite]" />
+                <div className="absolute inset-2 border-4 border-purple-600 dark:border-purple-400 border-b-transparent rounded-full animate-[spin_1.5s_linear_infinite_reverse]" />
               </div>
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse">
                 {t('analyzing')}
@@ -989,16 +982,16 @@ const Hero = () => {
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3 tracking-widest uppercase">
                 {t('engine_used')}: {
                   mode === 'joint_test' ? `⚡ Joint Test — ${JOINT_MODELS.length} Model`
-                  : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
-                  : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
-                  : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
-                  : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
-                  : mode === 'sensevoice' ? 'FunAudioLLM/SenseVoiceSmall (Alibaba)'
-                  : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
-                  : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
-                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
-                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
-                  : activeModelName
+                    : mode === 'hubert' ? 'SeaBenSea/HuBERT (HuggingFace)'
+                      : mode === 'exhubert' ? 'amiriparian/ExHuBERT'
+                        : mode === 'wav2vec2_turkish' ? 'Sefa-Alper/Wav2Vec2 Turkish'
+                          : mode === 'superb_er' ? 'SUPERB / Wav2Vec2-Base-ER'
+                            : mode === 'sensevoice' ? 'FunAudioLLM/SenseVoiceSmall (Alibaba)'
+                              : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
+                                : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
+                                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
+                                    : mode === 'sentence_whole' ? 'Experimental Ensemble'
+                                      : activeModelName
                 }
               </p>
             </div>
@@ -1027,14 +1020,17 @@ const Hero = () => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full max-w-4xl px-4">
                 {jointResults.map((r, i) => (
-                  <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 ${
-                    r.status === 'done' ? 'border-emerald-500/40 bg-emerald-500/10' :
-                    r.status === 'error' ? 'border-red-500/40 bg-red-500/10' :
-                    'border-white/10 bg-white/5'
-                  }`}>
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 ${r.status === 'done' ? 'border-emerald-500/40 bg-emerald-500/10' :
+                      r.status === 'error' ? 'border-red-500/40 bg-red-500/10' :
+                        'border-white/10 bg-white/5'
+                    }`}>
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.status === 'done' ? '#10b981' : r.status === 'error' ? '#ef4444' : '#94a3b8' }} />
                     <div className="min-w-0">
-                      <p className="text-xs font-bold truncate opacity-70">{r.name || r.model}</p>
+                      <p className="text-xs font-bold truncate opacity-70">
+                        {r.name === 'Advanced Cümle Analizi'
+                          ? (isTr ? 'Advanced Cümle Analizi' : 'Advanced Sentence Analysis')
+                          : (r.name || r.model)}
+                      </p>
                       {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: r.color }}>{r.emotion}</p>}
                       {r.status === 'error' && <p className="text-xs text-red-400">{t('joint_test_error_label')}</p>}
                       {r.status === 'loading' && <p className="text-xs opacity-40">{t('joint_test_waiting')}</p>}
@@ -1068,18 +1064,19 @@ const Hero = () => {
                 {jointResults.map((r, i) => (
                   <div
                     key={i}
-                    className={`relative flex flex-col items-center text-center gap-3 p-6 rounded-2xl border transition-all duration-300 ${
-                      r.status === 'error'
+                    className={`relative flex flex-col items-center text-center gap-3 p-6 rounded-2xl border transition-all duration-300 ${r.status === 'error'
                         ? isDark ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200'
                         : isDark ? 'bg-slate-900/60 border-white/10' : 'bg-white/70 border-slate-200/60'
-                    }`}
+                      }`}
                     style={{ backdropFilter: 'blur(12px)' }}
                   >
                     {/* Color accent top bar */}
                     <div className="absolute top-0 left-6 right-6 h-0.5 rounded-full" style={{ background: r.color }} />
 
                     <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {r.name || r.model}
+                      {r.name === 'Advanced Cümle Analizi'
+                        ? (isTr ? 'Advanced Cümle Analizi' : 'Advanced Sentence Analysis')
+                        : (r.name || r.model)}
                     </p>
 
                     {r.status === 'done' ? (
