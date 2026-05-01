@@ -197,24 +197,6 @@ const Result: React.FC<ResultProps> = ({
 
                 {/* RIGHT: ANALYTICS DASHBOARD (COL-SPAN-7) */}
                 <div className="lg:col-span-7 flex flex-col gap-6 h-full">
-
-                    {/* Veto Information Box (If Applied) */}
-                    {result.veto_info?.applied && (
-                        <MotionWrapper delay={0.2}>
-                            <div className="w-full border border-indigo-400/50 shadow-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/10 backdrop-blur-xl flex items-center gap-6" style={{ padding: '32px', borderRadius: '24px' }}>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{t('veto_title')}</h3>
-                                    </div>
-                                    <p className="text-sm font-medium opacity-80 leading-relaxed">
-                                        {t('veto_desc', { emotion: t('sad'), score: result.veto_info.rf_score.toFixed(1) })}
-                                    </p>
-                                </div>
-                            </div>
-                        </MotionWrapper>
-                    )}
-
                     {/* Chart & Distribution Analysis */}
                     <MotionWrapper delay={0.3} className="flex-1 min-h-[300px]">
                         <div

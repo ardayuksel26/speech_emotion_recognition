@@ -1,0 +1,44 @@
+\section{Methodology}
+
+This section describes the techniques and tools used in this study. Below are examples of how to include figures, equations, and tables in your report.
+
+\subsection{Example Figure}
+Figures are essential for visualizing results. \autoref{fig:example_system} shows an example diagram.
+
+\begin{figure}[H]
+    \centering
+    % Placeholder: Use your actual image name here.
+    \includegraphics[width=0.7\linewidth]{example-image}
+    \caption{This is an example figure caption. Captions should be self-explanatory. If you have taken this figure from elsewhere and you did not make it yourself, make sure to reference its source. All figures must be referenced in the text.}
+    \label{fig:example_system}
+\end{figure}
+
+\subsection{Example Equation}
+Equations should be used to define mathematical models or algorithms. \autoref{eq:perlin_sample} demonstrates a simple function used in terrain generation.
+
+\begin{equation}
+    f(x, y) = \sum_{i=1}^{n} \frac{1}{2^i} \text{noise}(2^i x, 2^i y)
+    \label{eq:perlin_sample}
+\end{equation}
+
+Where $f(x, y)$ represents the altitude at coordinates $(x, y)$, and $n$ is the number of octaves.
+
+\subsection{Example Table}
+Tables are used for structured data. \autoref{tab:example_expenditures} illustrates the project expenditures.
+
+\begin{table}[H]
+\centering
+\caption{Example table showing project expenditures per work package}
+\label{tab:example_expenditures}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|c|}
+\hline
+\multicolumn{1}{|c|}{} & \multicolumn{4}{c|}{\textbf{Work Packages}} & \textbf{} \\ \cline{2-5}
+\multicolumn{1}{|c|}{} & \centering\textbf{I \& II} & \centering\textbf{III} & \centering\textbf{IV} & \centering\textbf{V} & \textbf{TOTAL} \\ \hline
+\textbf{Equipment} & \$0.00 & \$0.00 & \$0.00 & \$0.00 & \$0.00 \\ \hline
+\textbf{API Services} & \$0.00 & \$0.00 & \$0.00 & \$0.00 & \$0.00 \\ \hline
+\textbf{TOTAL} & \$0.00 & \$0.00 & \$0.00 & \$0.00 & \textbf{\$0.00} \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Example of a subsubsection title in sentence case}
+This demonstrates a tertiary heading. Guidelines state that subsubsections do not have an extra line before the following text, and only the first letter should be capitalized.

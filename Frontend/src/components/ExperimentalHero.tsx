@@ -21,7 +21,6 @@ type JointResult = {
 };
 
 const JOINT_MODELS = [
-  { name: 'Mastermind (Ana Sayfa)', url: '/api/predict_mastermind',        color: '#f59e0b' },
   { name: 'Advanced Cümle Analizi', url: '/api/predict_advanced_sentence', color: '#ef4444' },
   { name: 'HuBERT (HuggingFace)',   url: '/analyze_hubert',                color: '#10b981' },
   { name: 'Wav2Vec2 Turkish',        url: '/analyze_wav2vec2_turkish',      color: '#0ea5e9' },

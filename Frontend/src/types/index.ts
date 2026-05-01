@@ -36,10 +36,6 @@ export interface AnalysisResult {
         hubert_emotion: string | null;
         vosk_error: string | null;
     };
-    veto_info?: {
-        applied: boolean;
-        rf_score: number;
-    };
     frequency_data?: Array<{
         time: number;
         freq: number;
