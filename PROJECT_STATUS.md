@@ -36,7 +36,7 @@ A full-stack, production-grade Speech Emotion Recognition (SER) system targeting
 | `/Models` | Initial baseline models (Standard + Robust variants). |
 | `/Models_2` | Advanced noise-augmented V2 models (CatBoost_V2, XGBoost_V2, LightGBM_V2) used for word-level majority voting. |
 | `/Huggingface` | Integrations for advanced DL models (HuBERT, WavLM, SenseVoice, Wav2Vec2). |
-| `/Data`, `/Data_with_noise`, `/TurEV-DB` | Training datasets, including noise-augmented RAVDESS and Turkish Emotion Voice Database. |
+| `/Data`, `/Data_with_noise`, `/TurEV-DB` | Training datasets, including noise-augmented and Turkish Emotion Voice Database. |
 | `/Train`, `/Train_2`, `/Train_3` | Historical training scripts for all model generations. |
 | `/Test-Genel-1` | The comprehensive evaluation and testing suite containing real-world human recordings (320 files) and the final Master Ensemble benchmarking tools. |
 | `/Old-Test-1`, `/Old-Test-2`, `/Old-Test-3` | Legacy evaluation data and benchmarking scripts from earlier project phases. |
