@@ -203,7 +203,7 @@
   "tech_s2_1_title": "2.1 TurEV-DB (Turkish Emotion Voice Database)",
   "tech_s2_1_p": "Projemizin derin öğrenme çekirdeği dış kaynaklar yerine yerel dil uyumluluğuna sahip <1>TurEV-DB</1> veri seti üzerine inşa edilmiştir. Bu veri seti, binlerce bağımsız kelimenin duygu etiketleriyle seslendirilmesinden oluşur.",
   "tech_s2_dist_title": "TurEV-DB Eğitim Verisi Dağılımı",
-  "tech_s2_dist_desc": "Veri setimizdeki 1,735 kelimenin duygu sınıflarına göre dengeli dağılımı (Distribution) yandaki grafikte gösterilmektedir. Bu dengeli yapı, modellerin bir duyguya (Bias) daha yatkın/meyilli olmasını engeller.",
+  "tech_s2_dist_desc": "Temiz TurEV-DB veri setindeki 1,735 kelimenin duygu sınıflarına göre dengeli dağılımı (Distribution) yandaki grafikte gösterilmektedir. Gürültü artırımıyla birlikte toplam veri seti büyüklüğü 10,410'a ulaşır.",
   "tech_s2_2_title": "2.2 Sentetik (Yapay) Cümle Jenerasyon Ağı",
   "tech_s2_2_p1": "Projenin en yenilikçi yanlarından biri, sadece kelime bazlı performansla yetinmeyerek, izole kelimeleri uç uca bağlayıp \"Yapay Cümleler\" üreten özel bir simülasyon motoru (Generator) kullanılmasıdır.",
   "tech_s2_2_p2": "Bu yaklaşımla üretilen uzun yapay cümleler testlerde Master Ensemble'ı sınıyor. Üretilen toplam <1>79 Pürüzsüz Cümle</1> sınıflandırması: <2>20 Angry</2>, <3>20 Calm</3>, <4>20 Happy</4>, ve <5>19 Sad</5>.",

@@ -79,3 +79,71 @@ h1, h2, h3, h4, h5, h6, .font-outfit {
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
+
+.audio-card {
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  height: 160px;
+}
+.dark .audio-card {
+  background-color: rgba(30, 41, 59, 0.4);
+}
+@media (min-width: 640px) {
+  .audio-card { height: 208px; }
+}
+@media (min-width: 768px) {
+  .audio-card { height: 256px; }
+}
+.audio-card-compact {
+  height: 140px !important;
+}
+@media (min-width: 640px) {
+  .audio-card-compact { height: 180px !important; }
+}
+@media (min-width: 768px) {
+  .audio-card-compact { height: 210px !important; }
+}
+
+.audio-panel {
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark .audio-panel {
+  background-color: rgb(30, 41, 59);
+}
+
+.audio-icon-box {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+.dark .audio-icon-box {
+  background-color: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-width: 2px;
+  border-style: solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.mode-btn-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding-top: 32px;
+  margin-bottom: 20px;
+}

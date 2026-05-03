@@ -4,7 +4,15 @@ import { useTheme } from '../context/ThemeContext';
 const InteractiveBackground: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { isDark } = useTheme();
+    // Ref to track current theme WITHOUT restarting the animation loop
+    const isDarkRef = useRef(isDark);
 
+    // Keep ref in sync on every theme change (no cleanup / no re-mount)
+    useEffect(() => {
+        isDarkRef.current = isDark;
+    }, [isDark]);
+
+    // Main animation — runs ONCE on mount, never reruns
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -15,12 +23,19 @@ const InteractiveBackground: React.FC = () => {
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
-        const particles: { x: number, y: number, vx: number, vy: number, baseVx: number, baseVy: number, size: number, color: string }[] = [];
-        const particleCount = 60;
-        const colors = isDark
-            ? ['#6366f1', '#a855f7', '#ec4899', '#3b82f6'] // darker mode glow
-            : ['#818cf8', '#c084fc', '#f472b6', '#60a5fa']; // lighter mode glow
+        const darkColors  = ['#6366f1', '#a855f7', '#ec4899', '#3b82f6'];
+        const lightColors = ['#818cf8', '#c084fc', '#f472b6', '#60a5fa'];
 
+        const particles: {
+            x: number; y: number;
+            vx: number; vy: number;
+            baseVx: number; baseVy: number;
+            size: number;
+            darkColor: string;
+            lightColor: string;
+        }[] = [];
+
+        const particleCount = 60;
         for (let i = 0; i < particleCount; i++) {
             const baseVx = (Math.random() - 0.5) * 1.5;
             const baseVy = (Math.random() - 0.5) * 1.5;
@@ -32,11 +47,13 @@ const InteractiveBackground: React.FC = () => {
                 baseVx,
                 baseVy,
                 size: Math.random() * 80 + 20,
-                color: colors[Math.floor(Math.random() * colors.length)]
+                darkColor:  darkColors[Math.floor(Math.random() * darkColors.length)],
+                lightColor: lightColors[Math.floor(Math.random() * lightColors.length)],
             });
         }
 
         let mouse = { x: width / 2, y: height / 2 };
+        let rafId: number;
 
         const handleMouseMove = (e: MouseEvent) => {
             mouse.x = e.clientX;
@@ -52,11 +69,12 @@ const InteractiveBackground: React.FC = () => {
         window.addEventListener('resize', handleResize);
 
         const animate = () => {
+            const dark = isDarkRef.current;
             ctx.clearRect(0, 0, width, height);
 
-            // Draw a subtle gradient overlay tracing mouse
+            // Mouse glow overlay
             const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 400);
-            if (isDark) {
+            if (dark) {
                 gradient.addColorStop(0, 'rgba(99, 102, 241, 0.15)');
                 gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
             } else {
@@ -67,7 +85,7 @@ const InteractiveBackground: React.FC = () => {
             ctx.fillRect(0, 0, width, height);
 
             particles.forEach((p) => {
-                // Repulsion: push particles away from mouse
+                // Mouse repulsion
                 const dx = mouse.x - p.x;
                 const dy = mouse.y - p.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -77,12 +95,11 @@ const InteractiveBackground: React.FC = () => {
                     p.vy -= (dy / dist) * force;
                 }
 
-                // Gradually pull velocity back toward base so particles
-                // resume natural drifting once mouse moves away
+                // Ease back to base velocity
                 p.vx += (p.baseVx - p.vx) * 0.03;
                 p.vy += (p.baseVy - p.vy) * 0.03;
 
-                // Clamp speed so particles don't fly off screen
+                // Clamp speed
                 const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
                 if (speed > 5) {
                     p.vx = (p.vx / speed) * 5;
@@ -93,38 +110,39 @@ const InteractiveBackground: React.FC = () => {
                 p.y += p.vy;
 
                 // Bounce off edges
-                if (p.x < 0 || p.x > width) { p.vx *= -1; p.baseVx *= -1; }
-                if (p.y < 0 || p.y > height) { p.vy *= -1; p.baseVy *= -1; }
+                if (p.x < 0 || p.x > width)  { p.vx *= -1; p.baseVx *= -1; }
+                if (p.y < 0 || p.y > height)  { p.vy *= -1; p.baseVy *= -1; }
 
+                // Draw — pick color based on current theme ref (not state)
+                const color = dark ? p.darkColor : p.lightColor;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                
-                // Add blur specifically for these particles
+                ctx.fillStyle = color;
                 ctx.shadowBlur = 40;
-                ctx.shadowColor = p.color;
-                ctx.globalAlpha = isDark ? 0.4 : 0.6; // adjust transparency based on theme
+                ctx.shadowColor = color;
+                ctx.globalAlpha = dark ? 0.4 : 0.6;
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
                 ctx.shadowBlur = 0;
             });
 
-            requestAnimationFrame(animate);
+            rafId = requestAnimationFrame(animate);
         };
 
         animate();
 
         return () => {
+            cancelAnimationFrame(rafId);
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('resize', handleResize);
         };
-    }, [isDark]);
+    }, []); // boş bağımlılık → sadece mount'ta çalışır
 
     return (
         <canvas
             ref={canvasRef}
             className="fixed inset-0 w-full h-full pointer-events-none z-0"
-            style={{ 
+            style={{
                 filter: 'blur(3xl)',
                 clipPath: 'inset(0)'
             }}

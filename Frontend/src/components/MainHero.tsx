@@ -7,7 +7,7 @@ import Result from "./Result";
 import axios from "axios";
 import { convertFileToWav } from "../utils/audioUtils";
 import { AnalysisResult } from "../types";
-import InteractiveBackground from "./InteractiveBackground";
+
 
 
 
@@ -106,15 +106,12 @@ const MainHero = () => {
 
   return (
     <div className={clsx(
-      "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
-      isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
+      "relative w-full flex-grow flex flex-col items-center font-sans",
       analysisResult
         ? "justify-start pt-24 pb-12 overflow-x-hidden"
         : "justify-center"
     )}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <InteractiveBackground />
-      </div>
+
 
       <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center py-8 sm:py-12 md:py-16 mb-4 sm:mb-6 md:mb-8">
 
@@ -135,14 +132,14 @@ const MainHero = () => {
 
         {/* Ana Kart */}
         <div className={clsx(
-          "relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] mt-8 sm:mt-0",
+          "relative w-full shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] mt-8 sm:mt-0",
           "flex flex-col items-center justify-center border",
-          isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]",
+          isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]",
           analysisResult
-            ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20"
+            ? "max-w-[100vw] sm:max-w-[95vw] lg:max-w-[1100px] min-h-[85vh] p-3 md:p-6 lg:p-8 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20"
             : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[3rem] w-full mx-4 md:mx-0"
         )}
-          style={{ marginTop: analysisResult ? "80px" : "0px" }}
+          style={{ marginTop: analysisResult ? "80px" : "0px", minHeight: analysisResult ? undefined : '280px' }}
         >
           {!analysisResult && (
             <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
@@ -151,7 +148,7 @@ const MainHero = () => {
           {/* Faz 1: Ses yok */}
           {!isSegmenting && !isAnalyzing && !analysisResult && (
             <div className="w-full flex-1 flex flex-col items-center justify-center animate-fadeIn z-10 relative">
-              <AudioInput onAudioReady={handleAudioReady} />
+              <AudioInput onAudioReady={handleAudioReady} compact />
             </div>
           )}
 
@@ -180,16 +177,13 @@ const MainHero = () => {
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse">
                 {t("analyzing")}
               </p>
-              <p className="text-sm font-medium mt-2 tracking-widest uppercase opacity-50">
-                Master Ensemble · V2 + HuBERT
-              </p>
             </div>
           )}
 
           {/* Faz 4: Sonuç */}
           {analysisResult && (
             <div className="w-full animate-fadeIn">
-              <Result result={analysisResult} onBack={reset} audioUrl={recordedUrl || undefined} />
+              <Result result={analysisResult} onBack={reset} audioUrl={recordedUrl || undefined} hideTimeline />
             </div>
           )}
         </div>

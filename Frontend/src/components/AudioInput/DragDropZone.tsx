@@ -60,11 +60,11 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
             className={twMerge(
                 clsx(
                     'relative overflow-hidden rounded-[2.5rem] border-2 border-dashed transition-all duration-500 cursor-pointer group',
-                    'flex flex-col items-center justify-center p-10 min-h-[300px]',
+                    'flex flex-col items-center justify-center p-6 min-h-[180px]',
                     isDark
                         ? 'bg-slate-800/40 border-slate-600/50 hover:border-indigo-400 backdrop-blur-xl shadow-lg'
-                        : 'bg-white/40 border-indigo-200 hover:border-indigo-500 backdrop-blur-xl shadow-lg',
-                    isDragging && (isDark ? 'bg-indigo-500/20 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.2)]' : 'bg-indigo-50/80 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.15)]'),
+                        : 'bg-white border-indigo-200 hover:border-indigo-500 shadow-lg',
+                    isDragging && (isDark ? 'bg-indigo-500/20 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.2)]' : 'bg-indigo-50 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.15)]'),
                     disabled && 'opacity-50 cursor-not-allowed grayscale'
                 ),
                 className
@@ -73,18 +73,18 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className={clsx(
-                "relative w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 shadow-xl",
+                "relative w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-110 shadow-xl",
                 isDark ? "bg-slate-700/50" : "bg-indigo-50"
             )}>
                 {isDragging ? (
-                    <FaMusic className="text-4xl text-indigo-500 animate-bounce" />
+                    <FaMusic className="text-3xl text-indigo-500 animate-bounce" />
                 ) : (
-                    <FaCloudUploadAlt className="text-5xl text-indigo-500" />
+                    <FaCloudUploadAlt className="text-4xl text-indigo-500" />
                 )}
             </div>
 
             <h3 className={clsx(
-                "text-2xl font-bold mb-3 text-center transition-colors",
+                "text-lg font-bold mb-2 text-center transition-colors",
                 isDark ? "text-slate-200" : "text-slate-800"
             )}>
                 {isDragging ? t('drop_audio_here') : t('drag_drop_audio')}

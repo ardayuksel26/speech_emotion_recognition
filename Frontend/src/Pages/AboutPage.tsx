@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiAward, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import InteractiveBackground from '../components/InteractiveBackground';
+
 
 /* ---------- types ---------- */
 interface TeamMember {
@@ -95,10 +95,7 @@ const AboutPage = () => {
     return (
         <div
             className="w-full flex-grow flex flex-col items-center relative"
-            style={{ background: isDark ? '#060e20' : '#f8faff' }}
         >
-            {/* Animated bubble background */}
-            <InteractiveBackground />
             {/* ── ambient noise blobs ── */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-5%] left-[-8%] w-[50%] h-[50%] rounded-full blur-[160px]"
@@ -189,7 +186,7 @@ const AboutPage = () => {
                                     : 'border-slate-200/40 shadow-xl shadow-violet-500/10'
                             }`}
                             style={{
-                                minHeight: '460px',
+                                minHeight: '400px',
                                 background: isDark
                                     ? 'rgba(9, 19, 40, 0.55)'
                                     : 'rgba(255, 255, 255, 0.45)',
@@ -223,7 +220,7 @@ const AboutPage = () => {
                                         </div>
 
                                         {/* Info */}
-                                        <div className="p-6 flex flex-col justify-center items-center text-center">
+                                        <div className="px-6 pt-5 pb-6 flex flex-col items-center text-center">
                                             <h3 className={`text-2xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                                                 {TEAM[currentIndex].name}
                                             </h3>

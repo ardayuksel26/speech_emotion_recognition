@@ -54,7 +54,7 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
         const draw = () => {
             if (!ctx) return;
 
-            // Update Data (Shift and Push)
+            // Update Data (Push new sample to the END of history)
             if (analyserRef.current && isRecording) {
                 const bufferLength = analyserRef.current.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
@@ -67,23 +67,18 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
                     sum += v * v;
                 }
                 const rms = Math.sqrt(sum / bufferLength);
-
-                // Push normalized height (RMS * scale)
-                // Use a non-linear scale for better visual sensitivity
                 const value = Math.min(rms * 10, 1.0);
-
                 dataHistoryRef.current.push(value);
             } else {
-                // If not recording (paused) or no source, push silence
                 dataHistoryRef.current.push(0);
             }
 
-            // Keep history limits
-            const maxPoints = Math.ceil(canvas.width / 3);
+            // Keep history to half the canvas width worth of bars
+            const sliceWidth = 3;
+            const maxPoints = Math.ceil(canvas.width / 2 / sliceWidth) + 1;
             if (dataHistoryRef.current.length > maxPoints) {
                 dataHistoryRef.current.shift();
             }
-
 
             // Draw Logic
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -91,40 +86,45 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
-            // Gradient
+            // Gradient across full width
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-            gradient.addColorStop(0, '#6366f1'); // Indigo-500
+            gradient.addColorStop(0, '#6366f1');   // Indigo-500
             gradient.addColorStop(0.5, '#ec4899'); // Pink-500
-            gradient.addColorStop(1, '#a855f7'); // Purple-500
+            gradient.addColorStop(1, '#a855f7');   // Purple-500
             ctx.strokeStyle = gradient;
-            ctx.fillStyle = gradient; // For fill if needed
-
-            // Draw Line
-            ctx.beginPath();
-            const sliceWidth = 3;
-            let x = canvas.width - (dataHistoryRef.current.length * sliceWidth);
-            // Start from right side flowing left? Or standard scrolling right
-            // Standard scrolling usually: New data appears on right, old slides left.
-            // So we iterate history from left (old) to right (new).
-
-            x = canvas.width - (dataHistoryRef.current.length * sliceWidth);
-            if (x < 0) x = 0; // Should fill screen eventually
 
             const h = canvas.height;
             const centerY = h / 2;
+            const centerX = canvas.width / 2;
 
-            for (let i = 0; i < dataHistoryRef.current.length; i++) {
-                const v = dataHistoryRef.current[i];
-                const height = Math.max(v * h * 0.8, 2); // Min 2px height
+            // The newest sample is at history[length-1] → drawn at centerX
+            // Older samples go left
+            ctx.beginPath();
+            const history = dataHistoryRef.current;
+            for (let i = 0; i < history.length; i++) {
+                // i=0 is oldest (far left), i=length-1 is newest (center)
+                const age = history.length - 1 - i; // 0 = newest, increases left
+                const drawX = centerX - age * sliceWidth;
+                if (drawX < 0) continue;
 
-                const drawX = x + (i * sliceWidth);
+                const v = history[i];
+                const barHeight = Math.max(v * h * 0.8, 2);
 
-                // Draw a symmetric bar or line
-                ctx.moveTo(drawX, centerY - height / 2);
-                ctx.lineTo(drawX, centerY + height / 2);
+                ctx.moveTo(drawX, centerY - barHeight / 2);
+                ctx.lineTo(drawX, centerY + barHeight / 2);
             }
 
             ctx.stroke();
+
+            // Draw vertical playhead line at center
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(99,102,241,0.7)';
+            ctx.moveTo(centerX, 4);
+            ctx.lineTo(centerX, h - 4);
+            ctx.stroke();
+            ctx.restore();
 
             animationRef.current = requestAnimationFrame(draw);
         };
@@ -163,7 +163,13 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
     }, [isRecording, recordingStream, isDark]);
 
     return (
-        <div className="w-full h-32 rounded-2xl overflow-hidden bg-white/20 dark:bg-slate-800/40 border border-white/40 dark:border-white/10 backdrop-blur-xl shadow-inner relative">
+        <div
+            className="w-full h-32 rounded-2xl overflow-hidden shadow-inner relative"
+            style={{
+                background: isDark ? 'rgba(30,41,59,0.4)' : '#ffffff',
+                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(203,213,225,0.5)',
+            }}
+        >
             <canvas ref={canvasRef} className="w-full h-full drop-shadow-md" />
         </div>
     );

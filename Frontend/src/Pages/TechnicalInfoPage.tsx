@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, ReactNode } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { motion, useScroll, useSpring } from 'framer-motion';
@@ -6,8 +6,8 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie,
     Area, AreaChart
 } from 'recharts';
-import { FaGraduationCap, FaNetworkWired, FaServer, FaMicrophoneAlt, FaBrain, FaDatabase, FaCode, FaFlask } from 'react-icons/fa';
-import InteractiveBackground from '../components/InteractiveBackground';
+import { FaNetworkWired, FaServer, FaMicrophoneAlt, FaBrain, FaDatabase, FaCode, FaFlask } from 'react-icons/fa';
+
 
 import { MastermindMetrics } from '../data/realWorldResults';
 import { vadEnergyIllustration } from '../data/segmentationBenchmark';
@@ -24,15 +24,16 @@ const turEvData = [
 
 const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: boolean }) => (
     <div
-        className="w-full min-w-0 max-w-full backdrop-blur-xl transition-all duration-300 overflow-hidden break-words mx-4 md:mx-0"
+        className="w-full min-w-0 max-w-full backdrop-blur-md overflow-hidden break-words mx-4 md:mx-0"
         style={{
             padding: 'clamp(16px, 5vw, 64px)',   /* Zorunlu CSS padding (iç boşluk) */
             borderRadius: '40px',                /* Zorunlu CSS yuvarlatma */
-            background: isDark ? 'rgba(13,21,41,0.65)' : 'rgba(255,255,255,0.72)',
+            background: isDark ? 'rgba(13,21,41,0.65)' : 'rgba(255,255,255,0.45)',
             border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(203,213,225,0.6)',
             boxShadow: isDark
                 ? `0 0 60px rgba(99,102,241,0.07), inset 0 1px 0 rgba(255,255,255,0.05)`
-                : `0 8px 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9)`,
+                : `0 8px 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.6)`,
+            willChange: 'transform, opacity',
         }}
     >
         {children}
@@ -40,12 +41,10 @@ const SectionCard = ({ children, isDark }: { children: React.ReactNode; isDark: 
 );
 
 const SectionTitle = ({
-    num, icon, title, iconColor, isDark
+    title, iconColor, isDark
 }: { num?: string; icon?: React.ReactNode; title: string; iconColor: string; isDark: boolean }) => (
     <div className="flex items-center gap-3 mb-8">
         <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ background: iconColor }} />
-        {num && <span className="text-sm font-black opacity-30 font-mono tracking-wider">{num}</span>}
-        {icon && <span className="text-xl shrink-0" style={{ color: iconColor }}>{icon}</span>}
         <h2 className={`text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             {title}
         </h2>
@@ -91,11 +90,39 @@ const StatPill = ({ label, value, color }: { label: string; value: string; color
     </div>
 );
 
-const fadeUp = {
-    initial: { opacity: 0, y: 28 },
+const fadeUp: any = {
+    initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: '-80px' },
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as any },
+    viewport: { once: true, margin: '-50px' },
+    transition: { duration: 0.5, ease: 'easeOut' as any },
+};
+
+/* ─── LazyMount Component ─── */
+const LazyMount = ({ children, minHeight = "400px" }: { children: ReactNode, minHeight?: string }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "800px" } // Load slightly before it comes into view
+        );
+        
+        if (ref.current) observer.observe(ref.current);
+        
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div ref={ref} style={{ minHeight: isVisible ? "auto" : minHeight, width: '100%' }}>
+            {isVisible ? children : null}
+        </div>
+    );
 };
 
 /* ─── Main Page ─── */
@@ -113,7 +140,12 @@ const TechnicalInfoPage = () => {
         F1: parseFloat((d.f1 * 100).toFixed(1)),
     }));
 
-    useEffect(() => { window.scrollTo(0, 0); }, []);
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        const timer = setTimeout(() => setIsMounted(true), 150);
+        return () => clearTimeout(timer);
+    }, []);
 
     const strongClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
 
@@ -125,8 +157,7 @@ const TechnicalInfoPage = () => {
     };
 
     return (
-        <div className={`min-h-[100vh] pb-32 font-sans transition-colors duration-700 w-full relative ${isDark ? 'bg-[#070d1c] text-[#cbd5e1]' : 'bg-[#f4f6fb] text-[#334155]'}`}>
-            <InteractiveBackground />
+        <div className={`min-h-[100vh] pb-32 font-sans transition-colors duration-700 w-full relative`}>
 
             {/* Progress Bar */}
             <motion.div
@@ -149,15 +180,7 @@ const TechnicalInfoPage = () => {
                     transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                     className="relative z-10 max-w-4xl text-center flex flex-col items-center gap-6"
                 >
-                    <div
-                        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-2 shadow-2xl"
-                        style={{
-                            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-                            boxShadow: '0 0 40px rgba(99,102,241,0.45)',
-                        }}
-                    >
-                        <FaGraduationCap className="text-white text-3xl" />
-                    </div>
+
                     <h1 className={`text-4xl md:text-6xl font-black tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {t('tech_hero_title_1')}{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-500">
@@ -173,16 +196,18 @@ const TechnicalInfoPage = () => {
                         <StatPill label={t('tech_stat_accuracy')} value={`%${(MastermindMetrics.accuracy * 100).toFixed(1)}`} color="#6366f1" />
                         <StatPill label={t('tech_stat_emotions')} value="4" color="#a855f7" />
                         <StatPill label={t('tech_stat_models')} value="10+" color="#ec4899" />
-                        <StatPill label={t('tech_stat_dataset')} value="1,735" color="#14b8a6" />
+                        <StatPill label={t('tech_stat_dataset')} value="10,410" color="#14b8a6" />
                     </div>
                 </motion.div>
             </div>
 
             {/* ── SECTIONS ── */}
             <div className="relative z-10 w-full flex justify-center px-4 pb-24">
-                <div className="w-full max-w-[1200px] text-base md:text-[1.05rem] leading-relaxed" style={{ display: 'flex', flexDirection: 'column', gap: '5rem' }}>
+                <div className="w-full max-w-[1200px] text-base md:text-[1.05rem] leading-relaxed" style={{ display: 'flex', flexDirection: 'column', gap: '5rem', minHeight: '100vh' }}>
 
-                    {/* 1. GİRİŞ */}
+                    {isMounted && (
+                        <>
+                            {/* 1. GİRİŞ */}
                     <motion.div {...fadeUp}>
                         <SectionCard isDark={isDark}>
                             <SectionTitle num="01" icon={<FaBrain />} title={t('tech_s1_title')} iconColor="#6366f1" isDark={isDark} />
@@ -262,39 +287,86 @@ const TechnicalInfoPage = () => {
                             </Blockquote>
 
                             <div className="flex flex-col md:flex-row items-center justify-center my-10 gap-8">
-                                <div className="w-full md:w-1/2 h-[300px]">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie data={turEvData} cx="50%" cy="50%" innerRadius={65} outerRadius={110} paddingAngle={5} dataKey="value">
-                                                {turEvData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} stroke={isDark ? '#0a0f1d' : '#f4f6fb'} strokeWidth={3} />
-                                                ))}
-                                            </Pie>
-                                            <RechartsTooltip contentStyle={tooltipStyle} formatter={(value) => [`${value} ${t('tech_pie_tooltip_word')}`, t('tech_pie_tooltip_label')]} />
-                                            <Legend wrapperStyle={{ fontSize: '14px' }} />
-                                        </PieChart>
-                                    </ResponsiveContainer>
+                                <div className={`w-full md:w-1/2 h-[300px] rounded-2xl border ${isDark ? 'border-white/5 bg-white/2' : 'border-slate-100 bg-white/60'}`}>
+                                    <LazyMount minHeight="300px">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie data={turEvData} cx="50%" cy="50%" innerRadius={65} outerRadius={110} paddingAngle={5} dataKey="value">
+                                                    {turEvData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} stroke={isDark ? '#0a0f1d' : '#f4f6fb'} strokeWidth={3} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip contentStyle={tooltipStyle} formatter={(value) => [`${value} ${t('tech_pie_tooltip_word')}`, t('tech_pie_tooltip_label')]} />
+                                                <Legend wrapperStyle={{ fontSize: '14px' }} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </LazyMount>
                                 </div>
-                                <div className="w-full md:w-1/2">
+                                <div className={`w-full md:w-1/2 rounded-2xl border p-5 ${isDark ? 'border-white/5 bg-white/2' : 'border-slate-100 bg-white/60'}`}>
                                     <h4 className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>{t('tech_s2_dist_title')}</h4>
                                     <p className="text-sm mb-4 opacity-80">{t('tech_s2_dist_desc')}</p>
-                                    <ul className="space-y-2.5 text-sm font-bold">
+                                    <ul className="list-none space-y-2.5 text-sm font-bold">
                                         {[
-                                            { label: 'Angry: 487 (28%)', color: '#ef4444', bg: '#ef444420' },
-                                            { label: 'Sad: 483 (28%)', color: '#6366f1', bg: '#6366f120' },
-                                            { label: 'Calm: 408 (24%)', color: '#14b8a6', bg: '#14b8a620' },
-                                            { label: 'Happy: 357 (20%)', color: '#f59e0b', bg: '#f59e0b20' },
+                                            { label: 'Angry: 487 (28%)', color: '#ef4444' },
+                                            { label: 'Sad: 483 (28%)', color: '#6366f1' },
+                                            { label: 'Calm: 408 (24%)', color: '#14b8a6' },
+                                            { label: 'Happy: 357 (20%)', color: '#f59e0b' },
                                         ].map((item, i) => (
-                                            <li key={i} className="flex items-center gap-3 px-4 py-2 rounded-xl" style={{ background: item.bg }}>
-                                                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: item.color }} />
-                                                <span style={{ color: item.color }}>{item.label}</span>
+                                            <li key={i} className="px-4 py-2" style={{ color: item.color }}>
+                                                {item.label}
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                             </div>
 
-                            <SubTitle color="#e879f9" isDark={isDark}>{t('tech_s2_2_title')}</SubTitle>
+                            <SubTitle color="#e879f9" isDark={isDark}>{isTr ? "2.2 Gürültü Artırımı (Data_with_noise)" : "2.2 Noise Augmentation (Data_with_noise)"}</SubTitle>
+                            <Blockquote color="#d946ef" isDark={isDark}>
+                                {isTr
+                                  ? <>Modelin gerçek hayat koşullarında dayanıklı olması için TurEV-DB'deki her temiz ses dosyası 5 farklı gürültü türüyle çoğaltılarak <code className="font-mono bg-fuchsia-500/10 px-1 rounded text-sm">Data_with_noise</code> klasörüne kaydedilmiştir. Bu şekilde 1,735 temiz ses 8,675 gürültülü sese dönüşerek toplam eğitim seti <strong className={strongClass}>10,410 ses dosyasına</strong> ulaşmıştır.</>
+                                  : <>To make the model robust in real-world conditions, each clean audio file in TurEV-DB was augmented with 5 different noise types and saved to the <code className="font-mono bg-fuchsia-500/10 px-1 rounded text-sm">Data_with_noise</code> folder. This way, 1,735 clean samples became 8,675 noisy samples, bringing the total training set to <strong className={strongClass}>10,410 audio files</strong>.</>
+                                }
+                            </Blockquote>
+
+                            {/* Noise augmentation table */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 mt-2">
+                                <div className={`p-5 rounded-2xl border ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
+                                    <p className="font-bold text-sm mb-3" style={{ color: '#d946ef' }}>{isTr ? "Uygulanan 5 Gürültü Türü" : "5 Applied Noise Types"}</p>
+                                    <ul className="space-y-1.5 text-sm">
+                                        {[
+                                            { label: 'background_cafe', desc: isTr ? 'Kafe arka plan sesi' : 'Café background noise' },
+                                            { label: 'pink_medium',     desc: isTr ? 'Orta yoğunluklu pembe gürültü' : 'Medium-intensity pink noise' },
+                                            { label: 'white_high',     desc: isTr ? 'Yüksek beyaz gürültü' : 'High-intensity white noise' },
+                                            { label: 'white_low',      desc: isTr ? 'Düşük beyaz gürültü' : 'Low-intensity white noise' },
+                                            { label: 'white_medium',   desc: isTr ? 'Orta beyaz gürültü' : 'Medium white noise' },
+                                        ].map((n, i) => (
+                                            <li key={i} className="flex items-start gap-2">
+                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#d946ef' }} />
+                                                <span><code className="font-mono text-xs">{n.label}</code> — <span className="opacity-70">{n.desc}</span></span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className={`p-5 rounded-2xl border ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
+                                    <p className="font-bold text-sm mb-3" style={{ color: '#d946ef' }}>{isTr ? "Duygu Başına Toplam Ses" : "Total Samples per Emotion"}</p>
+                                    <ul className="space-y-2 text-sm font-bold">
+                                        {[
+                                            { label: 'Angry',  clean: 487,  noisy: 2435, color: '#ef4444', bg: '#ef444415' },
+                                            { label: 'Sad',    clean: 483,  noisy: 2415, color: '#6366f1', bg: '#6366f115' },
+                                            { label: 'Calm',   clean: 408,  noisy: 2040, color: '#14b8a6', bg: '#14b8a615' },
+                                            { label: 'Happy',  clean: 357,  noisy: 1785, color: '#f59e0b', bg: '#f59e0b15' },
+                                        ].map((item, i) => (
+                                            <li key={i} className="flex items-center justify-between px-3 py-1.5 rounded-lg" style={{ background: item.bg }}>
+                                                <span style={{ color: item.color }}>{item.label}</span>
+                                                <span className="opacity-60 text-xs">{item.clean} + {item.noisy} =</span>
+                                                <span style={{ color: item.color }}>{item.clean + item.noisy}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <SubTitle color="#e879f9" isDark={isDark}>{isTr ? "2.3 Sentetik (Yapay) Cümle Jenerasyon Ağı" : "2.3 Synthetic Sentence Generation Engine"}</SubTitle>
                             <Blockquote color="#d946ef" isDark={isDark}>{t('tech_s2_2_p1')}</Blockquote>
                             <Blockquote color="#d946ef" isDark={isDark}>
                                 {t('tech_s2_2_p2_prefix')}{' '}
@@ -314,47 +386,49 @@ const TechnicalInfoPage = () => {
                         <SectionCard isDark={isDark}>
                             <SectionTitle num="03" icon={<FaServer />} title={isTr ? "3. Master Ensemble Model Mimarisi" : "3. Master Ensemble Model Architecture"} iconColor="#06b6d4" isDark={isDark} />
                             <p className="mb-6">
-                                {isTr 
-                                  ? <>Önceki Mastermind mimarimizin yerini alan yeni <strong className={strongClass}>Master Ensemble Model</strong>, kelime bazlı makine öğrenimi algoritmalarının hassasiyeti ile HuggingFace HuBERT transformatörünün derin bağlamsal analiz gücünü birleştirerek eşsiz bir performans sunar.</>
-                                  : <>Replacing our previous Mastermind architecture, the new <strong className={strongClass}>Master Ensemble Model</strong> combines the precision of word-level machine learning algorithms with the deep contextual analysis power of the HuggingFace HuBERT transformer to deliver unprecedented performance.</>
+                                {isTr
+                                  ? <>Önceki Mastermind mimarimizin yerini alan yeni <strong className={strongClass}>Master Ensemble Model</strong>, üç katmanlı bir yapıya sahiptir: Vosk ile kelime segmentasyonu ve V2 modellerin arayüz zaman çizelgesi için çalışması, SeaBenSea/HuBERT transformatörünün tam cümle analizi ile nihai duygu kararının belirlenmesi ve son olarak kalibrasyon katsayılarıyla dengeleme. Gerçek hayat testlerinde HuBERT (%60.94) V2 modellerinden (%32) çok daha yüksek performans gösterdiği için, nihai karar ağırlıklı olarak HuBERT üzerinden alınmakta; V2 modelleri ise kelime bazlı zaman çizelgesini beslemektedir.</>
+                                  : <>Replacing our previous Mastermind architecture, the new <strong className={strongClass}>Master Ensemble Model</strong> operates in three layers: Vosk-based word segmentation with V2 models running for the UI word timeline, SeaBenSea/HuBERT transformer full-sentence analysis for the final emotion decision, and calibration coefficients for balancing. Since HuBERT (60.94%) outperformed V2 models (32%) significantly in real-world tests, the final decision is driven primarily by HuBERT, while V2 models feed the per-word timeline visualization.</>
                                 }
                             </p>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 1: Vosk Segmentasyonu ve V2 Modelleri" : "Layer 1: Vosk Segmentation and V2 Models"}</SubTitle>
+                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 1: Vosk Segmentasyonu ve V2 Modelleri (Kelime Zaman Çizelgesi)" : "Layer 1: Vosk Segmentation and V2 Models (Word Timeline)"}</SubTitle>
                             <Blockquote color="#06b6d4" isDark={isDark}>
                                 {isTr
-                                  ? "Ses dosyası öncelikle Vosk motoru ile milisaniyelik zaman damgalarına sahip kelimelere bölünür. Her kelime 1582 boyutlu özellik çıkarımından (OpenSMILE IS10) geçirilir ve CatBoost, LightGBM, XGBoost modellerinden oluşan V2 havuzu ile test edilir. Bu modellerin F1-skorlarına dayalı ağırlıklı oylaması sonucunda kelime bazlı \"Word\" tahmin skoru elde edilir."
-                                  : "The audio file is first segmented by the Vosk engine into words with millisecond timestamps. Each word undergoes a 1582-dimensional feature extraction (OpenSMILE IS10) and is tested with the V2 pool consisting of CatBoost, LightGBM, XGBoost models. As a result of the weighted voting of these models based on F1-scores, a word-level \"Word\" prediction score is obtained."
+                                  ? "Ses dosyası öncelikle Vosk motoru ile milisaniyelik zaman damgalarına sahip kelimelere bölünür. Her kelime 1582 boyutlu özellik çıkarımından (OpenSMILE IS10) geçirilir ve CatBoost, LightGBM, XGBoost modellerinden oluşan V2 havuzu ile F1-skorlarına dayalı ağırlıklı oylama yapılır. Bu kelime bazlı tahminler arayüzdeki kelime zaman çizelgesini (timeline) besler. Nihai genel duygu kararında ise aşırı uyumlamayı (overfitting) önlemek için kelime bileşeni yerine sabit eşit bir baz değeri (0.25 her duygu sınıfı için) kullanılır."
+                                  : "The audio file is first segmented by the Vosk engine into words with millisecond timestamps. Each word undergoes a 1582-dimensional feature extraction (OpenSMILE IS10) and is evaluated with the V2 pool (CatBoost, LightGBM, XGBoost) using F1-weighted voting. These per-word predictions feed the word timeline displayed in the UI. For the final overall emotion decision, a fixed equal baseline (0.25 per emotion class) is used in place of the dynamic word scores — this prevents word-level noise from overfitting the global decision."
                                 }
                             </Blockquote>
 
-                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 2: HuBERT Tam Cümle Analizi" : "Layer 2: HuBERT Full Sentence Analysis"}</SubTitle>
+                            <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 2: HuBERT Tam Cümle Analizi (Ana Karar Verici)" : "Layer 2: HuBERT Full Sentence Analysis (Primary Discriminator)"}</SubTitle>
                             <p className="mb-4">
                                 {isTr
-                                  ? "SeaBenSea/HuBERT transformatörü kullanılarak, kelimelerin ötesinde sesin genel melodisi, ritmi ve tonlamasından global bir cümle skoru çıkarılır."
-                                  : "By using the SeaBenSea/HuBERT transformer, a global sentence score is extracted from the general melody, rhythm, and intonation of the voice beyond words."
+                                  ? <>SeaBenSea/HuBERT transformatörü kullanılarak sesin genel melodisi, ritmi ve tonlamasından duygu bazlı global skorlar çıkarılır. Modelin çıktısına önce duygu başına kalibrasyon katsayıları (<code className="font-mono bg-cyan-500/10 px-1 rounded text-sm">angry: 0.90, calm: 1.20, happy: 1.20, sad: 0.85</code>) uygulanır, ardından global ölçekleme faktörü (1.7×) ile çarpılarak normalize edilir. Bu katman, nihai duygu kararının birincil belirleyicisidir.</>
+                                  : <>Using the SeaBenSea/HuBERT transformer, emotion-specific global scores are extracted from the voice's overall melody, rhythm, and intonation. Per-emotion calibration weights (<code className="font-mono bg-cyan-500/10 px-1 rounded text-sm">angry: 0.90, calm: 1.20, happy: 1.20, sad: 0.85</code>) are applied to the raw outputs, followed by a global scale factor (1.7×), then normalized. This layer is the primary discriminator for the final emotion decision.</>
                                 }
                             </p>
 
                             <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 3: Füzyon ve Kalibrasyon" : "Layer 3: Fusion and Calibration"}</SubTitle>
                             <p className="mb-4">
                                 {isTr
-                                  ? "Elde edilen iki farklı bakış açısı, test sonuçlarımızdan elde edilen optimal katsayılarla birleştirilir ve Master Ensemble sonucu ortaya çıkar:"
-                                  : "The two different perspectives obtained are combined with the optimal coefficients obtained from our test results, and the Master Ensemble result emerges:"
+                                  ? "Sabit kelime bazı ile HuBERT'in normalize edilmiş skorları ağırlıklı olarak birleştirilir, ardından MASTER_CALIBRATION katsayılarıyla son dengeleme yapılır:"
+                                  : "The fixed word baseline and HuBERT's normalized scores are combined with learned weights, followed by a final balancing step with MASTER_CALIBRATION coefficients:"
                                 }
                             </p>
                             <TerminalBlock isDark={isDark} accentColor="#67e8f9">
-                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 1: Kelime bazlı V2 Tahmini" : "// Layer 1: Word-level V2 Prediction"}</p>
-                                <p className="mb-3"><strong>P</strong><sup>(word)</sup> = (1/N) Σ<sub>n=1..N</sub> <strong>predict_v2</strong>(<strong>x</strong><sub>n</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 2: Cümle bazlı HuBERT Tahmini" : "// Layer 2: Sentence-level HuBERT Prediction"}</p>
-                                <p className="mb-3"><strong>P</strong><sup>(global)</sup> = <strong>HuBERT</strong>(<strong>x</strong><sub>audio</sub>)</p>
-                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 3: Ağırlıklı Dağılım" : "// Layer 3: Weighted Distribution"}</p>
-                                <p><strong>Score</strong><sub>e</sub> = <strong>P</strong><sup>(word)</sup><sub>e</sub> · 2.2 + <strong>P</strong><sup>(global)</sup><sub>e</sub> · 1.8</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 1: Sabit kelime bazı (tüm duygular için eşit)" : "// Layer 1: Fixed word baseline (equal for all emotions)"}</p>
+                                <p className="mb-3"><strong>P</strong><sup>(word)</sup><sub>e</sub> = 0.25</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 2: HuBERT cümle analizi (duygu ağırlıkları × 1.7 → normalize)" : "// Layer 2: HuBERT sentence analysis (per-emotion weights × 1.7 → normalize)"}</p>
+                                <p className="mb-3"><strong>P</strong><sup>(global)</sup><sub>e</sub> = normalize(<strong>HuBERT</strong>(<strong>x</strong><sub>audio</sub>) · w<sub>e</sub> · 1.7)</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Katman 3: Füzyon (HuBERT baskın karar verici)" : "// Layer 3: Fusion (HuBERT as dominant decision maker)"}</p>
+                                <p className="mb-3"><strong>Score</strong><sub>e</sub> = <strong>P</strong><sup>(word)</sup><sub>e</sub> · 2.2 + <strong>P</strong><sup>(global)</sup><sub>e</sub> · 1.8</p>
+                                <p className="mb-2 opacity-60 text-xs">{isTr ? "// Kalibrasyon: MASTER_CALIBRATION × normalize(Score)" : "// Calibration: MASTER_CALIBRATION × normalize(Score)"}</p>
+                                <p><strong>Final</strong><sub>e</sub> = normalize(<strong>Score</strong><sub>e</sub> · <strong>cal</strong><sub>e</sub>)  <span className="opacity-50 text-xs ml-2">// cal = &#123;angry:1.25, happy:1.75, sad:0.50, calm:1.40&#125;</span></p>
                             </TerminalBlock>
                             <Blockquote color="#06b6d4" isDark={isDark}>
                                 {isTr
-                                  ? <>Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> sözlüğü ile duygu ağırlıkları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) çarpılarak en iyi dengeye (80.94% Accuracy) ulaşılır.</>
-                                  : <>In the final stage, emotion weights (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) are multiplied with the <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> dictionary to achieve the best balance (80.94% Accuracy).</>
+                                  ? <>Sabit baz (0.25) kullanımı sayesinde <strong>P</strong><sup>(word)</sup><sub>e</sub> tüm duygular için eşit olduğundan, nihai sıralamayı belirleyen tek değişken HuBERT'in çıktısıdır. Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> katsayıları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) uygulanarak en iyi dengeye (%80.94 Accuracy) ulaşılır.</>
+                                  : <>Because <strong>P</strong><sup>(word)</sup><sub>e</sub> is equal for all emotions (0.25 fixed), HuBERT's output is the sole variable that determines the final ranking between emotions. In the last step, <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> coefficients (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) are applied to achieve the best balance (80.94% Accuracy).</>
                                 }
                             </Blockquote>
 
@@ -387,18 +461,20 @@ const TechnicalInfoPage = () => {
                             </div>
 
                             <div className="w-full min-h-[480px] h-[520px] md:h-[560px] py-4 px-2 sm:px-4">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={barChartData} margin={{ top: 16, right: 16, left: 8, bottom: 24 }} barCategoryGap="18%">
-                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                        <XAxis dataKey="name" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 14, fontWeight: 'bold' }} />
-                                        <YAxis width={56} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(val) => `${val}%`} tick={{ fontSize: 12, fontWeight: 600 }} tickMargin={10} dx={-2} />
-                                        <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '14px', fontWeight: 'bold' }} />
-                                        <Legend wrapperStyle={{ fontSize: '15px', paddingTop: '24px' }} />
-                                        <Bar dataKey="F1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[6, 6, 0, 0]} />
-                                        <Bar dataKey="Precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[6, 6, 0, 0]} />
-                                        <Bar dataKey="Recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[6, 6, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                <LazyMount minHeight="480px">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={barChartData} margin={{ top: 16, right: 16, left: 8, bottom: 24 }} barCategoryGap="18%">
+                                            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
+                                            <XAxis dataKey="name" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 14, fontWeight: 'bold' }} />
+                                            <YAxis width={56} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(val) => `${val}%`} tick={{ fontSize: 12, fontWeight: 600 }} tickMargin={10} dx={-2} />
+                                            <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '14px', fontWeight: 'bold' }} />
+                                            <Legend wrapperStyle={{ fontSize: '15px', paddingTop: '24px' }} />
+                                            <Bar dataKey="F1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[6, 6, 0, 0]} />
+                                            <Bar dataKey="Precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[6, 6, 0, 0]} />
+                                            <Bar dataKey="Recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[6, 6, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </LazyMount>
                             </div>
                             <p className={`text-sm text-center max-w-3xl mx-auto mt-2 mb-2 opacity-70 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                                 {isTr
@@ -451,21 +527,23 @@ const TechnicalInfoPage = () => {
                                 {t('tech_s5_vad_chart_label')}
                             </p>
                             <div className="w-full h-[220px] mb-8">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={vadEnergyIllustration} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
-                                        <defs>
-                                            <linearGradient id="vadGrad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor={isDark ? '#2dd4bf' : '#0d9488'} stopOpacity={0.55} />
-                                                <stop offset="100%" stopColor={isDark ? '#2dd4bf' : '#0d9488'} stopOpacity={0.05} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} />
-                                        <XAxis dataKey="frame" tick={{ fontSize: 11 }} stroke={isDark ? '#64748b' : '#94a3b8'} label={{ value: t('tech_vad_chart_x'), position: 'insideBottom', offset: -2, fill: isDark ? '#64748b' : '#94a3b8', fontSize: 11 }} />
-                                        <YAxis domain={[0, 1]} width={44} tick={{ fontSize: 11 }} stroke={isDark ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}`} label={{ value: t('tech_vad_chart_y'), angle: -90, position: 'insideLeft', fill: isDark ? '#64748b' : '#94a3b8', fontSize: 11 }} />
-                                        <RechartsTooltip contentStyle={{ ...tooltipStyle, borderRadius: '12px' }} />
-                                        <Area type="monotone" dataKey="energy" stroke={isDark ? '#5eead4' : '#0f766e'} fill="url(#vadGrad)" strokeWidth={2} name={t('tech_vad_energy')} />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                                <LazyMount minHeight="220px">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={vadEnergyIllustration} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
+                                            <defs>
+                                                <linearGradient id="vadGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor={isDark ? '#2dd4bf' : '#0d9488'} stopOpacity={0.55} />
+                                                    <stop offset="100%" stopColor={isDark ? '#2dd4bf' : '#0d9488'} stopOpacity={0.05} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} />
+                                            <XAxis dataKey="frame" tick={{ fontSize: 11 }} stroke={isDark ? '#64748b' : '#94a3b8'} label={{ value: t('tech_vad_chart_x'), position: 'insideBottom', offset: -2, fill: isDark ? '#64748b' : '#94a3b8', fontSize: 11 }} />
+                                            <YAxis domain={[0, 1]} width={44} tick={{ fontSize: 11 }} stroke={isDark ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}`} label={{ value: t('tech_vad_chart_y'), angle: -90, position: 'insideLeft', fill: isDark ? '#64748b' : '#94a3b8', fontSize: 11 }} />
+                                            <RechartsTooltip contentStyle={{ ...tooltipStyle, borderRadius: '12px' }} />
+                                            <Area type="monotone" dataKey="energy" stroke={isDark ? '#5eead4' : '#0f766e'} fill="url(#vadGrad)" strokeWidth={2} name={t('tech_vad_energy')} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </LazyMount>
                             </div>
 
                             <SubTitle color="#2dd4bf" isDark={isDark}>{t('tech_s5_3_title')}</SubTitle>
@@ -636,18 +714,20 @@ const TechnicalInfoPage = () => {
                                 <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
                                     {isTr ? "Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)" : "Master Ensemble Class-Based F1, Precision, and Recall (%)"}
                                 </h4>
-                                <ResponsiveContainer width="100%" height="88%">
-                                    <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
-                                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                        <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} />
-                                        <YAxis width={54} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
-                                        <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '13px', fontWeight: 'bold' }} formatter={(v: unknown) => `${(v as number).toFixed(1)}%`} />
-                                        <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
-                                        <Bar dataKey="precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[5, 5, 0, 0]} />
-                                        <Bar dataKey="recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[5, 5, 0, 0]} />
-                                        <Bar dataKey="f1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[5, 5, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                <LazyMount minHeight="400px">
+                                    <ResponsiveContainer width="100%" height="88%">
+                                        <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
+                                            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
+                                            <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} />
+                                            <YAxis width={54} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
+                                            <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '13px', fontWeight: 'bold' }} formatter={(v: unknown) => `${(v as number).toFixed(1)}%`} />
+                                            <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
+                                            <Bar dataKey="precision" name="Precision (%)" fill={isDark ? '#3b82f6' : '#2563eb'} radius={[5, 5, 0, 0]} />
+                                            <Bar dataKey="recall" name="Recall (%)" fill={isDark ? '#ec4899' : '#db2777'} radius={[5, 5, 0, 0]} />
+                                            <Bar dataKey="f1" name="F1-Score (%)" fill={isDark ? '#a855f7' : '#9333ea'} radius={[5, 5, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </LazyMount>
                             </div>
 
                             {/* 7.4 Confusion Matrix */}
@@ -771,6 +851,8 @@ const TechnicalInfoPage = () => {
                             </p>
                         </div>
                     </motion.div>
+                        </>
+                    )}
 
                 </div>
             </div>

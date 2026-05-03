@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FaMicrophone, FaStop, FaFileAudio, FaChevronLeft } from 'react-icons/fa';
 import DragDropZone from './DragDropZone';
 import WaveformVisualizer from './WaveformVisualizer';
+import { useTheme } from '../../context/ThemeContext';
 // clsx import removed (unused)
 // clsx is unused, removing or keeping if intended for future? Error says unused.
 // actually, let's just remove the import if it's the only usage.
@@ -18,10 +19,12 @@ import { twMerge } from 'tailwind-merge';
 interface AudioInputProps {
     onAudioReady: (file: File) => void;
     className?: string;
+    compact?: boolean;
 }
 
-const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
+const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className, compact = false }) => {
     const { t } = useTranslation();
+    const { isDark } = useTheme();
     const [mode, setMode] = useState<'initial' | 'upload' | 'record' | 'preview'>('initial');
     const [isRecording, setIsRecording] = useState(false);
     // const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null); // Unused
@@ -83,32 +86,44 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full animate-fadeIn">
                     <button
                         onClick={() => setMode('upload')}
-                        className="group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 h-40 sm:h-52 md:h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+                        className={`audio-card ${compact ? 'audio-card-compact' : ''} group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 rounded-[2.5rem] border border-slate-200 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden`}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-colors duration-500 pointer-events-none" />
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500 shadow-sm">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/8 group-hover:to-purple-500/8 transition-colors duration-500 pointer-events-none" />
+                        <div className="audio-icon-box w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500 shadow-sm">
                             <FaFileAudio className="text-2xl sm:text-3xl md:text-4xl text-indigo-500 dark:text-indigo-400 drop-shadow-md" />
                         </div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-1 sm:mb-2 md:mb-3 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {t('upload_file')}
+                        <h3 
+                            className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 md:mb-3 tracking-tight transition-colors"
+                            style={{ color: isDark ? '#ffffff' : '#000000' }}
+                        >
+                            {t('upload_audio')}
                         </h3>
-                        <p className="text-slate-700 dark:text-slate-400 text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block">
+                        <p 
+                            className="text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block"
+                            style={{ color: isDark ? '#cbd5e1' : '#334155' }}
+                        >
                             {t('upload_desc')}
                         </p>
                     </button>
 
                     <button
                         onClick={() => setMode('record')}
-                        className="group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 h-40 sm:h-52 md:h-64 rounded-[2.5rem] bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-rose-400 dark:hover:border-rose-500 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+                        className={`audio-card ${compact ? 'audio-card-compact' : ''} group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-7 rounded-[2.5rem] border border-slate-200 dark:border-white/10 hover:border-rose-400 dark:hover:border-rose-500 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden`}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-orange-500/0 group-hover:from-rose-500/5 group-hover:to-orange-500/5 transition-colors duration-500 pointer-events-none" />
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-slate-50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-100 dark:border-white/5 flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 shadow-sm">
+                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-orange-500/0 group-hover:from-rose-500/8 group-hover:to-orange-500/8 transition-colors duration-500 pointer-events-none" />
+                        <div className="audio-icon-box w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-3 sm:mb-5 md:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 shadow-sm">
                             <FaMicrophone className="text-2xl sm:text-3xl md:text-4xl text-rose-500 dark:text-rose-400 drop-shadow-md" />
                         </div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-1 sm:mb-2 md:mb-3 tracking-tight group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                            {t('record_voice')}
+                        <h3 
+                            className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 md:mb-3 tracking-tight transition-colors"
+                            style={{ color: isDark ? '#ffffff' : '#000000' }}
+                        >
+                            {t('record_audio')}
                         </h3>
-                        <p className="text-slate-700 dark:text-slate-400 text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block">
+                        <p 
+                            className="text-center text-xs sm:text-sm px-2 sm:px-4 leading-relaxed font-medium hidden sm:block"
+                            style={{ color: isDark ? '#cbd5e1' : '#334155' }}
+                        >
                             {t('record_desc')}
                         </p>
                     </button>
@@ -118,7 +133,7 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
             {/* Upload Mode */}
             {mode === 'upload' && (
                 <div className="animate-fadeIn relative">
-                    <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 md:p-10 border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden">
+                    <div className="audio-panel rounded-[2.5rem] p-8 md:p-10 border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden">
                         <button
                             onClick={goBack}
                             className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 bg-white/80 dark:bg-white/10 backdrop-blur-md shadow-sm hover:shadow-md hover:scale-105 text-slate-600 dark:text-slate-200 z-10"
@@ -136,7 +151,7 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className }) => {
             {/* Record Mode */}
             {mode === 'record' && (
                 <div className="animate-fadeIn relative">
-                    <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-700 shadow-2xl text-center relative overflow-hidden">
+                    <div className="audio-panel rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-700 shadow-2xl text-center relative overflow-hidden">
 
                         {!isRecording && (
                             <button

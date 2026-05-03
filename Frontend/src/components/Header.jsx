@@ -43,9 +43,9 @@ const Header = () => {
 
   return (
     <header className={clsx(
-      "w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] fixed top-0 left-0 right-0 z-30 transition-all duration-300 flex items-center h-16 font-sans px-4 md:px-8 justify-between backdrop-blur-md",
+      "w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] fixed top-0 left-0 right-0 z-30 transition-all duration-300 flex items-center h-16 font-sans justify-between backdrop-blur-md",
       isDark ? "bg-slate-900/80 text-white border-b border-slate-700/50" : "bg-white/80 text-gray-800 border-b border-indigo-200"
-    )}>
+    )} style={{ paddingLeft: '16px', paddingRight: '0px' }}>
       {/* Mobile Spacer to ensure justify-between pushes controls to the right */}
       <div className="w-8 h-8 lg:hidden"></div>
 
@@ -78,7 +78,7 @@ const Header = () => {
       </nav>
 
       {/* RIGHT: Controls (Lang, Theme, Hamburger) */}
-      <div className="flex items-center gap-3 z-20 ml-auto lg:ml-0">
+      <div className="flex items-center gap-3 z-20 ml-auto lg:ml-0" style={{ paddingRight: '0px' }}>
 
         {/* Language Switcher (Desktop Only) */}
         <div className="relative hidden lg:block">
@@ -158,7 +158,8 @@ const Header = () => {
             border: '1px solid rgba(255,255,255,0.2)',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
             transition: 'background-color 0.3s',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            marginRight: '20px'
           }}
         >
           <div
@@ -188,11 +189,12 @@ const Header = () => {
         <button
           onClick={() => setIsMenuOpen(true)}
           className={clsx(
-            "lg:hidden p-2.5 rounded-lg transition-all duration-200 bg-transparent flex items-center justify-center border",
-            isDark ? "text-slate-200 border-slate-700 hover:bg-slate-800" : "text-slate-700 border-slate-200 hover:bg-slate-100"
+            "lg:hidden p-2.5 transition-all duration-200 bg-transparent flex items-center justify-center outline-none border-none",
+            isDark ? "text-slate-200 hover:text-white" : "text-slate-700 hover:text-black"
           )}
+          style={{ marginRight: '20px' }}
         >
-          <FaBars className="text-xl" />
+          <FaBars className="text-2xl" />
         </button>
       </div>
 

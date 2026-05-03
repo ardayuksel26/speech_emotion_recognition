@@ -3,7 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import { FiHeadphones, FiActivity, FiZap } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import InteractiveBackground from '../components/InteractiveBackground';
+
 
 /* ── use case data ── */
 const CASES = [
@@ -50,10 +50,7 @@ const UseCasesPage = () => {
     return (
         <div
             className="w-full flex-grow flex flex-col items-center relative"
-            style={{ background: bg }}
         >
-            {/* animated bubbles */}
-            <InteractiveBackground />
 
             <div className="w-full max-w-6xl px-4 md:px-10 relative z-10 flex flex-col pb-24" style={{ paddingTop: '7rem' }}>
 

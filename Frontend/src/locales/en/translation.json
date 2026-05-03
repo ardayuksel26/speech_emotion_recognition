@@ -205,7 +205,7 @@
   "tech_s2_1_title": "2.1 TurEV-DB (Turkish Emotion Voice Database)",
   "tech_s2_1_p": "The deep learning core of our project is built upon the locally language-compatible <1>TurEV-DB</1> dataset rather than external sources. This dataset consists of thousands of independent words voiced with emotion labels.",
   "tech_s2_dist_title": "TurEV-DB Training Data Distribution",
-  "tech_s2_dist_desc": "The balanced distribution of 1,735 words in our dataset across emotion classes is shown in the chart. This balanced structure prevents models from being biased toward any single emotion.",
+  "tech_s2_dist_desc": "The balanced distribution of 1,735 clean TurEV-DB words across emotion classes is shown in the chart. With noise augmentation included, the total dataset size reaches 10,410 samples.",
   "tech_s2_2_title": "2.2 Synthetic Sentence Generation Engine",
   "tech_s2_2_p1": "One of the most innovative aspects of the project is using a dedicated simulation engine (Generator) that goes beyond word-level performance by concatenating isolated words to create \"Synthetic Sentences\".",
   "tech_s2_2_p2": "The long synthetic sentences produced this way stress-test Mastermind in production tests. The total of <1>79 Smooth Sentences</1> breaks down as: <2>20 Angry</2>, <3>20 Calm</3>, <4>20 Happy</4>, and <5>19 Sad</5>.",

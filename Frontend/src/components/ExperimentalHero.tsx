@@ -8,9 +8,10 @@ import Result from "./Result";
 import axios from "axios";
 import { convertFileToWav } from "../utils/audioUtils";
 import { AnalysisResult } from "../types";
-import InteractiveBackground from "./InteractiveBackground";
+
 
 type JointResult = {
+  name: string;
   model: string;
   url: string;
   color: string;
@@ -409,7 +410,7 @@ const Hero = () => {
     if (!audioFile) return;
     setIsJointTesting(true);
     setJointDone(false);
-    setJointResults(JOINT_MODELS.map(m => ({ ...m, emotion: '', confidence: 0, status: 'loading' })));
+    setJointResults(JOINT_MODELS.map(m => ({ ...m, model: m.name, emotion: '', confidence: 0, status: 'loading' as const })));
 
     try {
       const wavBlob = await convertFileToWav(audioFile);
@@ -463,19 +464,18 @@ const Hero = () => {
 
   return (
     <div className={clsx(
-      "relative w-full flex-grow flex flex-col items-center font-sans transition-colors duration-500",
-      isDark ? "bg-[#0b0f19] text-white" : "bg-gray-50 text-slate-900",
+      "relative w-full flex-grow flex flex-col items-center font-sans",
       (analysisResult || jointDone)
         ? "justify-start pt-24 pb-12 overflow-x-hidden"
         : "justify-center"
     )}>
 
-      <InteractiveBackground />
+
 
       <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center pb-8 md:pb-20">
 
         {!(analysisResult || jointDone) && (
-          <p className={`text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
+          <p className={`hidden md:block text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
             <Trans i18nKey="experimental_subtitle">
               Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
             </Trans>
@@ -483,12 +483,12 @@ const Hero = () => {
         )}
 
         <div className={`
-          relative w-full backdrop-blur-[40px] shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
+          relative w-full shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
           flex flex-col items-center justify-center border mt-8 md:mt-0
-          ${isDark ? "bg-[#0f172a]/70 border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/70 border-indigo-100/80 shadow-[0_0_100px_rgba(99,102,241,0.1)]"}
+          ${isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]"}
           ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
         `}
-          style={!(analysisResult || jointDone) ? {} : { marginTop: '80px' }}
+          style={!(analysisResult || jointDone) ? { minHeight: '380px' } : { marginTop: '80px' }}
         >
 
           {/* Subtle Inner Glow */}
@@ -497,103 +497,103 @@ const Hero = () => {
           )}
           {/* Mode Switcher */}
           {!(analysisResult || jointDone) && (
-            <div className="w-full relative z-20 mb-8 mt-2">
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 w-full">
+            <div className="w-full relative mt-6">
+              <div className="mode-btn-wrap">
                 <button
                   onClick={() => { setMode('word'); setShowModelSelection(true); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'word'
-                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                  className={`mode-btn ${mode === 'word'
+                    ? 'bg-blue-600 text-white shadow-sm border-blue-500'
+                    : isDark ? 'bg-slate-700 text-blue-400 hover:text-blue-300 border-blue-500' : 'bg-white text-blue-600 hover:text-blue-700 border-blue-400'
                     }`}
                 >
                   {t('mode_word')}
                 </button>
                 <button
                   onClick={() => { setMode('sentence_segmented'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'sentence_segmented'
-                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                  className={`mode-btn ${mode === 'sentence_segmented'
+                    ? 'bg-fuchsia-600 text-white shadow-sm border-fuchsia-500'
+                    : isDark ? 'bg-slate-700 text-fuchsia-400 hover:text-fuchsia-300 border-fuchsia-500' : 'bg-white text-fuchsia-600 hover:text-fuchsia-700 border-fuchsia-400'
                     }`}
                 >
                   {t('mode_sentence_segmented')}
                 </button>
                 <button
                   onClick={() => { setMode('sentence_whole'); setShowModelSelection(true); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-3 sm:px-4 flex items-center justify-center text-center ${mode === 'sentence_whole'
-                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-lg border-indigo-400 dark:border-indigo-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 border-slate-300 dark:border-slate-600'
+                  className={`mode-btn ${mode === 'sentence_whole'
+                    ? 'bg-cyan-600 text-white shadow-sm border-cyan-500'
+                    : isDark ? 'bg-slate-700 text-cyan-400 hover:text-cyan-300 border-cyan-500' : 'bg-white text-cyan-600 hover:text-cyan-700 border-cyan-400'
                     }`}
                 >
                   {t('mode_sentence_whole')}
                 </button>
                 <button
                   onClick={() => { setMode('advanced_sentence'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'advanced_sentence'
-                    ? 'bg-red-600 text-white shadow-lg border-red-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-red-500 dark:text-red-400 hover:text-red-600 border-red-400 dark:border-red-500'
+                  className={`mode-btn ${mode === 'advanced_sentence'
+                    ? 'bg-red-600 text-white shadow-sm border-red-500'
+                    : isDark ? 'bg-slate-700 text-red-400 hover:text-red-300 border-red-500' : 'bg-white text-red-500 hover:text-red-600 border-red-400'
                     }`}
                 >
                   {isTr ? "Advanced Cümle Analizi" : "Advanced Sentence Analysis"}
                 </button>
                 <button
                   onClick={() => { setMode('hubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'hubert'
-                    ? 'bg-emerald-600 text-white shadow-lg border-emerald-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 border-emerald-400 dark:border-emerald-500'
+                  className={`mode-btn ${mode === 'hubert'
+                    ? 'bg-emerald-600 text-white shadow-sm border-emerald-500'
+                    : isDark ? 'bg-slate-700 text-emerald-400 hover:text-emerald-300 border-emerald-500' : 'bg-white text-emerald-600 hover:text-emerald-700 border-emerald-400'
                     }`}
                 >
                   HuBERT (HuggingFace)
                 </button>
                 <button
                   onClick={() => { setMode('wav2vec2_turkish'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wav2vec2_turkish'
-                    ? 'bg-sky-600 text-white shadow-lg border-sky-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-sky-600 dark:text-sky-400 hover:text-sky-700 border-sky-400 dark:border-sky-500'
+                  className={`mode-btn ${mode === 'wav2vec2_turkish'
+                    ? 'bg-sky-600 text-white shadow-sm border-sky-500'
+                    : isDark ? 'bg-slate-700 text-sky-400 hover:text-sky-300 border-sky-500' : 'bg-white text-sky-600 hover:text-sky-700 border-sky-400'
                     }`}
                 >
                   Wav2Vec2 Turkish
                 </button>
                 <button
                   onClick={() => { setMode('superb_er'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'superb_er'
-                    ? 'bg-teal-600 text-white shadow-lg border-teal-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-teal-600 dark:text-teal-400 hover:text-teal-700 border-teal-400 dark:border-teal-500'
+                  className={`mode-btn ${mode === 'superb_er'
+                    ? 'bg-teal-600 text-white shadow-sm border-teal-500'
+                    : isDark ? 'bg-slate-700 text-teal-400 hover:text-teal-300 border-teal-500' : 'bg-white text-teal-600 hover:text-teal-700 border-teal-400'
                     }`}
                 >
                   SUPERB Wav2Vec2-ER
                 </button>
                 <button
                   onClick={() => { setMode('sensevoice'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'sensevoice'
-                    ? 'bg-orange-600 text-white shadow-lg border-orange-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-orange-600 dark:text-orange-400 hover:text-orange-700 border-orange-400 dark:border-orange-500'
+                  className={`mode-btn ${mode === 'sensevoice'
+                    ? 'bg-orange-600 text-white shadow-sm border-orange-500'
+                    : isDark ? 'bg-slate-700 text-orange-400 hover:text-orange-300 border-orange-500' : 'bg-white text-orange-600 hover:text-orange-700 border-orange-400'
                     }`}
                 >
                   SenseVoice (Alibaba)
                 </button>
                 <button
                   onClick={() => { setMode('exhubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'exhubert'
-                    ? 'bg-violet-600 text-white shadow-lg border-violet-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-violet-600 dark:text-violet-400 hover:text-violet-700 border-violet-400 dark:border-violet-500'
+                  className={`mode-btn ${mode === 'exhubert'
+                    ? 'bg-violet-600 text-white shadow-sm border-violet-500'
+                    : isDark ? 'bg-slate-700 text-violet-400 hover:text-violet-300 border-violet-500' : 'bg-white text-violet-600 hover:text-violet-700 border-violet-400'
                     }`}
                 >
                   ExHuBERT
                 </button>
                 <button
                   onClick={() => { setMode('wavlm_base_plus'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wavlm_base_plus'
-                    ? 'bg-indigo-800 text-white shadow-lg border-indigo-700'
-                    : 'bg-slate-200 dark:bg-slate-700 text-indigo-800 dark:text-indigo-300 hover:text-indigo-900 border-indigo-500 dark:border-indigo-600'
+                  className={`mode-btn ${mode === 'wavlm_base_plus'
+                    ? 'bg-indigo-800 text-white shadow-sm border-indigo-700'
+                    : isDark ? 'bg-slate-700 text-indigo-300 hover:text-indigo-200 border-indigo-600' : 'bg-white text-indigo-800 hover:text-indigo-900 border-indigo-500'
                     }`}
                 >
                   WavLM Base Plus
                 </button>
                 <button
                   onClick={() => { setMode('wavlm_large'); setShowModelSelection(false); setAllSegmentResults({}); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-2 sm:px-4 flex items-center justify-center text-center ${mode === 'wavlm_large'
-                    ? 'bg-rose-600 text-white shadow-lg border-rose-500'
-                    : 'bg-slate-200 dark:bg-slate-700 text-rose-600 dark:text-rose-400 hover:text-rose-700 border-rose-400 dark:border-rose-500'
+                  className={`mode-btn ${mode === 'wavlm_large'
+                    ? 'bg-rose-600 text-white shadow-sm border-rose-500'
+                    : isDark ? 'bg-slate-700 text-rose-400 hover:text-rose-300 border-rose-500' : 'bg-white text-rose-600 hover:text-rose-700 border-rose-400'
                     }`}
                 >
                   WavLM Large
@@ -601,9 +601,9 @@ const Hero = () => {
                 {/* ── Ortak Test ── */}
                 <button
                   onClick={() => { setMode('joint_test'); setShowModelSelection(false); setAllSegmentResults({}); setJointResults([]); setJointDone(false); }}
-                  className={`rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 border-2 py-2.5 px-3 sm:px-4 flex items-center justify-center text-center ${mode === 'joint_test'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-amber-400'
-                    : 'bg-slate-200 dark:bg-slate-700 text-amber-600 dark:text-amber-400 hover:text-amber-700 border-amber-400 dark:border-amber-500'
+                  className={`mode-btn ${mode === 'joint_test'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm border-amber-400'
+                    : isDark ? 'bg-slate-700 text-amber-400 hover:text-amber-300 border-amber-500' : 'bg-white text-amber-600 hover:text-amber-700 border-amber-400'
                     }`}
                 >
                   {t('joint_test_button')}
@@ -613,8 +613,8 @@ const Hero = () => {
           )}
 
           {!audioFile && (
-            <div className="w-full mt-6 flex justify-center">
-              <AudioInput onAudioReady={handleAudioReady} />
+            <div className="w-full flex justify-center">
+              <AudioInput onAudioReady={handleAudioReady} compact />
             </div>
           )}
 
@@ -724,21 +724,19 @@ const Hero = () => {
                     <div className="flex justify-center" style={{ gap: '16px' }}>
                       <button
                         onClick={() => setQualityMode('studio')}
-                        className="text-sm font-bold transition-all duration-300 rounded-xl"
-                        style={qualityMode === 'studio'
-                          ? { padding: '10px 32px', background: 'linear-gradient(135deg, #6366f1, #818cf8)', color: 'white', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }
-                          : { padding: '10px 32px', color: '#94a3b8', border: '1px solid #e2e8f0' }
-                        }
+                        className={`text-sm font-bold transition-all duration-300 rounded-xl px-8 py-2.5 ${qualityMode === 'studio'
+                          ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)] border-transparent'
+                          : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
                       >
                         {t('studio')}
                       </button>
                       <button
                         onClick={() => setQualityMode('robust')}
-                        className="text-sm font-bold transition-all duration-300 rounded-xl"
-                        style={qualityMode === 'robust'
-                          ? { padding: '10px 32px', background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)', color: 'white', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }
-                          : { padding: '10px 32px', color: '#94a3b8', border: '1px solid #e2e8f0' }
-                        }
+                        className={`text-sm font-bold transition-all duration-300 rounded-xl px-8 py-2.5 ${qualityMode === 'robust'
+                          ? 'bg-gradient-to-br from-purple-500 to-indigo-400 text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)] border-transparent'
+                          : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
                       >
                         {t('noisy')}
                       </button>
@@ -758,11 +756,10 @@ const Hero = () => {
                         <button
                           key={model.id}
                           onClick={() => setSelectedModel(model.id)}
-                          className="transition-all duration-200 rounded-lg text-xs sm:text-sm font-semibold"
-                          style={selectedModel === model.id
-                            ? { padding: '10px 8px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', boxShadow: '0 4px 15px rgba(99,102,241,0.3)' }
-                            : { padding: '10px 8px', background: 'transparent', color: '#64748b', border: '1px solid #e2e8f0' }
-                          }
+                          className={`transition-all duration-200 rounded-lg text-xs sm:text-sm font-semibold px-2 py-2.5 ${selectedModel === model.id
+                            ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_4px_15px_rgba(99,102,241,0.3)] border-transparent'
+                            : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
                         >
                           {model.name}
                         </button>
@@ -772,11 +769,10 @@ const Hero = () => {
                     {/* Majority Voting Button */}
                     <button
                       onClick={() => setSelectedModel('majority_voting')}
-                      className="w-full transition-all duration-200 rounded-lg text-sm font-bold"
-                      style={selectedModel === 'majority_voting'
-                        ? { marginTop: '10px', padding: '12px 8px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: 'white', boxShadow: '0 4px 15px rgba(245,158,11,0.35)' }
-                        : { marginTop: '10px', padding: '12px 8px', background: 'transparent', color: '#f59e0b', border: '2px dashed #f59e0b' }
-                      }
+                      className={`w-full transition-all duration-200 rounded-lg text-sm font-bold mt-2.5 px-2 py-3 ${selectedModel === 'majority_voting'
+                        ? 'bg-gradient-to-br from-amber-500 to-red-500 text-white shadow-[0_4px_15px_rgba(245,158,11,0.35)] border-transparent'
+                        : 'bg-transparent text-amber-600 dark:text-amber-500 border-2 border-dashed border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10'
+                      }`}
                     >
                       {t('majority_voting')}
                     </button>
@@ -808,20 +804,14 @@ const Hero = () => {
                             <button
                               key={tab.id}
                               onClick={() => setActiveSegTab(tab.id)}
-                              className="text-sm font-bold transition-all duration-300 rounded-xl relative flex flex-col items-center justify-center leading-tight"
-                              style={activeSegTab === tab.id
-                                ? {
-                                  padding: '6px 20px',
-                                  background: tab.gradient,
-                                  color: 'white',
-                                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                                }
-                                : {
-                                  padding: '6px 20px',
-                                  color: hasError ? '#ef4444' : '#94a3b8',
-                                  border: `1px solid ${hasError ? '#fca5a5' : '#e2e8f0'}`
-                                }
-                              }
+                              className={`text-sm font-bold transition-all duration-300 rounded-xl relative flex flex-col items-center justify-center leading-tight px-5 py-1.5 ${
+                                activeSegTab === tab.id
+                                  ? 'text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] border-transparent'
+                                  : hasError
+                                    ? 'bg-transparent text-red-500 dark:text-red-400 border border-red-300 dark:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-500/10'
+                                    : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                              }`}
+                              style={activeSegTab === tab.id ? { background: tab.gradient } : {}}
                             >
                               <span>
                                 {tab.label}
@@ -1052,9 +1042,9 @@ const Hero = () => {
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <div className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">{t('joint_test_results_title')}</span>
+                  <span className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>{t('joint_test_results_title')}</span>
                 </div>
                 <div className="w-11" />
               </div>
