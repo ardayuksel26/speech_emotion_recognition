@@ -119,7 +119,7 @@ const LazyMount = ({ children, minHeight = "400px" }: { children: ReactNode, min
     }, []);
 
     return (
-        <div ref={ref} style={{ minHeight: isVisible ? "auto" : minHeight, width: '100%' }}>
+        <div ref={ref} style={{ minHeight: minHeight, width: '100%', minWidth: 0, position: 'relative' }}>
             {isVisible ? children : null}
         </div>
     );
@@ -289,7 +289,7 @@ const TechnicalInfoPage = () => {
                             <div className="flex flex-col md:flex-row items-center justify-center my-10 gap-8">
                                 <div className={`w-full md:w-1/2 h-[300px] rounded-2xl border ${isDark ? 'border-white/5 bg-white/2' : 'border-slate-100 bg-white/60'}`}>
                                     <LazyMount minHeight="300px">
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                                             <PieChart>
                                                 <Pie data={turEvData} cx="50%" cy="50%" innerRadius={65} outerRadius={110} paddingAngle={5} dataKey="value">
                                                     {turEvData.map((entry, index) => (
@@ -462,7 +462,7 @@ const TechnicalInfoPage = () => {
 
                             <div className="w-full min-h-[480px] h-[520px] md:h-[560px] py-4 px-2 sm:px-4">
                                 <LazyMount minHeight="480px">
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                                         <BarChart data={barChartData} margin={{ top: 16, right: 16, left: 8, bottom: 24 }} barCategoryGap="18%">
                                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
                                             <XAxis dataKey="name" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 14, fontWeight: 'bold' }} />
@@ -528,7 +528,7 @@ const TechnicalInfoPage = () => {
                             </p>
                             <div className="w-full h-[220px] mb-8">
                                 <LazyMount minHeight="220px">
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                                         <AreaChart data={vadEnergyIllustration} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
                                             <defs>
                                                 <linearGradient id="vadGrad" x1="0" y1="0" x2="0" y2="1">
@@ -715,7 +715,7 @@ const TechnicalInfoPage = () => {
                                     {isTr ? "Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)" : "Master Ensemble Class-Based F1, Precision, and Recall (%)"}
                                 </h4>
                                 <LazyMount minHeight="400px">
-                                    <ResponsiveContainer width="100%" height="88%">
+                                    <ResponsiveContainer width="100%" height="88%" minWidth={0} debounce={50}>
                                         <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
                                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
                                             <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} />
@@ -821,7 +821,7 @@ const TechnicalInfoPage = () => {
                                         </p>
 
                                         <div className="w-full h-[280px]">
-                                            <ResponsiveContainer width="100%" height="100%">
+                                            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                                                 <BarChart data={model.metrics} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barSize={30}>
                                                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
                                                     <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 12, fontWeight: 600 }} />
