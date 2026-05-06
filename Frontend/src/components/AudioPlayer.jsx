@@ -41,7 +41,12 @@ const AudioPlayer = ({
   // Decide button text based on analysis mode
   const getAnalyzeButtonText = () => {
     if (analysisMode === 'sentence') {
-      return `${selectedModelName || 'CatBoost'} ${t('sentence_analysis')}`;
+      const suffix = t('sentence_analysis');
+      // If selectedModelName already ends with the suffix, don't append it again
+      if (selectedModelName && selectedModelName.includes(suffix)) {
+        return selectedModelName;
+      }
+      return `${selectedModelName || 'CatBoost'} ${suffix}`;
     }
     return t('analyze_audio') || 'Ses Analizini Yap';
   };
@@ -63,7 +68,7 @@ const AudioPlayer = ({
       {recordedUrl && !isRecording && (
         <button
           onClick={onBack}
-          className={`absolute top-2 left-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-sm hover:shadow-md hover:scale-105 ${isDark ? "bg-slate-700/50 text-slate-200 hover:bg-slate-600" : "bg-white/80 text-slate-600 hover:bg-white"
+          className={`absolute top-2 left-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-sm hover:shadow-md hover:scale-105 ${isDark ? "bg-slate-700/50 text-slate-200 hover:bg-slate-600" : "bg-white text-slate-900 hover:bg-slate-100"
             }`}
         >
           <FaChevronLeft className="text-sm" />

@@ -230,7 +230,7 @@ const AboutPage = () => {
                                                     href={TEAM[currentIndex].github}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200'}`}
+                                                    className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200'}`}
                                                 >
                                                     <FaGithub size={20} />
                                                 </a>
@@ -238,7 +238,7 @@ const AboutPage = () => {
                                                     href={TEAM[currentIndex].linkedin}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200'}`}
+                                                    className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200'}`}
                                                 >
                                                     <FaLinkedin size={20} />
                                                 </a>

@@ -43,7 +43,6 @@ const UseCasesPage = () => {
     const navigate = useNavigate();
 
     /* theme-aware tokens */
-    const bg = isDark ? '#060e20' : '#f8faff';
     const onSurface = isDark ? '#dee5ff' : '#1a1a2e';
     const onSurfaceVariant = isDark ? '#a3aac4' : '#64748b';
 

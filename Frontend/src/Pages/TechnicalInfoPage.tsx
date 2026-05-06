@@ -119,7 +119,7 @@ const LazyMount = ({ children, minHeight = "400px" }: { children: ReactNode, min
     }, []);
 
     return (
-        <div ref={ref} style={{ minHeight: minHeight, width: '100%', minWidth: 0, position: 'relative' }}>
+        <div ref={ref} style={{ minHeight: minHeight, height: '100%', width: '100%', minWidth: 0, position: 'relative' }}>
             {isVisible ? children : null}
         </div>
     );
@@ -823,7 +823,8 @@ const TechnicalInfoPage = () => {
                                         <div className="w-full h-[280px]">
                                             <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                                                 <BarChart data={model.metrics} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barSize={30}>
-                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
+
+                                                   <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
                                                     <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 12, fontWeight: 600 }} />
                                                     <YAxis width={40} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
                                                     <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} />

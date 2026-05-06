@@ -86,14 +86,14 @@ const Result: React.FC<ResultProps> = ({
     return (
         <div
             className={clsx(
-                "w-full min-h-[85vh] flex flex-col font-sans px-4 sm:px-8 md:px-12 lg:px-20 pt-8 lg:pt-12 pb-10",
+                "w-full flex flex-col font-sans",
                 isDark ? "text-white" : "text-slate-900"
             )}
-            style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '20px' }}
+            style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '0', paddingBottom: '4px' }}
         >
 
             {/* TOP NAVIGATION HUD */}
-            <div className="flex flex-wrap items-center justify-between gap-6 mb-8 lg:mb-12 w-full max-w-7xl mx-auto" style={{ padding: '8px' }}>
+            <div className="flex flex-wrap items-center justify-between gap-6 w-full max-w-7xl mx-auto" style={{ padding: '0 4px', marginBottom: '4px' }}>
                 <button
                     onClick={onBack}
                     className={clsx(
@@ -109,7 +109,7 @@ const Result: React.FC<ResultProps> = ({
             </div>
 
             {/* DASHBOARD GRID */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 w-full max-w-7xl mx-auto flex-1 lg:px-8" style={{ gap: '24px', padding: '16px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 w-full max-w-7xl mx-auto" style={{ gap: '16px', padding: '0 4px' }}>
 
                 {/* LEFT: DOMINANT EMOTION DISPLAY (COL-SPAN-4) */}
                 <MotionWrapper delay={0.1} className="lg:col-span-4 flex flex-col h-full">
@@ -130,7 +130,7 @@ const Result: React.FC<ResultProps> = ({
                         </div>
 
                         {/* Emoji Badge */}
-                        <div className="relative z-10 mb-5">
+                        <div className="relative z-10" style={{ marginBottom: '20px' }}>
                             <div className={clsx(
                                 "w-36 h-36 md:w-44 md:h-44 rounded-full flex items-center justify-center relative",
                                 `bg-gradient-to-br ${emotionColorClass}`
@@ -145,15 +145,18 @@ const Result: React.FC<ResultProps> = ({
                         </div>
 
                         {/* Title & Confidence */}
-                        <div className="relative z-10 text-center space-y-3 w-full px-4 md:px-8">
-                            <h1 className={clsx(
-                                "text-4xl md:text-5xl font-black tracking-tighter capitalize drop-shadow-md",
-                                `text-transparent bg-clip-text bg-gradient-to-r ${glowClass}`
-                            )}>
+                        <div className="relative z-10 text-center w-full" style={{ padding: '0 32px' }}>
+                            <h1
+                                className={clsx(
+                                    "text-4xl md:text-5xl font-black tracking-tighter capitalize drop-shadow-md",
+                                    `text-transparent bg-clip-text bg-gradient-to-r ${glowClass}`
+                                )}
+                                style={{ padding: '4px 2px 6px' }}
+                            >
                                 {t(result.dominant_emotion.toLowerCase())}
                             </h1>
 
-                            <p className="text-sm font-black tracking-widest uppercase opacity-70">
+                            <p className="text-sm font-black tracking-widest uppercase opacity-70" style={{ marginTop: '16px' }}>
                                 {t('confidence')}: {(result.confidence * 100).toFixed(1)}%
                             </p>
                         </div>
@@ -274,6 +277,9 @@ const Result: React.FC<ResultProps> = ({
                                 )}
 
                                 {/* Model Details — Master Ensemble veya Experimental Voting */}
+                                {result.model_details && result.frequency_data && result.frequency_data.length > 0 && (
+                                    <div style={{ marginTop: '40px' }} />
+                                )}
                                 {result.model_details && (
                                     Array.isArray(result.model_details) ? (
                                         /* ── Eski format: Experimental Voting Kartları ── */

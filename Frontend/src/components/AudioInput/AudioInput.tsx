@@ -136,7 +136,7 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className, compac
                     <div className="audio-panel rounded-[2.5rem] p-8 md:p-10 border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden">
                         <button
                             onClick={goBack}
-                            className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 bg-white/80 dark:bg-white/10 backdrop-blur-md shadow-sm hover:shadow-md hover:scale-105 text-slate-600 dark:text-slate-200 z-10"
+                            className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-md hover:scale-105 z-10 ${isDark ? 'bg-white/10 text-slate-200 hover:bg-white/20' : 'bg-white text-slate-900 hover:bg-slate-100'}`}
                         >
                             <FaChevronLeft className="text-sm" />
                         </button>
@@ -156,7 +156,7 @@ const AudioInput: React.FC<AudioInputProps> = ({ onAudioReady, className, compac
                         {!isRecording && (
                             <button
                                 onClick={goBack}
-                                className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 bg-white/80 dark:bg-white/10 backdrop-blur-md shadow-sm hover:shadow-md hover:scale-105 text-slate-600 dark:text-slate-200 z-10"
+                                className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-md shadow-sm hover:shadow-md hover:scale-105 z-10 ${isDark ? 'bg-white/10 text-slate-200 hover:bg-white/20' : 'bg-white text-slate-900 hover:bg-slate-100'}`}
                             >
                                 <FaChevronLeft className="text-sm" />
                             </button>

@@ -105,18 +105,29 @@ const MainHero = () => {
   };
 
   return (
-    <div className={clsx(
-      "relative w-full flex-grow flex flex-col items-center font-sans",
-      analysisResult
-        ? "justify-start pt-24 pb-12 overflow-x-hidden"
-        : "justify-center"
-    )}>
+    <div
+      className={clsx(
+        "relative w-full flex-grow flex flex-col items-center font-sans",
+        analysisResult ? "justify-start overflow-x-hidden" : "justify-center"
+      )}
+      style={analysisResult ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+    >
 
 
-      <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center py-8 sm:py-12 md:py-16 mb-4 sm:mb-6 md:mb-8">
+      <div className={clsx(
+        "relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center",
+        analysisResult ? "" : "py-8 sm:py-12 md:py-16 mb-4 sm:mb-6 md:mb-8"
+      )}
+      style={analysisResult ? { paddingBottom: '4px' } : { paddingBottom: '80px' }}
+      >
 
         {/* Başlık */}
-        <h1 className={`font-outfit text-3xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 py-1 sm:py-2 leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${analysisResult ? "scale-75 mb-0 opacity-0 h-0" : "opacity-100"}`}>
+        <h1 className={clsx(
+          "font-outfit text-3xl sm:text-5xl md:text-7xl font-black leading-tight text-center tracking-tighter transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          analysisResult 
+            ? "scale-75 mb-0 opacity-0 h-0 overflow-hidden py-0" 
+            : "opacity-100 mb-4 sm:mb-6 py-1 sm:py-2"
+        )}>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-rose-500 drop-shadow-sm">
             {t("discover_your_voice")}
           </span>
@@ -136,10 +147,10 @@ const MainHero = () => {
           "flex flex-col items-center justify-center border",
           isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]",
           analysisResult
-            ? "max-w-[100vw] sm:max-w-[95vw] lg:max-w-[1100px] min-h-[85vh] p-3 md:p-6 lg:p-8 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20"
+            ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20"
             : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[3rem] w-full mx-4 md:mx-0"
         )}
-          style={{ marginTop: analysisResult ? "80px" : "0px", minHeight: analysisResult ? undefined : '280px' }}
+          style={!analysisResult ? { minHeight: '280px' } : { marginTop: '0', padding: '0 8px 4px' }}
         >
           {!analysisResult && (
             <div className="absolute inset-0 rounded-[3rem] pointer-events-none shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]" />
@@ -182,8 +193,8 @@ const MainHero = () => {
 
           {/* Faz 4: Sonuç */}
           {analysisResult && (
-            <div className="w-full animate-fadeIn">
-              <Result result={analysisResult} onBack={reset} audioUrl={recordedUrl || undefined} hideTimeline />
+            <div className="w-full animate-fadeIn" style={{ height: '100%' }}>
+              <Result result={analysisResult} onBack={reset} audioUrl={recordedUrl || undefined} />
             </div>
           )}
         </div>

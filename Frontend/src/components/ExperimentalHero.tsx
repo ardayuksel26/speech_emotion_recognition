@@ -22,7 +22,7 @@ type JointResult = {
 };
 
 const JOINT_MODELS = [
-  { name: 'Advanced Cümle Analizi', url: '/api/predict_advanced_sentence', color: '#ef4444' },
+  { name: 'Gelişmiş Cümle Analizi', url: '/api/predict_advanced_sentence', color: '#ef4444' },
   { name: 'HuBERT (HuggingFace)', url: '/analyze_hubert', color: '#10b981' },
   { name: 'Wav2Vec2 Turkish', url: '/analyze_wav2vec2_turkish', color: '#0ea5e9' },
   { name: 'SUPERB Wav2Vec2-ER', url: '/analyze_superb', color: '#14b8a6' },
@@ -463,16 +463,17 @@ const Hero = () => {
   };
 
   return (
-    <div className={clsx(
-      "relative w-full flex-grow flex flex-col items-center font-sans",
-      (analysisResult || jointDone)
-        ? "justify-start pt-24 pb-12 overflow-x-hidden"
-        : "justify-center"
-    )}>
+    <div
+      className={clsx(
+        "relative w-full flex-grow flex flex-col items-center font-sans",
+        (analysisResult || jointDone) ? "justify-start overflow-x-hidden" : "justify-center"
+      )}
+      style={(analysisResult || jointDone) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+    >
 
 
 
-      <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center pb-8 md:pb-20">
+      <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center" style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '80px' }}>
 
         {!(analysisResult || jointDone) && (
           <p className={`hidden md:block text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
@@ -486,9 +487,9 @@ const Hero = () => {
           relative w-full shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
           flex flex-col items-center justify-center border mt-8 md:mt-0
           ${isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]"}
-          ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] min-h-[85vh] p-3 md:p-8 lg:p-10 overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
+          ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
         `}
-          style={!(analysisResult || jointDone) ? { minHeight: '380px' } : { marginTop: '80px' }}
+          style={!(analysisResult || jointDone) ? { minHeight: '380px' } : { marginTop: '0', padding: '0 8px 4px' }}
         >
 
           {/* Subtle Inner Glow */}
@@ -533,7 +534,7 @@ const Hero = () => {
                     : isDark ? 'bg-slate-700 text-red-400 hover:text-red-300 border-red-500' : 'bg-white text-red-500 hover:text-red-600 border-red-400'
                     }`}
                 >
-                  {isTr ? "Advanced Cümle Analizi" : "Advanced Sentence Analysis"}
+                  {isTr ? "Gelişmiş Cümle Analizi" : "Advanced Sentence Analysis"}
                 </button>
                 <button
                   onClick={() => { setMode('hubert'); setShowModelSelection(false); setAllSegmentResults({}); }}
@@ -626,7 +627,7 @@ const Hero = () => {
                   <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
                     <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
                     <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                      {t('majority_voting')} (10-Model Optimized Ensemble)
+                      {t('majority_voting')} ({t('sentence_whole_badge')})
                     </span>
                   </div>
                 </div>
@@ -637,7 +638,7 @@ const Hero = () => {
                   <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-red-500/20 to-rose-500/20 border border-red-500/30 backdrop-blur-md flex items-center gap-3 shadow-sm">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                     <span className="text-sm font-black uppercase tracking-widest text-red-600 dark:text-red-400">
-                      Models_2 — 5-Model Noise-Augmented Ensemble
+                      {isTr ? "Gelişmiş Cümle Analizi" : "Advanced Sentence Analysis"}
                     </span>
                   </div>
                 </div>
@@ -711,31 +712,37 @@ const Hero = () => {
 
               {/* Model Selection UI - Matrix Format */}
               {(mode === 'word' || (showModelSelection && mode !== 'sentence_whole' && mode !== 'advanced_sentence')) && (
-                <div className="w-full mt-6 mb-8 rounded-[2rem] border border-white/40 dark:border-slate-700/50 shadow-2xl animate-fadeIn overflow-hidden relative bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl">
+                <div className={`w-full mt-6 mb-8 rounded-[2rem] border shadow-2xl animate-fadeIn overflow-hidden relative ${isDark ? 'border-slate-700/50 bg-slate-800/40 backdrop-blur-xl' : 'border-slate-200 bg-white'}`}>
 
                   {/* Glassmorphic overlay instead of solid gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent dark:from-slate-700/20 pointer-events-none" />
+                  <div className={`absolute inset-0 bg-gradient-to-b pointer-events-none ${isDark ? 'from-slate-700/20 to-transparent' : 'from-white/20 to-transparent'}`} />
 
                   {/* Quality Section */}
                   <div className="relative p-5 pb-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 text-center">
+                    <p className={`text-xs font-bold uppercase tracking-widest mb-3 text-center ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                       {t('training_quality')}
                     </p>
                     <div className="flex justify-center" style={{ gap: '16px' }}>
                       <button
                         onClick={() => setQualityMode('studio')}
-                        className={`text-sm font-bold transition-all duration-300 rounded-xl px-8 py-2.5 ${qualityMode === 'studio'
+                        style={{ padding: '10px 32px' }}
+                        className={`text-sm font-bold transition-all duration-300 rounded-xl ${qualityMode === 'studio'
                           ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)] border-transparent'
-                          : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          : isDark
+                            ? 'bg-transparent text-slate-300 border border-slate-700 hover:bg-slate-800'
+                            : 'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         {t('studio')}
                       </button>
                       <button
                         onClick={() => setQualityMode('robust')}
-                        className={`text-sm font-bold transition-all duration-300 rounded-xl px-8 py-2.5 ${qualityMode === 'robust'
+                        style={{ padding: '10px 32px' }}
+                        className={`text-sm font-bold transition-all duration-300 rounded-xl ${qualityMode === 'robust'
                           ? 'bg-gradient-to-br from-purple-500 to-indigo-400 text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)] border-transparent'
-                          : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          : isDark
+                            ? 'bg-transparent text-slate-300 border border-slate-700 hover:bg-slate-800'
+                            : 'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         {t('noisy')}
@@ -744,11 +751,11 @@ const Hero = () => {
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-slate-200/60 dark:border-slate-700/60" />
+                  <div className={`border-t ${isDark ? 'border-slate-700/60' : 'border-slate-200'}`} />
 
                   {/* Model Grid */}
                   <div className="relative p-5 pt-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 text-center">
+                    <p className={`text-xs font-bold uppercase tracking-widest mb-3 text-center ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                       {t('analysis_engine')}
                     </p>
                     <div className="grid grid-cols-3 gap-2">
@@ -758,7 +765,9 @@ const Hero = () => {
                           onClick={() => setSelectedModel(model.id)}
                           className={`transition-all duration-200 rounded-lg text-xs sm:text-sm font-semibold px-2 py-2.5 ${selectedModel === model.id
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_4px_15px_rgba(99,102,241,0.3)] border-transparent'
-                            : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            : isDark
+                              ? 'bg-transparent text-slate-300 border border-slate-700 hover:bg-slate-800'
+                              : 'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-50'
                           }`}
                         >
                           {model.name}
@@ -771,7 +780,9 @@ const Hero = () => {
                       onClick={() => setSelectedModel('majority_voting')}
                       className={`w-full transition-all duration-200 rounded-lg text-sm font-bold mt-2.5 px-2 py-3 ${selectedModel === 'majority_voting'
                         ? 'bg-gradient-to-br from-amber-500 to-red-500 text-white shadow-[0_4px_15px_rgba(245,158,11,0.35)] border-transparent'
-                        : 'bg-transparent text-amber-600 dark:text-amber-500 border-2 border-dashed border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10'
+                        : isDark
+                          ? 'bg-transparent text-amber-400 border-2 border-dashed border-amber-500 hover:bg-amber-500/10'
+                          : 'bg-transparent text-amber-600 border-2 border-dashed border-amber-500 hover:bg-amber-50'
                       }`}
                     >
                       {t('majority_voting')}
@@ -782,7 +793,7 @@ const Hero = () => {
 
               {/* Segmentation Preview UI */}
               {mode === 'sentence_segmented' && !showModelSelection && (
-                <div className="w-full mb-8 p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm animate-fadeIn">
+                <div className={`w-full mb-8 p-6 rounded-2xl border shadow-sm animate-fadeIn ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
                   {isSegmenting ? (
                     <div className="flex flex-col items-center justify-center p-4">
                       <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
@@ -793,9 +804,9 @@ const Hero = () => {
                       {/* Engine Tabs */}
                       <div className="flex justify-center mb-5" style={{ gap: '8px' }}>
                         {[
-                          { id: 'vad' as const, label: t('stt_vad'), gradient: 'linear-gradient(135deg, #6366f1, #818cf8)' },
-                          { id: 'vosk' as const, label: t('stt_vosk'), gradient: 'linear-gradient(135deg, #10b981, #34d399)' },
-                          { id: 'whisperx' as const, label: t('stt_whisperx'), gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)' },
+                          { id: 'vad' as const, label: 'VAD', gradient: 'linear-gradient(135deg, #6366f1, #818cf8)' },
+                          { id: 'vosk' as const, label: 'VOSK', gradient: 'linear-gradient(135deg, #10b981, #34d399)' },
+                          { id: 'whisperx' as const, label: 'WHISPERX', gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)' },
                         ].map((tab) => {
                           const tabData = allSegmentResults[tab.id];
                           const count = tabData?.segments?.length ?? 0;
@@ -804,14 +815,14 @@ const Hero = () => {
                             <button
                               key={tab.id}
                               onClick={() => setActiveSegTab(tab.id)}
-                              className={`text-sm font-bold transition-all duration-300 rounded-xl relative flex flex-col items-center justify-center leading-tight px-5 py-1.5 ${
+                              className={`text-sm font-bold transition-all duration-300 rounded-xl relative flex flex-col items-center justify-center leading-tight ${
                                 activeSegTab === tab.id
                                   ? 'text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] border-transparent'
                                   : hasError
-                                    ? 'bg-transparent text-red-500 dark:text-red-400 border border-red-300 dark:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-500/10'
-                                    : 'bg-transparent text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    ? `bg-transparent border ${isDark ? 'text-red-400 border-red-500/50 hover:bg-red-500/10' : 'text-red-500 border-red-300 hover:bg-red-50'}`
+                                    : `bg-transparent border ${isDark ? 'text-slate-300 border-slate-700 hover:bg-slate-800' : 'text-slate-600 border-slate-200 hover:bg-slate-50'}`
                               }`}
-                              style={activeSegTab === tab.id ? { background: tab.gradient } : {}}
+                              style={{ padding: '8px 24px', ...(activeSegTab === tab.id ? { background: tab.gradient } : {}) }}
                             >
                               <span>
                                 {tab.label}
@@ -839,22 +850,23 @@ const Hero = () => {
                           <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4 text-center">
                             {t('segmented_words')} ({sentenceSegments.length} {t('pieces')})
                           </label>
-                          <div className="flex flex-wrap gap-2 justify-center">
+                          <div className="flex flex-wrap gap-2 justify-center px-4">
                             {sentenceSegments.map((seg, i) => {
                               const EMOTION_COLORS: Record<string, string> = {
                                 happy: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
                                 sad: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
                                 angry: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',
                                 calm: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300',
-                                neutral: 'bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300'
+                                neutral: 'bg-white border border-slate-200 text-slate-700 shadow-sm dark:bg-slate-800 dark:border-transparent dark:text-slate-300'
                               };
                               const emotionKey = seg.emotion || 'neutral';
-                              const colorClass = EMOTION_COLORS[emotionKey] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+                              const colorClass = EMOTION_COLORS[emotionKey] || 'bg-white border border-slate-200 text-slate-700 shadow-sm dark:bg-slate-800 dark:border-transparent dark:text-slate-300';
 
                               return (
                                 <button
                                   key={i}
-                                  className={`px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity shadow-sm flex items-center gap-1.5 ${colorClass}`}
+                                  className={`rounded-lg text-sm font-medium hover:opacity-80 transition-opacity shadow-sm flex items-center gap-1.5 ${colorClass}`}
+                                  style={{ padding: '6px 14px' }}
                                   onClick={() => {
                                     if (audioElementRef.current) {
                                       audioElementRef.current.currentTime = seg.start;
@@ -885,7 +897,7 @@ const Hero = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center p-2">
-                      <p className="text-center text-slate-500 dark:text-slate-400 mb-4">{t('segment_prompt')}</p>
+                      <p className={`text-center mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('segment_prompt')}</p>
                       <button
                         onClick={() => audioFile && handleSegmentation(audioFile)}
                         className="transition-all duration-300 rounded-xl text-sm font-bold"
@@ -915,8 +927,8 @@ const Hero = () => {
                             : mode === 'sensevoice' ? 'SenseVoiceSmall (Alibaba)'
                               : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
                                 : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
-                                  : mode === 'sentence_whole' ? 'Experimental Ensemble'
-                                    : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
+                                  : mode === 'sentence_whole' ? t('sentence_whole_btn')
+                                    : mode === 'advanced_sentence' ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
                                       : activeModelName
                 }
                 recordedUrl={recordedUrl}
@@ -979,8 +991,8 @@ const Hero = () => {
                             : mode === 'sensevoice' ? 'FunAudioLLM/SenseVoiceSmall (Alibaba)'
                               : mode === 'wavlm_base_plus' ? 'harritaylor / WavLM Base Plus'
                                 : mode === 'wavlm_large' ? '3loi / WavLM Large (Odyssey 2024)'
-                                  : mode === 'advanced_sentence' ? 'Models_2 (5-Model Ensemble)'
-                                    : mode === 'sentence_whole' ? 'Experimental Ensemble'
+                                  : mode === 'advanced_sentence' ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
+                                    : mode === 'sentence_whole' ? t('sentence_whole_engine')
                                       : activeModelName
                 }
               </p>
@@ -1017,8 +1029,8 @@ const Hero = () => {
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.status === 'done' ? '#10b981' : r.status === 'error' ? '#ef4444' : '#94a3b8' }} />
                     <div className="min-w-0">
                       <p className="text-xs font-bold truncate opacity-70">
-                        {r.name === 'Advanced Cümle Analizi'
-                          ? (isTr ? 'Advanced Cümle Analizi' : 'Advanced Sentence Analysis')
+                        {r.name === 'Gelişmiş Cümle Analizi'
+                          ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
                           : (r.name || r.model)}
                       </p>
                       {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: r.color }}>{r.emotion}</p>}
@@ -1064,8 +1076,8 @@ const Hero = () => {
                     <div className="absolute top-0 left-6 right-6 h-0.5 rounded-full" style={{ background: r.color }} />
 
                     <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {r.name === 'Advanced Cümle Analizi'
-                        ? (isTr ? 'Advanced Cümle Analizi' : 'Advanced Sentence Analysis')
+                      {r.name === 'Gelişmiş Cümle Analizi'
+                        ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
                         : (r.name || r.model)}
                     </p>
 
