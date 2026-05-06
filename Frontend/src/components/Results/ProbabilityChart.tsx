@@ -10,11 +10,12 @@ interface ProbabilityChartProps {
 }
 
 const ProbabilityChart: React.FC<ProbabilityChartProps> = ({ probabilities }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isDark } = useTheme();
 
-    // Sort by probability desc
+    // Sort by probability desc, filter out zero-score emotions
     const sortedEmotions = Object.entries(probabilities)
+        .filter(([, score]) => score > 0)
         .sort(([, a], [, b]) => b - a);
 
     return (
@@ -39,10 +40,10 @@ const ProbabilityChart: React.FC<ProbabilityChartProps> = ({ probabilities }) =>
                     <div key={emotion} className="w-full px-2 sm:px-4">
                         <div className="flex justify-between items-end mb-2 px-2">
                             <span className={clsx(
-                                "font-black uppercase tracking-widest text-sm md:text-base",
+                                "font-black tracking-widest text-sm md:text-base",
                                 isDark ? "text-gray-200" : "text-gray-700"
                             )}>
-                                {t(`emotions.${normalized}`)}
+                                {t(`emotions.${normalized}`).toLocaleUpperCase(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}
                             </span>
                             <span className={clsx(
                                 "font-bold text-sm md:text-base -mb-0.5",

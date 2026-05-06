@@ -153,7 +153,7 @@ const Result: React.FC<ResultProps> = ({
                                 )}
                                 style={{ padding: '4px 2px 6px' }}
                             >
-                                {t(result.dominant_emotion.toLowerCase())}
+                                {t(`emotions.${result.dominant_emotion.toLowerCase()}`, result.dominant_emotion)}
                             </h1>
 
                             <p className="text-sm font-black tracking-widest uppercase opacity-70" style={{ marginTop: '16px' }}>

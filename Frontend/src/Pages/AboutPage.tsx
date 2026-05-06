@@ -290,9 +290,7 @@ const AboutPage = () => {
                             : 'bg-indigo-50 border-indigo-100'
                     }`}
                 >
-                    <div className={`p-4 rounded-full mb-2 ${isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-white text-violet-500 shadow-sm'}`}>
-                        <FiAward className="text-3xl" />
-                    </div>
+                    <FiAward className={`text-4xl mb-2 ${isDark ? 'text-violet-400' : 'text-violet-500'}`} />
                     <div className="space-y-2">
                         <h3 className={`text-2xl font-bold tracking-tight px-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                             {t('about_university')}

@@ -466,22 +466,15 @@ const Hero = () => {
     <div
       className={clsx(
         "relative w-full flex-grow flex flex-col items-center font-sans",
-        (analysisResult || jointDone) ? "justify-start overflow-x-hidden" : "justify-center"
+        (analysisResult || jointDone || hasAnyResults) ? "justify-start overflow-x-hidden" : "justify-center"
       )}
-      style={(analysisResult || jointDone) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+      style={(analysisResult || jointDone || hasAnyResults) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
     >
 
 
 
       <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center" style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '80px' }}>
 
-        {!(analysisResult || jointDone) && (
-          <p className={`hidden md:block text-base md:text-lg font-medium mb-8 text-center max-w-2xl leading-relaxed tracking-wide ${isDark ? "text-indigo-100/60" : "text-slate-500/90"} animate-slideUpFade`} style={{ animationDelay: '0.05s' }}>
-            <Trans i18nKey="experimental_subtitle">
-              Burada <strong className="font-semibold text-indigo-400 dark:text-indigo-300">deneysel modeller</strong> mevcuttur — farklı yapay zeka motorlarını test edebilir ve sonuçları karşılaştırabilirsiniz.
-            </Trans>
-          </p>
-        )}
 
         <div className={`
           relative w-full shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]

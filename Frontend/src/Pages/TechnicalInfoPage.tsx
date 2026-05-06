@@ -133,8 +133,9 @@ const TechnicalInfoPage = () => {
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
+    const emotionTr: Record<string, string> = { Angry: 'Kızgın', Calm: 'Sakin', Happy: 'Mutlu', Sad: 'Üzgün' };
     const barChartData = MastermindMetrics.metrics.map(d => ({
-        name: d.emotion,
+        name: isTr ? (emotionTr[d.emotion] ?? d.emotion) : d.emotion,
         Precision: parseFloat((d.precision * 100).toFixed(1)),
         Recall: parseFloat((d.recall * 100).toFixed(1)),
         F1: parseFloat((d.f1 * 100).toFixed(1)),
@@ -330,9 +331,9 @@ const TechnicalInfoPage = () => {
 
                             {/* Noise augmentation table */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 mt-2">
-                                <div className={`p-5 rounded-2xl border ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
+                                <div className={`p-5 border flex flex-col ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
                                     <p className="font-bold text-sm mb-3" style={{ color: '#d946ef' }}>{isTr ? "Uygulanan 5 Gürültü Türü" : "5 Applied Noise Types"}</p>
-                                    <ul className="space-y-1.5 text-sm">
+                                    <ul className="flex-1 flex flex-col justify-between text-sm">
                                         {[
                                             { label: 'background_cafe', desc: isTr ? 'Kafe arka plan sesi' : 'Café background noise' },
                                             { label: 'pink_medium',     desc: isTr ? 'Orta yoğunluklu pembe gürültü' : 'Medium-intensity pink noise' },
@@ -340,24 +341,24 @@ const TechnicalInfoPage = () => {
                                             { label: 'white_low',      desc: isTr ? 'Düşük beyaz gürültü' : 'Low-intensity white noise' },
                                             { label: 'white_medium',   desc: isTr ? 'Orta beyaz gürültü' : 'Medium white noise' },
                                         ].map((n, i) => (
-                                            <li key={i} className="flex items-start gap-2">
-                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#d946ef' }} />
+                                            <li key={i} className="flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[2px]" style={{ background: '#d946ef' }} />
                                                 <span><code className="font-mono text-xs">{n.label}</code> — <span className="opacity-70">{n.desc}</span></span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
-                                <div className={`p-5 rounded-2xl border ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
+                                <div className={`p-5 border ${isDark ? 'border-fuchsia-500/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50/60'}`}>
                                     <p className="font-bold text-sm mb-3" style={{ color: '#d946ef' }}>{isTr ? "Duygu Başına Toplam Ses" : "Total Samples per Emotion"}</p>
-                                    <ul className="space-y-2 text-sm font-bold">
+                                    <ul className="flex flex-col gap-4 text-sm font-bold">
                                         {[
-                                            { label: 'Angry',  clean: 487,  noisy: 2435, color: '#ef4444', bg: '#ef444415' },
-                                            { label: 'Sad',    clean: 483,  noisy: 2415, color: '#6366f1', bg: '#6366f115' },
-                                            { label: 'Calm',   clean: 408,  noisy: 2040, color: '#14b8a6', bg: '#14b8a615' },
-                                            { label: 'Happy',  clean: 357,  noisy: 1785, color: '#f59e0b', bg: '#f59e0b15' },
+                                            { label: 'Angry',  labelTr: 'Kızgın', clean: 487,  noisy: 2435, color: '#ef4444', bg: '#ef444415' },
+                                            { label: 'Sad',    labelTr: 'Üzgün',  clean: 483,  noisy: 2415, color: '#6366f1', bg: '#6366f115' },
+                                            { label: 'Calm',   labelTr: 'Sakin',  clean: 408,  noisy: 2040, color: '#14b8a6', bg: '#14b8a615' },
+                                            { label: 'Happy',  labelTr: 'Mutlu',  clean: 357,  noisy: 1785, color: '#f59e0b', bg: '#f59e0b15' },
                                         ].map((item, i) => (
-                                            <li key={i} className="flex items-center justify-between px-3 py-1.5 rounded-lg" style={{ background: item.bg }}>
-                                                <span style={{ color: item.color }}>{item.label}</span>
+                                            <li key={i} className="flex items-center justify-between px-3 py-3" style={{ background: item.bg }}>
+                                                <span style={{ color: item.color }}>{isTr ? item.labelTr : item.label}</span>
                                                 <span className="opacity-60 text-xs">{item.clean} + {item.noisy} =</span>
                                                 <span style={{ color: item.color }}>{item.clean + item.noisy}</span>
                                             </li>
@@ -372,11 +373,11 @@ const TechnicalInfoPage = () => {
                                 {t('tech_s2_2_p2_prefix')}{' '}
                                 <span className="font-bold underline text-[1.05rem]">{t('tech_s2_2_p2_count')}</span>{' '}
                                 {t('tech_s2_2_p2_mid')}{' '}
-                                <span className="text-red-500 font-bold">20 Angry</span>,{' '}
-                                <span className="text-teal-500 font-bold">20 Calm</span>,{' '}
-                                <span className="text-amber-500 font-bold">20 Happy</span>,{' '}
+                                <span className="text-red-500 font-bold">20 {isTr ? 'Kızgın' : 'Angry'}</span>,{' '}
+                                <span className="text-teal-500 font-bold">20 {isTr ? 'Sakin' : 'Calm'}</span>,{' '}
+                                <span className="text-amber-500 font-bold">20 {isTr ? 'Mutlu' : 'Happy'}</span>,{' '}
                                 {t('tech_s2_2_p2_and')}{' '}
-                                <span className="text-indigo-500 font-bold">19 Sad</span>.
+                                <span className="text-indigo-500 font-bold">19 {isTr ? 'Üzgün' : 'Sad'}</span>.
                             </Blockquote>
                         </SectionCard>
                     </motion.div>
@@ -403,7 +404,7 @@ const TechnicalInfoPage = () => {
                             <SubTitle color="#22d3ee" isDark={isDark}>{isTr ? "Katman 2: HuBERT Tam Cümle Analizi (Ana Karar Verici)" : "Layer 2: HuBERT Full Sentence Analysis (Primary Discriminator)"}</SubTitle>
                             <p className="mb-4">
                                 {isTr
-                                  ? <>SeaBenSea/HuBERT transformatörü kullanılarak sesin genel melodisi, ritmi ve tonlamasından duygu bazlı global skorlar çıkarılır. Modelin çıktısına önce duygu başına kalibrasyon katsayıları (<code className="font-mono bg-cyan-500/10 px-1 rounded text-sm">angry: 0.90, calm: 1.20, happy: 1.20, sad: 0.85</code>) uygulanır, ardından global ölçekleme faktörü (1.7×) ile çarpılarak normalize edilir. Bu katman, nihai duygu kararının birincil belirleyicisidir.</>
+                                  ? <>SeaBenSea/HuBERT transformatörü kullanılarak sesin genel melodisi, ritmi ve tonlamasından duygu bazlı global skorlar çıkarılır. Modelin çıktısına önce duygu başına kalibrasyon katsayıları (<code className="font-mono bg-cyan-500/10 px-1 rounded text-sm">kızgın: 0.90, sakin: 1.20, mutlu: 1.20, üzgün: 0.85</code>) uygulanır, ardından global ölçekleme faktörü (1.7×) ile çarpılarak normalize edilir. Bu katman, nihai duygu kararının birincil belirleyicisidir.</>
                                   : <>Using the SeaBenSea/HuBERT transformer, emotion-specific global scores are extracted from the voice's overall melody, rhythm, and intonation. Per-emotion calibration weights (<code className="font-mono bg-cyan-500/10 px-1 rounded text-sm">angry: 0.90, calm: 1.20, happy: 1.20, sad: 0.85</code>) are applied to the raw outputs, followed by a global scale factor (1.7×), then normalized. This layer is the primary discriminator for the final emotion decision.</>
                                 }
                             </p>
@@ -427,7 +428,7 @@ const TechnicalInfoPage = () => {
                             </TerminalBlock>
                             <Blockquote color="#06b6d4" isDark={isDark}>
                                 {isTr
-                                  ? <>Sabit baz (0.25) kullanımı sayesinde <strong>P</strong><sup>(word)</sup><sub>e</sub> tüm duygular için eşit olduğundan, nihai sıralamayı belirleyen tek değişken HuBERT'in çıktısıdır. Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> katsayıları (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) uygulanarak en iyi dengeye (%80.94 Accuracy) ulaşılır.</>
+                                  ? <>Sabit baz (0.25) kullanımı sayesinde <strong>P</strong><sup>(word)</sup><sub>e</sub> tüm duygular için eşit olduğundan, nihai sıralamayı belirleyen tek değişken HuBERT'in çıktısıdır. Son aşamada <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> katsayıları (Kızgın: 1.25, Mutlu: 1.75, Üzgün: 0.50, Sakin: 1.40) uygulanarak en iyi dengeye (%80.94 Accuracy) ulaşılır.</>
                                   : <>Because <strong>P</strong><sup>(word)</sup><sub>e</sub> is equal for all emotions (0.25 fixed), HuBERT's output is the sole variable that determines the final ranking between emotions. In the last step, <code className="font-mono bg-cyan-500/10 px-1 rounded">MASTER_CALIBRATION</code> coefficients (Angry: 1.25, Happy: 1.75, Sad: 0.50, Calm: 1.40) are applied to achieve the best balance (80.94% Accuracy).</>
                                 }
                             </Blockquote>
@@ -626,7 +627,7 @@ const TechnicalInfoPage = () => {
                             {/* 7.1 Test Yöntemleri */}
                             <SubTitle color="#34d399" isDark={isDark}>{isTr ? "1. Test Metodolojileri" : "1. Test Methodologies"}</SubTitle>
                             <div className="grid gap-6 md:grid-cols-2 mb-8 mt-4">
-                                <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                <div className={`p-6 border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
                                     <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{isTr ? "Sentetik Cümle Testi (sentencevoice_test)" : "Synthetic Sentence Test (sentencevoice_test)"}</h4>
                                     <p className="text-sm">
                                         {isTr
@@ -635,12 +636,12 @@ const TechnicalInfoPage = () => {
                                         }
                                     </p>
                                 </div>
-                                <div className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                <div className={`p-6 border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
                                     <h4 className={`font-bold mb-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{isTr ? "Gerçek Hayat Testi (our_voices_for_test)" : "Real World Test (our_voices_for_test)"}</h4>
                                     <p className="text-sm">
                                         {isTr
-                                          ? "Eğitim setinde (TurEV) hiç bulunmayan, farklı kişilerin (örneğin İlhan, Yağız, Yağmur) kendi sesleriyle kaydettiği toplam 320 adet doğal ve kesintisiz (in-the-wild) cümleden oluşur. Modellerin asıl kalibrasyonu ve \"gerçek dünya\" performansı bu veri seti ile ölçülmüştür."
-                                          : "It consists of a total of 320 natural and continuous (in-the-wild) sentences recorded by different people (e.g., İlhan, Yağız, Yağmur) whose voices were not in the training set (TurEV). The main calibration and \"real world\" performance of the models were measured using this dataset."
+                                          ? "Eğitim setinde (TurEV) hiç bulunmayan, farklı kişilerin (örneğin Arda, Yağız, Yağmur, İlhan) kendi sesleriyle kaydettiği toplam 320 adet doğal ve kesintisiz (in-the-wild) cümleden oluşur. Modellerin asıl kalibrasyonu ve \"gerçek dünya\" performansı bu veri seti ile ölçülmüştür."
+                                          : "It consists of a total of 320 natural and continuous (in-the-wild) sentences recorded by different people (e.g., Arda, Yağız, Yağmur, İlhan) whose voices were not in the training set (TurEV). The main calibration and \"real world\" performance of the models were measured using this dataset."
                                         }
                                     </p>
                                 </div>
@@ -692,15 +693,15 @@ const TechnicalInfoPage = () => {
                             </Blockquote>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-2">
-                                <div className={`p-4 rounded-xl border ${isDark ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-emerald-200 bg-emerald-50/50'}`}>
+                                <div className={`p-4 border ${isDark ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-emerald-200 bg-emerald-50/50'}`}>
                                     <p className="font-bold text-sm mb-1" style={{ color: '#10b981' }}>{isTr ? "Türkçe Ses Kalibrasyon Matrisi" : "Turkish Vocal Calibration Matrix"}</p>
                                     <p className="text-xs opacity-80 leading-relaxed">
-                                        {isTr 
-                                            ? "Modelin duygu tahminlerini dengelemek amacıyla şu katsayılar uygulanır: Angry (1.25), Happy (1.75), Sad (0.50), Calm (1.40)." 
+                                        {isTr
+                                            ? "Modelin duygu tahminlerini dengelemek amacıyla şu katsayılar uygulanır: Kızgın (1.25), Mutlu (1.75), Üzgün (0.50), Sakin (1.40)."
                                             : "The following calibration coefficients are applied to balance emotion predictions: Angry (1.25), Happy (1.75), Sad (0.50), Calm (1.40)."}
                                     </p>
                                 </div>
-                                <div className={`p-4 rounded-xl border ${isDark ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-200 bg-blue-50/50'}`}>
+                                <div className={`p-4 border ${isDark ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-200 bg-blue-50/50'}`}>
                                     <p className="font-bold text-sm mb-1" style={{ color: '#3b82f6' }}>{isTr ? "İşleme Hızı" : "Processing Speed"}</p>
                                     <p className="text-xs opacity-80 leading-relaxed">
                                         {isTr 
@@ -718,7 +719,7 @@ const TechnicalInfoPage = () => {
                                     <ResponsiveContainer width="100%" height="88%" minWidth={0} debounce={50}>
                                         <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
                                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                            <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} />
+                                            <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} tickFormatter={(v) => isTr ? (emotionTr[v] ?? v) : v} />
                                             <YAxis width={54} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fontWeight: 600 }} tickMargin={8} />
                                             <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} itemStyle={{ fontSize: '13px', fontWeight: 'bold' }} formatter={(v: unknown) => `${(v as number).toFixed(1)}%`} />
                                             <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '12px' }} />
@@ -805,7 +806,7 @@ const TechnicalInfoPage = () => {
 
                             <div className="space-y-12">
                                 {experimentalModelsData.map((model, idx) => (
-                                    <div key={idx} className={`p-6 rounded-2xl border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
+                                    <div key={idx} className={`p-6 border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-white/60'}`}>
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                                             <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
                                                 <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm ${isDark ? 'bg-amber-500/20' : 'bg-amber-100'}`}>{idx + 1}</span>
@@ -825,7 +826,7 @@ const TechnicalInfoPage = () => {
                                                 <BarChart data={model.metrics} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barSize={30}>
 
                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                                                    <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 12, fontWeight: 600 }} />
+                                                    <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => isTr ? (emotionTr[v] ?? v) : v} />
                                                     <YAxis width={40} stroke={isDark ? '#64748b' : '#94a3b8'} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
                                                     <RechartsTooltip cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} contentStyle={tooltipStyle} />
                                                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
