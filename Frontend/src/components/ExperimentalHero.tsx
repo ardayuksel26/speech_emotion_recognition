@@ -466,9 +466,9 @@ const Hero = () => {
     <div
       className={clsx(
         "relative w-full flex-grow flex flex-col items-center font-sans",
-        (analysisResult || jointDone || hasAnyResults) ? "justify-start overflow-x-hidden" : "justify-center"
+        (analysisResult || jointDone || hasAnyResults || !!audioFile) ? "justify-start overflow-x-hidden" : "justify-center"
       )}
-      style={(analysisResult || jointDone || hasAnyResults) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+      style={(analysisResult || jointDone || hasAnyResults || !!audioFile) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
     >
 
 
