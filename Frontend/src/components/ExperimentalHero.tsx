@@ -155,7 +155,7 @@ const Hero = () => {
           const fd = new FormData();
           fd.append("file", wavBlob, "converted_audio.wav");
           fd.append("model_type", activeModelKey);
-          const resp = await axios.post(`http://localhost:5000/segment-sentence`, fd, {
+          const resp = await axios.post(`${import.meta.env.VITE_API_URL}/segment-sentence`, fd, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           return { segments: resp.data.segments as SegmentItem[], elapsed: resp.data.elapsed_seconds as number };
@@ -166,7 +166,7 @@ const Hero = () => {
           fd.append("file", wavBlob, "converted_audio.wav");
           fd.append("stt_engine", "vosk");
           fd.append("model_type", activeModelKey);
-          const resp = await axios.post(`http://localhost:5000/transcribe`, fd, {
+          const resp = await axios.post(`${import.meta.env.VITE_API_URL}/transcribe`, fd, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           return { segments: (resp.data.words || []).map((w: any) => ({ start: w.start, end: w.end, word: w.word, emotion: w.emotion })) as SegmentItem[], elapsed: resp.data.elapsed_seconds as number };
@@ -177,7 +177,7 @@ const Hero = () => {
           fd.append("file", wavBlob, "converted_audio.wav");
           fd.append("stt_engine", "whisperx");
           fd.append("model_type", activeModelKey);
-          const resp = await axios.post(`http://localhost:5000/transcribe`, fd, {
+          const resp = await axios.post(`${import.meta.env.VITE_API_URL}/transcribe`, fd, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           return { segments: (resp.data.words || []).map((w: any) => ({ start: w.start, end: w.end, word: w.word, emotion: w.emotion })) as SegmentItem[], elapsed: resp.data.elapsed_seconds as number };
@@ -293,7 +293,7 @@ const Hero = () => {
         endpoint = '/api/predict_sentence_whole';
       }
 
-      const response = await axios.post(`http://localhost:5000${endpoint}`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -419,7 +419,7 @@ const Hero = () => {
           try {
             const fd = new FormData();
             fd.append('file', wavBlob, 'audio.wav');
-            const resp = await axios.post(`http://localhost:5000${m.url}`, fd, {
+            const resp = await axios.post(`${import.meta.env.VITE_API_URL}${m.url}`, fd, {
               headers: { 'Content-Type': 'multipart/form-data' }
             });
             const emotion = resp.data.emotion || resp.data.final_emotion || 'unknown';

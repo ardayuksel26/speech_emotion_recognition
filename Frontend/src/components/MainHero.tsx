@@ -42,7 +42,7 @@ const MainHero = () => {
       setIsSegmenting(false);
       setIsAnalyzing(true);
 
-      const response = await axios.post("http://localhost:5000/analyze_master", formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/analyze_master`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
