@@ -1985,4 +1985,5 @@ def analyze_master():
 if __name__ == '__main__':
     # use_reloader=False ekleyerek klasördeki dosya değişikliklerinin (veya yeni kütüphane yüklemelerinin)
     # sunucuyu aniden resetlemesini engelliyoruz.
-    app.run(debug=True, use_reloader=False, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, use_reloader=False, host='0.0.0.0', port=port)
