@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation, Trans } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../context/ThemeContext";
 import { clsx } from "clsx";
 import AudioInput from "./AudioInput/AudioInput"; // Using the new component
