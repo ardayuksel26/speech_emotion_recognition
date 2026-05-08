@@ -11,7 +11,7 @@ import seaborn as sns
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models2/GradientBoosting" # Yeni klasör
+MODEL_DIR = "Models/GradientBoosting"
 MODEL_NAME = "gradboost_model.pkl"
 SCALER_NAME = "scaler_gb.pkl"
 LABEL_ENCODER_NAME = "label_encoder_gb.pkl"

@@ -11,7 +11,7 @@ import seaborn as sns
 
 # --- AYARLAR ---
 DATA_DIR = "TurEV-DB/Extracted CSV"
-MODEL_DIR = "Models2/MLP"
+MODEL_DIR = "Models/MLP"
 MODEL_NAME = "mlp_model.pkl"
 SCALER_NAME = "scaler_mlp.pkl"
 LABEL_ENCODER_NAME = "label_encoder_mlp.pkl"

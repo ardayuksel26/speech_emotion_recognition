@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("Robust_Trainer")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../TurEV-DB/Extracted CSV")
-BASE_MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../Models2")
+BASE_MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../Models")
 
 EMOTION_FILES = {
     "angry.csv": "angry",

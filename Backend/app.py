@@ -459,6 +459,13 @@ def predict():
     # 1. Frontend'den gelen 'model_type' verisini al (Varsayılan: catboost)
     selected_model_key = request.form.get('model_type', 'catboost')
 
+    # Robust versiyonu yoksa base modele düş (örn. dnn_robust → dnn)
+    if selected_model_key not in loaded_models and selected_model_key.endswith('_robust'):
+        base_key = selected_model_key[:-7]  # '_robust' = 7 karakter
+        if base_key in loaded_models:
+            logger.warning(f"'{selected_model_key}' bulunamadı, '{base_key}' kullanılıyor.")
+            selected_model_key = base_key
+
     # 2. Seçilen model yüklü mü diye kontrol et
     if selected_model_key not in loaded_models:
         return jsonify({

@@ -64,17 +64,18 @@ const Hero = () => {
   const isTr = i18n.language === 'tr';
 
   // Base models list
+  // supportsRobust: backend'de _robust dosyası olan modeller
   const BASE_MODELS = [
-    { id: 'catboost', name: 'CatBoost' },
-    { id: 'xgboost', name: 'XGBoost' },
-    { id: 'lightgbm', name: 'LightGBM' },
-    { id: 'rf', name: 'Random Forest' },
-    { id: 'knn', name: 'K-Nearest Neighbors' },
-    { id: 'svm', name: 'Support Vector Machine' },
-    { id: 'mlp', name: 'Multi-Layer Perceptron' },
-    { id: 'gradient_boosting', name: 'Gradient Boosting' },
-    { id: 'dnn', name: 'Deep Neural Network (DNN)' },
-    { id: 'cnn1d', name: '1D Convolutional Neural Network' },
+    { id: 'catboost', name: 'CatBoost', supportsRobust: true },
+    { id: 'xgboost', name: 'XGBoost', supportsRobust: true },
+    { id: 'lightgbm', name: 'LightGBM', supportsRobust: true },
+    { id: 'rf', name: 'Random Forest', supportsRobust: true },
+    { id: 'knn', name: 'K-Nearest Neighbors', supportsRobust: true },
+    { id: 'svm', name: 'Support Vector Machine', supportsRobust: true },
+    { id: 'dnn', name: 'Deep Neural Network (DNN)', supportsRobust: false },
+    { id: 'cnn1d', name: '1D Convolutional Neural Network', supportsRobust: false },
+    { id: 'mlp', name: 'Multi-Layer Perceptron', supportsRobust: true },
+    { id: 'gradient_boosting', name: 'Gradient Boosting', supportsRobust: true },
   ];
 
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -93,12 +94,14 @@ const Hero = () => {
   const [jointDone, setJointDone] = useState(false);
 
   // Compute actual backend key
+  const selectedModelDef = BASE_MODELS.find(m => m.id === selectedModel);
+  const useRobust = qualityMode === 'robust' && selectedModelDef?.supportsRobust;
   const activeModelKey = selectedModel === 'majority_voting'
     ? 'majority_voting'
-    : (qualityMode === 'robust' ? `${selectedModel}_robust` : selectedModel);
+    : (useRobust ? `${selectedModel}_robust` : selectedModel);
   const activeModelName = selectedModel === 'majority_voting'
     ? t('majority_voting')
-    : `${BASE_MODELS.find(m => m.id === selectedModel)?.name} (${qualityMode === 'robust' ? t('noisy') : t('studio')})`;
+    : `${selectedModelDef?.name} (${useRobust ? t('noisy') : t('studio')})`;
 
   // Segmentation and Next flow - stores results for ALL engines
   type SegmentItem = { start: number, end: number, word?: string, emotion?: string };
