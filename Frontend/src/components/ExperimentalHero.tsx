@@ -466,19 +466,19 @@ const Hero = () => {
     <div
       className={clsx(
         "relative w-full flex-grow flex flex-col items-center font-sans",
-        (analysisResult || jointDone || hasAnyResults || !!audioFile) ? "justify-start overflow-x-hidden" : "justify-center"
+        (analysisResult || jointDone || hasAnyResults || !!audioFile) ? "justify-start overflow-x-hidden" : "justify-start"
       )}
-      style={(analysisResult || jointDone || hasAnyResults || !!audioFile) ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+      style={(analysisResult || jointDone || hasAnyResults || !!audioFile) ? { paddingTop: '80px', paddingBottom: '24px' } : { paddingTop: '120px', paddingBottom: '32px' }}
     >
 
 
 
-      <div className="relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center" style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '80px' }}>
+      <div className={`relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center${!(analysisResult || jointDone || hasAnyResults || !!audioFile) ? ' my-auto' : ''}`} style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '40px' }}>
 
 
         <div className={`
           relative w-full shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
-          flex flex-col items-center justify-center border mt-8 md:mt-0
+          flex flex-col items-center justify-center border
           ${isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]"}
           ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
         `}

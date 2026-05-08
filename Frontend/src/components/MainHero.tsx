@@ -110,15 +110,15 @@ const MainHero = () => {
         "relative w-full flex-grow flex flex-col items-center font-sans",
         analysisResult ? "justify-start overflow-x-hidden" : "justify-center"
       )}
-      style={analysisResult ? { paddingTop: '120px', paddingBottom: '24px' } : {}}
+      style={analysisResult ? { paddingTop: '80px', paddingBottom: '24px' } : { paddingTop: '32px', paddingBottom: '32px' }}
     >
 
 
       <div className={clsx(
         "relative z-10 w-full max-w-6xl px-4 sm:px-6 flex flex-col items-center",
-        analysisResult ? "" : "py-8 sm:py-12 md:py-16 mb-4 sm:mb-6 md:mb-8"
+        analysisResult ? "" : "py-4 sm:py-8 md:py-12"
       )}
-      style={analysisResult ? { paddingBottom: '4px' } : { paddingBottom: '80px' }}
+      style={analysisResult ? { paddingBottom: '4px' } : { paddingBottom: '40px' }}
       >
 
         {/* Başlık */}

@@ -715,8 +715,8 @@ const TechnicalInfoPage = () => {
                                 <h4 className={`text-center font-bold text-xs sm:text-sm tracking-widest uppercase mb-6 opacity-60 ${isDark ? 'text-white' : 'text-slate-800'}`}>
                                     {isTr ? "Master Ensemble Sınıf Bazlı F1, Precision ve Recall (%)" : "Master Ensemble Class-Based F1, Precision, and Recall (%)"}
                                 </h4>
-                                <LazyMount minHeight="400px">
-                                    <ResponsiveContainer width="100%" height="88%" minWidth={0} debounce={50}>
+                                <LazyMount minHeight="360px">
+                                    <ResponsiveContainer width="100%" height={360} minWidth={0} debounce={50}>
                                         <BarChart data={emotionPerformanceMetrics} margin={{ top: 12, right: 18, left: 10, bottom: 8 }} barCategoryGap="18%">
                                             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
                                             <XAxis dataKey="emotion" stroke={isDark ? '#64748b' : '#94a3b8'} tick={{ fontSize: 13, fontWeight: 700 }} tickFormatter={(v) => isTr ? (emotionTr[v] ?? v) : v} />
@@ -821,8 +821,8 @@ const TechnicalInfoPage = () => {
                                             {t(model.descriptionKey)}
                                         </p>
 
-                                        <div className="w-full h-[280px]">
-                                            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+                                        <div className="w-full">
+                                            <ResponsiveContainer width="100%" height={280} minWidth={0} debounce={50}>
                                                 <BarChart data={model.metrics} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barSize={30}>
 
                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e2e8f0'} vertical={false} />
