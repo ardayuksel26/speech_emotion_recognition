@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiAward, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiAward } from 'react-icons/fi';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 
@@ -16,8 +15,6 @@ interface TeamMember {
     accentText: string;
     github: string;
     linkedin: string;
-    photoPosition?: string;
-    photoSize?: string;
 }
 
 /* ---------- data ---------- */
@@ -26,7 +23,7 @@ const TEAM: TeamMember[] = [
         name: 'Arda Yüksel',
         roleKey: 'about_member_1_role',
         descKey: 'about_member_1_desc',
-        photo: '/team1.png',
+        photo: '/arda_photo.jpeg',
         accent: 'from-violet-600 to-purple-500',
         accentText: 'text-violet-400',
         github: 'https://github.com/ardayuksel26',
@@ -36,19 +33,17 @@ const TEAM: TeamMember[] = [
         name: 'İlhan Uzunoğlu',
         roleKey: 'about_member_2_role',
         descKey: 'about_member_2_desc',
-        photo: '/team2.png',
+        photo: '/ilhan_photo.png',
         accent: 'from-sky-500 to-cyan-400',
         accentText: 'text-sky-400',
         github: 'https://github.com/ilhanuzunoglu',
         linkedin: 'https://linkedin.com/in/ilhanuzunoglu',
-        photoPosition: 'center top',
-        photoSize: 'contain',
     },
     {
         name: 'Yağız Karhan Kökgül',
         roleKey: 'about_member_3_role',
         descKey: 'about_member_3_desc',
-        photo: '/team3.png',
+        photo: '/yagiz_photo.jpeg',
         accent: 'from-fuchsia-500 to-pink-400',
         accentText: 'text-fuchsia-400',
         github: 'https://github.com/karhankkgl',
@@ -60,30 +55,6 @@ const TEAM: TeamMember[] = [
 const AboutPage = () => {
     const { t } = useTranslation();
     const { isDark } = useTheme();
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const startInterval = () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % TEAM.length);
-        }, 5000);
-    };
-
-    const handleNext = () => {
-        setCurrentIndex((prev) => (prev + 1) % TEAM.length);
-        startInterval();
-    };
-
-    const handlePrev = () => {
-        setCurrentIndex((prev) => (prev - 1 + TEAM.length) % TEAM.length);
-        startInterval();
-    };
-
-    useEffect(() => {
-        startInterval();
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, []);
 
     const fadeUp = {
         initial: { opacity: 0, y: 24 },
@@ -170,91 +141,75 @@ const AboutPage = () => {
                         {t('about_meet_team')}
                     </h2>
 
-                    <div className="flex items-center justify-center w-full gap-4 md:gap-8 max-w-3xl mx-auto">
-                        <button 
-                            onClick={handlePrev} 
-                            className={`w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
-                        >
-                            <FiChevronLeft size={22} />
-                        </button>
-
-                        <div className="w-full max-w-sm relative overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                        {TEAM.map((member) => (
                             <div
-                            className={`group relative flex flex-col rounded-xl overflow-hidden border ${
-                                isDark
-                                    ? 'border-white/10 shadow-2xl shadow-violet-500/10'
-                                    : 'border-slate-200/40 shadow-xl shadow-violet-500/10'
-                            }`}
-                            style={{
-                                minHeight: '400px',
-                                background: isDark
-                                    ? 'rgba(9, 19, 40, 0.55)'
-                                    : 'rgba(255, 255, 255, 0.45)',
-                                backdropFilter: 'blur(16px) saturate(180%)',
-                                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-                            }}>
+                                key={member.name}
+                                className={`group relative flex flex-col rounded-xl overflow-hidden border ${
+                                    isDark
+                                        ? 'border-white/10 shadow-2xl shadow-violet-500/10'
+                                        : 'border-slate-200/40 shadow-xl shadow-violet-500/10'
+                                }`}
+                                style={{
+                                    background: isDark
+                                        ? 'rgba(9, 19, 40, 0.55)'
+                                        : 'rgba(255, 255, 255, 0.45)',
+                                    backdropFilter: 'blur(16px) saturate(180%)',
+                                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                                }}
+                            >
                                 {/* Top glow bar */}
                                 <div className="absolute top-0 left-0 right-0 h-px opacity-20 z-10"
                                     style={{ background: 'linear-gradient(90deg, transparent, #bd9dff, transparent)' }} />
 
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={currentIndex}
-                                        initial={{ opacity: 0, x: 40 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -40 }}
-                                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                                        className="absolute inset-0 flex flex-col"
-                                    >
-                                        {/* Photo */}
-                                        <div className="relative overflow-hidden" style={{ height: '300px' }}>
-                                            <div
-                                                className="w-full h-full bg-no-repeat"
-                                                style={{ 
-                                                    backgroundImage: `url('${TEAM[currentIndex].photo}')`,
-                                                    backgroundPosition: TEAM[currentIndex].photoPosition ?? 'center',
-                                                    backgroundSize: TEAM[currentIndex].photoSize ?? 'cover',
-                                                }}
-                                            />
-                                            <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#091328] via-transparent' : 'from-white/20 via-transparent'} to-transparent`} />
-                                        </div>
+                                {/* Photo */}
+                                <div
+                                    className="relative overflow-hidden flex items-center justify-center"
+                                    style={{
+                                        height: '340px',
+                                        background: isDark ? 'rgba(9,19,40,0.8)' : 'rgba(240,244,255,0.8)',
+                                    }}
+                                >
+                                    <img
+                                        src={member.photo}
+                                        alt={member.name}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            objectPosition: 'center',
+                                        }}
+                                    />
+                                    <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#091328] via-transparent' : 'from-white/20 via-transparent'} to-transparent pointer-events-none`} />
+                                </div>
 
-                                        {/* Info */}
-                                        <div className="px-6 pt-5 pb-6 flex flex-col items-center text-center">
-                                            <h3 className={`text-2xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                                                {TEAM[currentIndex].name}
-                                            </h3>
-                                            {/* Social Links */}
-                                            <div className="flex items-center gap-4 mt-4">
-                                                <a
-                                                    href={TEAM[currentIndex].github}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200'}`}
-                                                >
-                                                    <FaGithub size={20} />
-                                                </a>
-                                                <a
-                                                    href={TEAM[currentIndex].linkedin}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200'}`}
-                                                >
-                                                    <FaLinkedin size={20} />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                </AnimatePresence>
+                                {/* Info */}
+                                <div className="px-6 pt-5 pb-6 flex flex-col items-center text-center">
+                                    <h3 className={`text-xl font-bold leading-snug mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                        {member.name}
+                                    </h3>
+                                    {/* Social Links */}
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <a
+                                            href={member.github}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200'}`}
+                                        >
+                                            <FaGithub size={20} />
+                                        </a>
+                                        <a
+                                            href={member.linkedin}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`w-9 h-9 inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 hover:text-sky-600 bg-slate-100 hover:bg-slate-200'}`}
+                                        >
+                                            <FaLinkedin size={20} />
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <button 
-                            onClick={handleNext} 
-                            className={`w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-200 border ${isDark ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:scale-110' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:scale-110 shadow-sm'}`}
-                        >
-                            <FiChevronRight size={22} />
-                        </button>
+                        ))}
                     </div>
                 </motion.div>
 
