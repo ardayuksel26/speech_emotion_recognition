@@ -494,7 +494,7 @@ const Hero = () => {
 
 
 
-      <div className={`relative z-10 w-full max-w-6xl px-4 md:px-6 flex flex-col items-center${!(analysisResult || jointDone || hasAnyResults || !!audioFile) ? ' my-auto' : ''}`} style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '40px' }}>
+      <div className={`relative z-10 w-full max-w-7xl px-4 md:px-6 flex flex-col items-center${!(analysisResult || jointDone || hasAnyResults || !!audioFile) ? ' my-auto' : ''}`} style={(analysisResult || jointDone) ? { paddingBottom: '4px' } : { paddingBottom: '40px' }}>
 
 
         <div className={`
@@ -503,7 +503,7 @@ const Hero = () => {
           ${isDark ? "bg-[#0f172a]/70 backdrop-blur-[40px] border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.15)]" : "bg-white/60 backdrop-blur-[40px] border-indigo-100 shadow-[0_0_60px_rgba(99,102,241,0.08)]"}
           ${(analysisResult || jointDone) ? "max-w-[100vw] sm:max-w-[98vw] lg:max-w-[1600px] overflow-visible rounded-3xl md:rounded-[2.5rem] mx-auto border-indigo-500/20" : "max-w-5xl min-h-[320px] px-4 py-8 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] w-full mx-4 md:mx-0"}
         `}
-          style={!(analysisResult || jointDone) ? { minHeight: '380px' } : { marginTop: '0', padding: '0 8px 4px' }}
+          style={!(analysisResult || jointDone) ? { minHeight: '380px' } : jointDone ? { marginTop: '0', padding: '0 8px 48px' } : { marginTop: '0', padding: '0 8px 4px' }}
         >
 
           {/* Subtle Inner Glow */}
@@ -1047,7 +1047,7 @@ const Hero = () => {
                           ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
                           : (r.name || r.model)}
                       </p>
-                      {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: getEmotionDisplayColor(r.emotion) }}>{r.emotion}</p>}
+                      {r.status === 'done' && <p className="text-sm font-black" style={{ color: getEmotionDisplayColor(r.emotion) }}>{t(`emotions.${r.emotion.toLowerCase()}`, r.emotion)}</p>}
                       {r.status === 'error' && <p className="text-xs text-red-400">{t('joint_test_error_label')}</p>}
                       {r.status === 'loading' && <p className="text-xs opacity-40">{t('joint_test_waiting')}</p>}
                     </div>
@@ -1059,9 +1059,9 @@ const Hero = () => {
 
           {/* ── Joint Test: Results ── */}
           {jointDone && !isJointTesting && (
-            <div className="w-full animate-fadeIn py-6 flex flex-col items-center px-4 md:px-8">
+            <div className="w-full animate-fadeIn py-10 flex flex-col items-center px-4 md:px-8">
               {/* Header */}
-              <div className="flex items-center justify-between mb-8 w-full max-w-5xl">
+              <div className="flex items-center justify-between mb-8 w-full max-w-6xl">
                 <button
                   onClick={reset}
                   className={`w-11 h-11 flex items-center justify-center rounded-full transition-all hover:scale-110 ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60' : 'text-slate-500 hover:text-slate-900'}`}
@@ -1076,7 +1076,7 @@ const Hero = () => {
               </div>
 
               {/* Results Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-5xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-6xl">
                 {jointResults.map((r, i) => (
                   <div
                     key={i}
@@ -1097,8 +1097,8 @@ const Hero = () => {
 
                     {r.status === 'done' ? (
                       <>
-                        <p className="text-2xl font-black capitalize" style={{ color: getEmotionDisplayColor(r.emotion) }}>
-                          {r.emotion}
+                        <p className="text-2xl font-black" style={{ color: getEmotionDisplayColor(r.emotion) }}>
+                          {t(`emotions.${r.emotion.toLowerCase()}`, r.emotion)}
                         </p>
                         <div className="w-full">
                           <div className="flex justify-between text-xs font-bold mb-1 opacity-60">
