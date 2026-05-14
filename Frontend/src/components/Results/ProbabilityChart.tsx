@@ -13,9 +13,7 @@ const ProbabilityChart: React.FC<ProbabilityChartProps> = ({ probabilities }) =>
     const { t, i18n } = useTranslation();
     const { isDark } = useTheme();
 
-    // Sort by probability desc, filter out zero-score emotions
     const sortedEmotions = Object.entries(probabilities)
-        .filter(([, score]) => score > 0)
         .sort(([, a], [, b]) => b - a);
 
     return (
@@ -37,7 +35,7 @@ const ProbabilityChart: React.FC<ProbabilityChartProps> = ({ probabilities }) =>
                 const style = emotionStyles[normalized] || { bg: 'bg-gradient-to-r from-indigo-500 to-purple-600', shadow: 'shadow-[0_0_12px_rgba(99,102,241,0.6)]' };
 
                 return (
-                    <div key={emotion} className="w-full px-2 sm:px-4">
+                    <div key={emotion} className={clsx("w-full px-2 sm:px-4", score === 0 && "opacity-35")}>
                         <div className="flex justify-between items-end mb-2 px-2">
                             <span className={clsx(
                                 "font-black tracking-widest text-sm md:text-base",
