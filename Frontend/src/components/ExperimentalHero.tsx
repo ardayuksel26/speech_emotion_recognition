@@ -32,6 +32,24 @@ const JOINT_MODELS = [
   { name: 'WavLM Large', url: '/analyze_wavlm_large', color: '#f43f5e' },
 ];
 
+const EMOTION_DISPLAY_COLORS: Record<string, string> = {
+  angry: '#f43f5e',
+  happy: '#fbbf24',
+  sad: '#60a5fa',
+  neutral: '#94a3b8',
+  calm: '#2dd4bf',
+  fear: '#a855f7',
+  disgust: '#22c55e',
+  surprise: '#ec4899',
+  positive: '#fbbf24',
+  excited: '#fb923c',
+  bored: '#94a3b8',
+  frustrated: '#f43f5e',
+};
+
+const getEmotionDisplayColor = (emotion: string): string =>
+  EMOTION_DISPLAY_COLORS[emotion.toLowerCase()] ?? '#6366f1';
+
 const parseConf = (c: any): number => {
   if (typeof c === 'string') return parseFloat(c.replace('%', ''));
   if (typeof c === 'number') return c <= 1 ? c * 100 : c;
@@ -1029,7 +1047,7 @@ const Hero = () => {
                           ? (isTr ? 'Gelişmiş Cümle Analizi' : 'Advanced Sentence Analysis')
                           : (r.name || r.model)}
                       </p>
-                      {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: r.color }}>{r.emotion}</p>}
+                      {r.status === 'done' && <p className="text-sm font-black capitalize" style={{ color: getEmotionDisplayColor(r.emotion) }}>{r.emotion}</p>}
                       {r.status === 'error' && <p className="text-xs text-red-400">{t('joint_test_error_label')}</p>}
                       {r.status === 'loading' && <p className="text-xs opacity-40">{t('joint_test_waiting')}</p>}
                     </div>
@@ -1041,12 +1059,12 @@ const Hero = () => {
 
           {/* ── Joint Test: Results ── */}
           {jointDone && !isJointTesting && (
-            <div className="w-full animate-fadeIn px-4 md:px-8 py-6">
+            <div className="w-full animate-fadeIn py-6 flex flex-col items-center px-4 md:px-8">
               {/* Header */}
-              <div className="flex items-center justify-between mb-8 max-w-5xl mx-auto">
+              <div className="flex items-center justify-between mb-8 w-full max-w-5xl">
                 <button
                   onClick={reset}
-                  className={`w-11 h-11 flex items-center justify-center rounded-full transition-all hover:scale-110 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`w-11 h-11 flex items-center justify-center rounded-full transition-all hover:scale-110 ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </button>
@@ -1058,7 +1076,7 @@ const Hero = () => {
               </div>
 
               {/* Results Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-5xl">
                 {jointResults.map((r, i) => (
                   <div
                     key={i}
@@ -1069,7 +1087,7 @@ const Hero = () => {
                     style={{ backdropFilter: 'blur(12px)' }}
                   >
                     {/* Color accent top bar */}
-                    <div className="absolute top-0 left-6 right-6 h-0.5 rounded-full" style={{ background: r.color }} />
+                    <div className="absolute top-0 left-6 right-6 h-0.5 rounded-full" style={{ background: r.status === 'done' ? getEmotionDisplayColor(r.emotion) : r.color }} />
 
                     <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {r.name === 'Gelişmiş Cümle Analizi'
@@ -1079,7 +1097,7 @@ const Hero = () => {
 
                     {r.status === 'done' ? (
                       <>
-                        <p className="text-2xl font-black capitalize" style={{ color: r.color }}>
+                        <p className="text-2xl font-black capitalize" style={{ color: getEmotionDisplayColor(r.emotion) }}>
                           {r.emotion}
                         </p>
                         <div className="w-full">
@@ -1088,7 +1106,7 @@ const Hero = () => {
                             <span>{r.confidence.toFixed(1)}%</span>
                           </div>
                           <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(r.confidence, 100)}%`, background: r.color }} />
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(r.confidence, 100)}%`, background: getEmotionDisplayColor(r.emotion) }} />
                           </div>
                         </div>
                       </>
