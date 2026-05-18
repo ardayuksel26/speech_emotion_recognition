@@ -3,6 +3,24 @@ import os
 import threading
 import numpy as np
 import joblib
+
+# Numpy backward-compatibility patch: models saved with old numpy passed the
+# BitGenerator class object to __bit_generator_ctor; current numpy expects a
+# string name. This shim handles both formats transparently.
+try:
+    import numpy.random._pickle as _np_rng_pickle
+    _orig_bg_ctor = _np_rng_pickle.__bit_generator_ctor
+    _bg_class_map = {v: k for k, v in _np_rng_pickle.BitGenerators.items()}
+
+    def _compat_bg_ctor(bit_generator_name='MT19937'):
+        if isinstance(bit_generator_name, type):
+            bit_generator_name = _bg_class_map.get(bit_generator_name,
+                                                    bit_generator_name.__name__)
+        return _orig_bg_ctor(bit_generator_name)
+
+    _np_rng_pickle.__bit_generator_ctor = _compat_bg_ctor
+except Exception:
+    pass
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from preprocessing import extract_features

@@ -4,7 +4,9 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "Bash(git remote *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(pip install *)",
+      "PowerShell(pip install *)"
     ]
   }
 }

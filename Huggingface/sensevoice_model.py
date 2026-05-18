@@ -24,6 +24,15 @@ class SenseVoiceEmotionPredictor:
         # Windows'ta HuggingFace symlink hatasını önle
         os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
+        # Windows Application Control politikası funasr'ın pip subprocess çağrısını
+        # engelliyor ([WinError 4551]). Gereksinimler zaten kurulu olduğu için
+        # bu adımı monkey-patch ile atlıyoruz.
+        try:
+            import funasr.utils.install_model_requirements as _imr
+            _imr.install_requirements = lambda *a, **kw: None
+        except Exception:
+            pass
+
         from funasr import AutoModel
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading SenseVoice model on {device}")
