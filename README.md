@@ -111,22 +111,28 @@ npm run dev
 ## 📸 Screenshots / Uygulama Ekran Görüntüleri
 
 ### 1. Main Page / Ana Sayfa
-![Main Page](https://via.placeholder.com/800x450?text=Main+Page)
+<img width="1918" height="907" alt="Main_Page" src="https://github.com/user-attachments/assets/5db97759-de7f-48b6-9eb3-1429d552d476" />
+
 
 ### 2. Experimental Models / Deneysel Modeller
-![Experimental Models](https://via.placeholder.com/800x450?text=Experimental+Models)
+<img width="1918" height="910" alt="Experimental_Models_Page" src="https://github.com/user-attachments/assets/9bbb1d04-c0ed-4044-879c-1d3bdf0676bf" />
+
 
 ### 3. About Us Page / Hakkımızda Sayfası
-![About Us](https://via.placeholder.com/800x450?text=About+Us+Page)
+<img width="1896" height="896" alt="About_Us_Page" src="https://github.com/user-attachments/assets/11e5f300-f5f8-49cf-85fe-fb37672fba38" />
+
 
 ### 4. Use Cases / Kullanım Alanları
-![Use Cases](https://via.placeholder.com/800x450?text=Use+Cases)
+<img width="1918" height="907" alt="Use_Cases_Page" src="https://github.com/user-attachments/assets/27be6228-5227-4d54-bf6a-6f62d479b289" />
+
 
 ### 5. Technical Info Page / Teknik Bilgi Sayfası
-![Technical Info](https://via.placeholder.com/800x450?text=Technical+Info+Page)
+<img width="1895" height="887" alt="Technical_info_page" src="https://github.com/user-attachments/assets/d7bd67f6-f897-4a33-bf62-73b2fc87d10a" />
+
 
 ### 6. Result Screen / Sonuç Ekranı
-![Result Screen](https://via.placeholder.com/800x450?text=Result+Screen)
+<img width="1918" height="907" alt="Result_Screen" src="https://github.com/user-attachments/assets/ade849c0-d804-417c-a11f-3d58a16197a8" />
+
 
 ---
 © 2026 Speech Emotion Recognition Project
